@@ -298,6 +298,31 @@
     
     
 #### bp下载 
+- 功能描述及逻辑
+    
+    投资人对于用户上传BP的项目进行查看时，可以对用户的bp书进行下载查看。
+    
+- 请求url
+
+    1. mock链接:
+    
+    2. dev链接:
+    
+- 请求数据（Get）
+```json
+{
+  "openId": "",
+  "projectNo": ""
+}
+```
+
+
+- 返回数据
+```json
+{
+    "data": "file"
+}
+```
 
 #### 红包模块
 - 功能描述及逻辑
@@ -343,13 +368,147 @@
     细化为以下几个部分。但所有模块均只涉及对于项目评价信息单表的修改。
     
 1. 投资人待评价获取
+    投资人获取到自己investorId项目的所有评论，对于其中content为空的字段信息，前端显示**提交**，如果
+    content字段不为空前端显示**修改**
 
+    - 请求url
+
+        1. mock链接:
+    
+        2. dev链接:
+    
+    - 请求数据（Get）
+```json
+```
+
+- 返回数据
+```json
+{
+	"data":[
+		{
+			"projectNm":"",
+			"projectNo":"",
+			"openId":"",
+			"investorId":"",
+			"content":"",
+			"stars":"",
+			"reply":"",
+			"updateTm":"",
+			"replyTm":""
+		}
+	]
+}
+```
 2. 投资人评价/修改提交
+    在投资人的评价页面，对用户已经付费的相关待评论的内容进行编辑.
+    - 请求url
 
+        1. mock链接:
+    
+        2. dev链接:
+    
+    - 请求数据(Post)
+```json
+{
+	"data":[
+		{
+			"projectNm":"",
+			"projectNo":"",
+			"openId":"",
+			"investorId":"",
+			"content":"",
+			"stars":"",
+			"reply":"",
+			"updateTm":"",
+			"replyTm":""
+		}
+	]
+}
+```
+
+   - 返回数据
+```json
+{
+    "state": "",
+    "message": ""
+}
+```
 3. 用户获取投资人评价
+    
+    用户登陆到自己已提交expList的请求，可以进行投资人的评论查看。如果Content内容不为空则视为
+    评论有效，用户即可查看评论。否则显示**让客官稍等**页面。
+    
+    - 请求url
 
+        1. mock链接:
+    
+        2. dev链接:
+    
+    - 请求数据（Get）
+```json
+{
+	"data":{
+			"openId":""		
+		}
+	
+}
+```
+
+
+- 返回数据
+```json
+{
+	"data":[
+		{
+			"projectNm":"",
+			"projectNo":"",
+			"openId":"",
+			"investorId":"",
+			"content":"",
+			"stars":"",
+			"reply":"",
+			"updateTm":"",
+			"replyTm":""
+		}
+	]
+}
+```
 4. 用户对于投资人评价回评
+
+    对于已有content的、对于客户进行展示的评论，客户可以进行回评，回评只能有一次，可以只提交星级或者是星级和回评
+    提交后后端对数据进行更新。
+    
+
+   - 请求url
    
+       1. mock链接:
+       
+       2. dev链接:
+       
+   - 请求数据
+  ```json
+  {
+  	"data":[
+  		{
+  			"projectNm":"",
+  			"projectNo":"",
+  			"openId":"",
+  			"investorId":"",
+  			"stars":"",
+  			"reply":""
+  		}
+  	]
+  }
+   ```
+   
+   
+   - 返回数据
+   ```json
+   {
+       "state": "",
+       "message": ""
+   }
+   ```
 
 
 
