@@ -2,18 +2,15 @@ package com.pojo;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
-import org.bson.types.ObjectId;
+import org.springframework.data.annotation.Id;
 
 @Data
 @Builder
 public class Investor {
     /**
-     * Document Id
+     * 投资人 Id
      */
-    private ObjectId id;
-    /**
-     * 投资人Id
-     */
+    @Id
     private String investorId;
     /**
      * 机构名称
