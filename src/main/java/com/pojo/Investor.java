@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @Builder
-@Document(collection = "investor")
+@Document(value = "investor")
 public class Investor {
     /**
      * 投资人 Id
