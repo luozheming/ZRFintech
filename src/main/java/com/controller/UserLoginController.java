@@ -9,12 +9,9 @@ import com.utils.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
-import static org.springframework.data.mongodb.core.query.Update.update;
 import static org.springframework.data.mongodb.core.query.Query.query;
-
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 @RestController
 public class UserLoginController {
