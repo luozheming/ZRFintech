@@ -18,7 +18,8 @@ import java.util.List;
 
 public class Initdb {
     public static void main(String args[]) {
-        initProjectDB();
+        initInvestorDB();
+//        initProjectDB();
     }
 
 
@@ -33,10 +34,10 @@ public class Initdb {
         database = database.withCodecRegistry(pojoCodecRegistry);
         MongoCollection<Investor> collection = database.getCollection("investor", Investor.class);
         List<Investor> Investors = asList(
-                Investor.builder().orgNm("高瓴资本").pthoneNm("19991967502").investor("杨博").introd("团队长").build(),
-                Investor.builder().orgNm("金沙江创投").pthoneNm("13585688902").investor("武思宇").build(),
-                Investor.builder().orgNm("高瓴资本").pthoneNm("18696148635").investor("罗哲明").build(),
-                Investor.builder().orgNm("红衫资本").pthoneNm("18392181272").investor("彭星宇").invesEmail("pengxingyu@cmbchina.com").build()
+                Investor.builder().investorId("1").orgNm("高瓴资本").pthoneNm("19991967502").investor("杨博").introd("团队长").build(),
+                Investor.builder().investorId("2").orgNm("金沙江创投").pthoneNm("13585688902").investor("武思宇").build(),
+                Investor.builder().investorId("3").orgNm("高瓴资本").pthoneNm("18696148635").investor("罗哲明").build(),
+                Investor.builder().investorId("4").orgNm("红衫资本").pthoneNm("18392181272").investor("彭星宇").invesEmail("pengxingyu@cmbchina.com").build()
         );
 
         collection.insertMany(Investors);
