@@ -35,6 +35,7 @@
 |investor|投资人姓名|String||
 |introd|投资人介绍|String||
 |invesEmail|投资人邮箱|String||
+|invesPhotoRoute|投资人照片路径|String||
 |indusLab1|行业标签1|String||
 |indusLab2|行业标签2|String||
 |indusLab3|行业标签3|String||
@@ -59,16 +60,13 @@
 |:----:|:----:|:---:|:---:|
 |projectNo|项目编号|String|项目唯一识别编号|
 |projectNm|项目名称|String||
-|openId|上传用户|String||
-|proIndus|项目行业|String||
-|proDes|项目描述|String||
-|proVal|项目价值|String||
-|bizModel|商业模式|String||
-|cptEdge|竞争优势|String||
-|operYear|经营年限|int||
-|finSt|财务状况|String||
+|proIndus|所属行业|String||
 |teamSize|团队人数|int||
-|ftrPlan|企业未来规划|String||
+|finSt|企业营收状况|String||
+|entProvince|企业所在省|String||
+|entCity|企业所在城市|String||
+|proDes|项目简介|String||
+|openId|上传用户|String||
 |bpRoute|BP路径|String||
 |expList|期望点评列表|Array|investorId列表合集|
 
@@ -319,7 +317,7 @@
 {
   "openId": "",
   "projectNo": "",
-  "data": "file"
+  "file": "file"
 }
 ```
 

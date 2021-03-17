@@ -6,6 +6,8 @@ public enum ErrorCode {
     SUCCESS(200, "success"),
     USERFIRSTLOGIN(200,"用户首次登陆"),
     NULLOBJECT(601,"对象为空"),
+    EMPITYFILE(602,"文件为空"),
+    FILEUPLOADFAILED(604,"文件上传失败"),
     OTHEREEEOR(669,"其余未知错误");
 
     private int code;
