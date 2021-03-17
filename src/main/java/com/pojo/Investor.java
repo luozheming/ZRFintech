@@ -12,7 +12,6 @@ public class Investor {
     /**
      * 投资人 Id
      */
-    @Id
     private String investorId;
     /**
      * 机构名称
