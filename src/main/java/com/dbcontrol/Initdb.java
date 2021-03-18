@@ -34,15 +34,15 @@ public class Initdb {
         database = database.withCodecRegistry(pojoCodecRegistry);
         MongoCollection<Investor> collection = database.getCollection("investor", Investor.class);
         List<Investor> Investors = asList(
-                Investor.builder().investorId("1").orgNm("高瓴资本").pthoneNm("19991967502").investor("杨博").introd("团队长").build(),
-                Investor.builder().investorId("2").orgNm("金沙江创投").pthoneNm("13585688902").investor("武思宇").introd("资深运营。\n 15亿用户APP。\n值得你信赖").build(),
-                Investor.builder().investorId("3").orgNm("高瓴资本").pthoneNm("18696148635").investor("罗哲明").introd("资深运营。\n 15亿用户APP。\n值得你信赖").build(),
-                Investor.builder().investorId("4").orgNm("红衫资本").pthoneNm("18392181272").investor("彭星宇").introd("资深运营。\n 15亿用户APP。\n值得你信赖").invesEmail("pengxingyu@cmbchina.com").build(),
-                Investor.builder().investorId("5").orgNm("红衫资本").pthoneNm("18392181272").investor("唐培轩").introd("资深开发。\n15年经验\n值得你信赖\n中软国际\n精通java后端").invesEmail("tangpeixuan@cmbchina.com").build(),
-                Investor.builder().investorId("6").orgNm("招银国际").pthoneNm("15685215623").investor("一剑").introd("资深开发。\n15年经验\n值得你信赖\n中软国际\n精通java后端").invesEmail("yijian@cmbchina.com").build(),
-                Investor.builder().investorId("7").orgNm("招银国际").pthoneNm("15325896699").investor("董振宇").introd("资深开发。\n15年经验\n值得你信赖\n中软国际\n精通java后端").invesEmail("dongzhenyu@cmbchina.com").build(),
-                Investor.builder().investorId("8").orgNm("易帆国际").pthoneNm("15325896512").investor("黄志云").introd("资深开发。\n15年经验\n值得你信赖").invesEmail("zhiyunhuang@cmbchina.com").build(),
-                Investor.builder().investorId("9").orgNm("易帆国际").pthoneNm("15325896525").investor("张三").introd("资深数据分析。").invesEmail("zhiyunhuang@cmbchina.com").build()
+                Investor.builder().investorId("1").orgNm("高瓴资本").pthoneNm("19991967502").investor("杨博").introd("团队长").invesPhotoRoute("E:\\investor\\1\\杨博.jpg").build(),
+                Investor.builder().investorId("2").orgNm("金沙江创投").pthoneNm("13585688902").investor("武思宇").introd("资深运营。\n 15亿用户APP。\n值得你信赖").invesPhotoRoute("E:\\investor\\2\\武思宇.jpg").build(),
+                Investor.builder().investorId("3").orgNm("高瓴资本").pthoneNm("18696148635").investor("罗哲明").introd("资深运营。\n 15亿用户APP。\n值得你信赖").invesPhotoRoute("E:\\investor\\3\\罗哲明.jpg").build(),
+                Investor.builder().investorId("4").orgNm("红衫资本").pthoneNm("18392181272").investor("彭星宇").introd("资深运营。\n 15亿用户APP。\n值得你信赖").invesEmail("pengxingyu@cmbchina.com").invesPhotoRoute("E:\\investor\\4\\彭星宇.jpg").build(),
+                Investor.builder().investorId("5").orgNm("红衫资本").pthoneNm("18392181272").investor("唐培轩").introd("资深开发。\n15年经验\n值得你信赖\n中软国际\n精通java后端").invesEmail("tangpeixuan@cmbchina.com").invesPhotoRoute("E:\\investor\\5\\唐培轩.jpg").build(),
+                Investor.builder().investorId("6").orgNm("招银国际").pthoneNm("15685215623").investor("一剑").introd("资深开发。\n15年经验\n值得你信赖\n中软国际\n精通java后端").invesEmail("yijian@cmbchina.com").invesPhotoRoute("E:\\investor\\6\\一剑.jpg").build(),
+                Investor.builder().investorId("7").orgNm("招银国际").pthoneNm("15325896699").investor("董振宇").introd("资深开发。\n15年经验\n值得你信赖\n中软国际\n精通java后端").invesEmail("dongzhenyu@cmbchina.com").invesPhotoRoute("E:\\investor\\7\\董振宇.jpg").build(),
+                Investor.builder().investorId("8").orgNm("易帆国际").pthoneNm("15325896512").investor("黄志云").introd("资深开发。\n15年经验\n值得你信赖").invesEmail("zhiyunhuang@cmbchina.com").invesPhotoRoute("E:\\investor\\8\\黄志云.jpg").build(),
+                Investor.builder().investorId("9").orgNm("易帆国际").pthoneNm("15325896525").investor("张三").introd("资深数据分析。").invesEmail("zhiyunhuang@cmbchina.com").invesPhotoRoute("E:\\investor\\9\\张三.jpg").build()
         );
 
         collection.insertMany(Investors);
