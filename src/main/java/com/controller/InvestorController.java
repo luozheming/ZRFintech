@@ -162,11 +162,11 @@ public class InvestorController {
     }
 
     @GetMapping(value = "/downLoadInvestorPhoto")
-    public String downLoadInvestorPhoto(HttpServletResponse response, @RequestParam String investorId) {
+    public String downLoadInvestorPhoto(HttpServletResponse response, @RequestParam String pthoneNm) {
         try {
             // 获取投资人头像路径
             String filePath = "";
-            List<Investor> investors = mongoTemplate.find(query(Criteria.where("investorId").is(investorId)).limit(1), Investor.class);
+            List<Investor> investors = mongoTemplate.find(query(Criteria.where("pthoneNm").is(pthoneNm)).limit(1), Investor.class);
             if (!CollectionUtils.isEmpty(investors)) {
                 filePath = investors.get(0).getInvesPhotoRoute();
             }
