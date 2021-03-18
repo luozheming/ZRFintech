@@ -35,7 +35,7 @@ public class UserLoginController {
         }
     }
 
-    @PostMapping(value = "entUserLogin")
+    @PostMapping(value = "/entUserLogin")
     public String entUserLogin(@RequestBody EntUser entUser){
         try{
         //如果用户已存在数据库，返回成功信息。否则将用户数据保存至数据库
@@ -49,5 +49,4 @@ public class UserLoginController {
             return ErrorCode.OTHEREEEOR.toJsonString();
         }
     }
-
 }

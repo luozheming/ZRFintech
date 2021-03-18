@@ -20,45 +20,33 @@ public class Project {
      */
     private String projectNm;
     /**
-     * 上传用户
-     */
-    private String openId;
-    /**
-     * 项目行业
+     * 所属行业
      */
     private String proIndus;
-    /**
-     * 项目描述
-     */
-    private String proDes;
-    /**
-     * 项目价值
-     */
-    private String proVal;
-    /**
-     * 商业模式
-     */
-    private String bizModel;
-    /**
-     * 竞争优势
-     */
-    private String cptEdge;
-    /**
-     * 经营年限
-     */
-    private int operYear;
-    /**
-     * 财务状况
-     */
-    private String finSt;
     /**
      * 团队人数
      */
     private int teamSize;
     /**
-     * 企业未来规划
+     * 企业营收状况
      */
-    private String ftrPlan;
+    private String finSt;
+    /**
+     * 企业所在省
+     */
+    private String entProvince;
+    /**
+     * 企业所在城市
+     */
+    private String entCity;
+    /**
+     * 项目描述
+     */
+    private String proDes;
+    /**
+     * 上传用户
+     */
+    private String openId;
     /**
      *  BP路径
      */
