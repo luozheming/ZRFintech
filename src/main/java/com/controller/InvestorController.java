@@ -170,7 +170,6 @@ public class InvestorController {
             if (!CollectionUtils.isEmpty(investors)) {
                 filePath = investors.get(0).getInvesPhotoRoute();
             }
-
             // 下载文件
             return downLoadFile(response, filePath);
         } catch (Exception e) {
