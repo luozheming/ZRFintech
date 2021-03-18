@@ -35,9 +35,14 @@ public class Initdb {
         MongoCollection<Investor> collection = database.getCollection("investor", Investor.class);
         List<Investor> Investors = asList(
                 Investor.builder().investorId("1").orgNm("高瓴资本").pthoneNm("19991967502").investor("杨博").introd("团队长").build(),
-                Investor.builder().investorId("2").orgNm("金沙江创投").pthoneNm("13585688902").investor("武思宇").build(),
-                Investor.builder().investorId("3").orgNm("高瓴资本").pthoneNm("18696148635").investor("罗哲明").build(),
-                Investor.builder().investorId("4").orgNm("红衫资本").pthoneNm("18392181272").investor("彭星宇").invesEmail("pengxingyu@cmbchina.com").build()
+                Investor.builder().investorId("2").orgNm("金沙江创投").pthoneNm("13585688902").investor("武思宇").introd("资深运营。\n 15亿用户APP。\n值得你信赖").build(),
+                Investor.builder().investorId("3").orgNm("高瓴资本").pthoneNm("18696148635").investor("罗哲明").introd("资深运营。\n 15亿用户APP。\n值得你信赖").build(),
+                Investor.builder().investorId("4").orgNm("红衫资本").pthoneNm("18392181272").investor("彭星宇").introd("资深运营。\n 15亿用户APP。\n值得你信赖").invesEmail("pengxingyu@cmbchina.com").build(),
+                Investor.builder().investorId("5").orgNm("红衫资本").pthoneNm("18392181272").investor("唐培轩").introd("资深开发。\n15年经验\n值得你信赖\n中软国际\n精通java后端").invesEmail("tangpeixuan@cmbchina.com").build(),
+                Investor.builder().investorId("6").orgNm("招银国际").pthoneNm("15685215623").investor("一剑").introd("资深开发。\n15年经验\n值得你信赖\n中软国际\n精通java后端").invesEmail("yijian@cmbchina.com").build(),
+                Investor.builder().investorId("7").orgNm("招银国际").pthoneNm("15325896699").investor("董振宇").introd("资深开发。\n15年经验\n值得你信赖\n中软国际\n精通java后端").invesEmail("dongzhenyu@cmbchina.com").build(),
+                Investor.builder().investorId("8").orgNm("易帆国际").pthoneNm("15325896512").investor("黄志云").introd("资深开发。\n15年经验\n值得你信赖").invesEmail("zhiyunhuang@cmbchina.com").build(),
+                Investor.builder().investorId("9").orgNm("易帆国际").pthoneNm("15325896525").investor("张三").introd("资深数据分析。").invesEmail("zhiyunhuang@cmbchina.com").build()
         );
 
         collection.insertMany(Investors);
@@ -60,7 +65,7 @@ public class Initdb {
                 Project.builder().projectNo("985").projectNm("阿里巴巴").openId("358").teamSize(31).expList(asList("65","69","73")).build(),
                 Project.builder().projectNo("115").projectNm("微信").openId("185").teamSize(32).expList(asList("3")).build(),
                 Project.builder().projectNo("562").projectNm("富途").openId("433").teamSize(61).expList(asList("5","38","51")).build(),
-                Project.builder().projectNo("812").projectNm("货拉拉").openId("251").teamSize(15).ftrPlan("没有未来规划").build()
+                Project.builder().projectNo("812").projectNm("货拉拉").openId("251").teamSize(15).build()
         );
         collection.insertMany(projects);
     }
