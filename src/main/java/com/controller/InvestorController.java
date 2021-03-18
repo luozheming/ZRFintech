@@ -8,6 +8,7 @@ import com.dto.outdto.OutputFormate;
 import com.pojo.Project;
 import com.pojo.ProjectComment;
 import com.utils.ErrorCode;
+import com.utils.NumGenerate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -19,7 +20,10 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
@@ -35,6 +39,9 @@ public class InvestorController {
     @Autowired
     private MongoTemplate mongoTemplate;
 
+    @Autowired
+    private NumGenerate numGenerate;
+
     @PostMapping(value = "/entPayment")
     public String entPayment(@RequestBody List<InvestorGetPaymentsDto> investorGetPaymentsVos){
         try{
@@ -44,15 +51,12 @@ public class InvestorController {
 
                 // 在项目编号下已有投资人id的list中累加
                 List<String> expList = new ArrayList<>();
-                // 获取项目评论最大id
-                int maxId = mongoTemplate.findAll(ProjectComment.class).size();
                 for (InvestorGetPaymentsDto investorGetPaymentsVo: investorGetPaymentsVos) {
                     expList.add(investorGetPaymentsVo.getInvestorId());
 
                     projectComment = new ProjectComment();
                     BeanUtils.copyProperties(investorGetPaymentsVo, projectComment);
-                    maxId = maxId + 1;
-                    projectComment.setId(String.valueOf(maxId));
+                    projectComment.setId(numGenerate.getNumCode());
                     projectCommentList.add(projectComment);
                 }
                 // 更新项目expList
