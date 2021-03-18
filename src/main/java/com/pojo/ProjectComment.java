@@ -48,6 +48,10 @@ public class ProjectComment {
      */
     private Date updateTm;
     /**
+     * 完成标识
+     */
+    private Boolean isDone;
+    /**
      * 评论星级
      */
     private Integer stars;
