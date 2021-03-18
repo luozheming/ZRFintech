@@ -30,6 +30,10 @@ public class Investor {
      */
     private String introd;
     /**
+     * 投资人照片路径
+     */
+    private String  invesPhotoRoute;
+    /**
      * 投资人邮箱
      */
     private String invesEmail;

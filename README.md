@@ -119,32 +119,35 @@
 
     1. mock链接:
     
-    2. dev链接:
+    2. dev链接: ip:port/entUserLogin
 
 - 请求数据
 ```json
 {
-	"data":{
-		"country":"",
-		"projects":{
-			"project1":{
-				"projectNm":"",
-				"projectNo":""
-			}
-		},
-		"gender":"",
-		"province":"",
-		"city":"",
-		"openId":"",
-		"nickName":"",
-		"phoneNm":""
-	}
+    "country":"",
+    "projects":[
+        {
+            "projectNm":"",
+            "projectNo":""
+        }
+    ],
+    "gender":"",
+    "province":"",
+    "city":"",
+    "openId":"",
+    "nickName":"",
+    "phoneNm":""
 }
 ```
 
 - 返回数据
-    
-    无
+```json
+{
+  "code":"",
+  "message":""
+}
+```    
+
     
     
 #### 用户登陆（投资人登陆）
@@ -157,15 +160,13 @@
 
     1. mock链接:
     
-    2. dev链接:
+    2. dev链接:ip:port/investLogin
 
 - 请求数据
 ```json
 {
-	"data":{
-        "openId": "",   
-		"phoneNm":""
-	}
+    "openId": "",   
+    "phoneNm":""
 }
 ```
 
@@ -189,7 +190,7 @@
 
     1. mock链接:
     
-    2. dev链接:
+    2. dev链接:ip:port/getInvestorInfo
 
 - 请求数据
 ```json
@@ -212,9 +213,7 @@
 			"introd":"",
 			"invesEmail":""
 		}
-	],
-	"pageSize":"",
-	"pageNum":""
+	]
 }
 ```
 
@@ -228,7 +227,7 @@
 
     1. mock链接:
     
-    2. dev链接:
+    2. dev链接:ip:port/getProjectInfo
 
 - 请求数据
 ```json
@@ -251,9 +250,7 @@
 			"finSt":"",
 			"bpRoute":""
 		}
-	],
-	"pageSize":"",
-	"pageNum":""
+	]
 }
 ```
 
@@ -263,31 +260,28 @@
     用户点击上传项目，分为模板表单上传和bp文件上传，此处为表单上传功能。后端获取到数据后
     和（自动生成的项目编号）一起更新用户基础信息projects字段以及项目基础信息部分。
     
-- 请求url
+- 请求url(post)
 
     1. mock链接:
     
-    2. dev链接:
+    2. dev链接: ip:port/projectfromupload
 
 - 请求数据
 ```json
 {
-	"data":
-		{
-			"finSt":"",
-			"openId":"",
-			"proVal":"",
-			"operYear":"",
-			"cptEdge":"",
-			"projectNm":"",
-			"expList":[],
-			"projectNo":"",
-			"teamSize":"",
-			"bizModel":"",
-			"ftrPlan":"",
-			"proIndus":"",
-			"proDes":""
-		}
+    "finSt":"",
+    "openId":"",
+    "proVal":"",
+    "operYear":"",
+    "cptEdge":"",
+    "projectNm":"",
+    "expList":[],
+    "projectNo":"",
+    "teamSize":"",
+    "bizModel":"",
+    "ftrPlan":"",
+    "proIndus":"",
+    "proDes":""
 }
 ```
 
@@ -310,7 +304,7 @@
 
     1. mock链接:
     
-    2. dev链接:
+    2. dev链接: ip:port/uploadfile
     
 - 请求数据
 ```json
@@ -325,7 +319,7 @@
 - 返回数据
 ```json
 {
-    "state": "",
+    "code": "",
     "message": ""
 }
 ```
