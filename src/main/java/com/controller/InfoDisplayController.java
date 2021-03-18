@@ -7,16 +7,21 @@ import com.pojo.Investor;
 import com.pojo.Project;
 import com.utils.ErrorCode;
 import com.utils.NumGenerate;
+import org.bson.internal.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
+
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 
@@ -64,9 +69,52 @@ public class InfoDisplayController {
         } else {
             int startNum = pageNum * pageSize;
             List<Investor> investors = mongoTemplate.find(new Query().skip(startNum).limit(pageSize), Investor.class);
+            if (!CollectionUtils.isEmpty(investors)) {
+                for (Investor investor : investors) {
+                    investor.setPhoto(getPhoto(investor.getInvesPhotoRoute()));// 投资人头像
+                    investor.setOrgPhoto(getPhoto(investor.getInvesOrgPhotoRoute()));// 投资人机构图片
+                }
+            }
             OutputFormate outputFormate = new OutputFormate(investors);
             return JSONObject.toJSONString(outputFormate);
         }
+    }
+
+    /**
+     * 获取图片信息
+     * @param filePath
+     * @return
+     */
+    public String getPhoto(String filePath) {
+        String photo = "";
+        FileInputStream fileInputStream = null;
+        ByteArrayOutputStream bos = null;
+        try {
+            fileInputStream = new FileInputStream(filePath);
+            bos = new ByteArrayOutputStream();
+            byte[] b = new byte[1024];
+            int len = -1;
+            while((len = fileInputStream.read(b)) != -1) {
+                bos.write(b, 0, len);
+            }
+            byte[] fileByte = bos.toByteArray();
+            //进行base64位加密
+            photo = new String(Base64.encode(fileByte));
+        } catch (Exception e) {
+            return "";
+        } finally {
+            try {
+                if (null != fileInputStream) {
+                    fileInputStream.close();
+                }
+                if (null != bos) {
+                    bos.close();
+                }
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
+            }
+        }
+        return photo;
     }
 
     /**

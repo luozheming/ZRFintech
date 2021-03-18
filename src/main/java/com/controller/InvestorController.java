@@ -40,6 +40,11 @@ public class InvestorController {
     @Autowired
     private NumGenerate numGenerate;
 
+    /**
+     * 红包支付
+     * @param entPaymentDtoList
+     * @return
+     */
     @PostMapping(value = "/entPayment")
     public String entPayment(@RequestBody List<EntPaymentDto> entPaymentDtoList){
         try{
@@ -75,6 +80,11 @@ public class InvestorController {
         }
     }
 
+    /**
+     * 分页获取评论信息（投资人）
+     * @param getCommentsDto
+     * @return
+     */
     @GetMapping(value = "/getCommentsByInvestorId")
     public String getCommentsByInvestorId(GetCommentsDto getCommentsDto){
         try{
@@ -94,6 +104,11 @@ public class InvestorController {
         }
     }
 
+    /**
+     * 分页获取评论信息（客户）
+     * @param getCommentsDto
+     * @return
+     */
     @GetMapping(value = "/getCommentsByOpenId")
     public String getCommentsByOpenId(GetCommentsDto getCommentsDto){
         try{
@@ -113,6 +128,11 @@ public class InvestorController {
         }
     }
 
+    /**
+     * 投资人提交评价
+     * @param projectComment
+     * @return
+     */
     @PostMapping(value = "/updateCommentByInvestor")
     public String updateCommentByInvestor(@RequestBody ProjectComment projectComment){
         try{
@@ -128,6 +148,11 @@ public class InvestorController {
         }
     }
 
+    /**
+     * 客户提交回评
+     * @param projectComment
+     * @return
+     */
     @PostMapping(value = "/updateCommentByEnt")
     public String updateCommentByEnt(@RequestBody ProjectComment projectComment){
         try{
@@ -144,6 +169,12 @@ public class InvestorController {
         }
     }
 
+    /**
+     * 下载bp文件
+     * @param response
+     * @param projectNo
+     * @return
+     */
     @GetMapping(value = "/downLoadBP")
     public String downLoadBP(HttpServletResponse response, @RequestParam String projectNo) {
         try {
@@ -161,22 +192,12 @@ public class InvestorController {
         }
     }
 
-    @GetMapping(value = "/downLoadInvestorPhoto")
-    public String downLoadInvestorPhoto(HttpServletResponse response, @RequestParam String pthoneNm) {
-        try {
-            // 获取投资人头像路径
-            String filePath = "";
-            List<Investor> investors = mongoTemplate.find(query(Criteria.where("pthoneNm").is(pthoneNm)).limit(1), Investor.class);
-            if (!CollectionUtils.isEmpty(investors)) {
-                filePath = investors.get(0).getInvesPhotoRoute();
-            }
-            // 下载文件
-            return downLoadFile(response, filePath);
-        } catch (Exception e) {
-            return ErrorCode.OTHEREEEOR.toJsonString();
-        }
-    }
-
+    /**
+     * 文件下载
+     * @param response
+     * @param filePath
+     * @return
+     */
     @GetMapping(value = "/downLoadFile")
     public String downLoadFile(HttpServletResponse response, String filePath) {
         FileInputStream fis = null; //文件输入流

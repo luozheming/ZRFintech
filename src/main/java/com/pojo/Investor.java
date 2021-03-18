@@ -34,6 +34,10 @@ public class Investor {
      */
     private String  invesPhotoRoute;
     /**
+     * 投资人机构照片路径
+     */
+    private String  invesOrgPhotoRoute;
+    /**
      * 投资人邮箱
      */
     private String invesEmail;
@@ -41,6 +45,14 @@ public class Investor {
      * 行业标签1
      */
     private String indusLab1;
+    /**
+     * 投资人头像数据
+     */
+    private String photo;
+    /**
+     * 机构图片数据
+     */
+    private String orgPhoto;
 
     @Tolerate
     public Investor() {}
