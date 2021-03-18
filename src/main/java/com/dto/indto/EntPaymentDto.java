@@ -3,7 +3,7 @@ package com.dto.indto;
 import lombok.Data;
 
 @Data
-public class InvestorGetPaymentsDto {
+public class EntPaymentDto {
     /**
      * 项目编号
      */

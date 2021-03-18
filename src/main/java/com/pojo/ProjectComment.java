@@ -48,10 +48,6 @@ public class ProjectComment {
      */
     private Date updateTm;
     /**
-     * 财务状况
-     */
-    private String finSt;
-    /**
      * 评论星级
      */
     private Integer stars;

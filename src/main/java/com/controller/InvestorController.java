@@ -2,9 +2,10 @@ package com.controller;
 
 
 import com.alibaba.fastjson.JSONObject;
+import com.dto.indto.EntPaymentDto;
 import com.dto.indto.GetCommentsDto;
-import com.dto.indto.InvestorGetPaymentsDto;
 import com.dto.outdto.OutputFormate;
+import com.pojo.Investor;
 import com.pojo.Project;
 import com.pojo.ProjectComment;
 import com.utils.ErrorCode;
@@ -20,10 +21,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,26 +41,26 @@ public class InvestorController {
     private NumGenerate numGenerate;
 
     @PostMapping(value = "/entPayment")
-    public String entPayment(@RequestBody List<InvestorGetPaymentsDto> investorGetPaymentsVos){
+    public String entPayment(@RequestBody List<EntPaymentDto> entPaymentDtoList){
         try{
-            if (!CollectionUtils.isEmpty(investorGetPaymentsVos)) {
+            if (!CollectionUtils.isEmpty(entPaymentDtoList)) {
                 List<ProjectComment> projectCommentList = new ArrayList<>();// 项目评论信息list
                 ProjectComment projectComment = null;
 
                 // 在项目编号下已有投资人id的list中累加
                 List<String> expList = new ArrayList<>();
-                for (InvestorGetPaymentsDto investorGetPaymentsVo: investorGetPaymentsVos) {
-                    expList.add(investorGetPaymentsVo.getInvestorId());
+                for (EntPaymentDto entPaymentDto: entPaymentDtoList) {
+                    expList.add(entPaymentDto.getInvestorId());
 
                     projectComment = new ProjectComment();
-                    BeanUtils.copyProperties(investorGetPaymentsVo, projectComment);
+                    BeanUtils.copyProperties(entPaymentDto, projectComment);
                     projectComment.setId(numGenerate.getNumCode());
                     projectCommentList.add(projectComment);
                 }
                 // 更新项目expList
                 Update update = new Update();
                 update.addToSet("expList").each(expList);
-                String projectNo = investorGetPaymentsVos.get(0).getProjectNo();// 项目编号
+                String projectNo = entPaymentDtoList.get(0).getProjectNo();// 项目编号
                 mongoTemplate.updateFirst(query(where("projectNo").is(projectNo)), update, Project.class);
 
                 // 批量初始化评论信息
@@ -146,21 +144,51 @@ public class InvestorController {
         }
     }
 
-    @GetMapping(value = "/downLoadFile")
-    public String downLoadFile(HttpServletResponse response, @RequestParam String projectNo) {
+    @GetMapping(value = "/downLoadBP")
+    public String downLoadBP(HttpServletResponse response, @RequestParam String projectNo) {
         try {
-            // 获取项目bpRoute
+            // 获取bp文件路径
             String filePath = "";
-            String fileName = "";
             List<Project> projects = mongoTemplate.find(query(Criteria.where("projectNo").is(projectNo)).limit(1), Project.class);
             if (!CollectionUtils.isEmpty(projects)) {
                 filePath = projects.get(0).getBpRoute();
-                fileName = filePath.substring(filePath.lastIndexOf("\\") + 1, filePath.length());
             }
+
+            // 下载文件
+            return downLoadFile(response, filePath);
+        } catch (Exception e) {
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+    }
+
+    @GetMapping(value = "/downLoadInvestorPhoto")
+    public String downLoadInvestorPhoto(HttpServletResponse response, @RequestParam String investorId) {
+        try {
+            // 获取投资人头像路径
+            String filePath = "";
+            List<Investor> investors = mongoTemplate.find(query(Criteria.where("investorId").is(investorId)).limit(1), Investor.class);
+            if (!CollectionUtils.isEmpty(investors)) {
+                filePath = investors.get(0).getInvesPhotoRoute();
+            }
+
+            // 下载文件
+            return downLoadFile(response, filePath);
+        } catch (Exception e) {
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+    }
+
+    @GetMapping(value = "/downLoadFile")
+    public String downLoadFile(HttpServletResponse response, String filePath) {
+        FileInputStream fis = null; //文件输入流
+        BufferedInputStream bis = null;
+        OutputStream os = null; //输出流
+        try {
             File file =  new File(filePath);
             if (!file.exists()) {
                 return ErrorCode.NULLOBJECT.toJsonString();
             }
+            String fileName = filePath.substring(filePath.lastIndexOf("\\") + 1, filePath.length());
 
             // 将文件名称进行编码
             response.setContentType("application/vnd.ms-excel;charset=UTF-8");
@@ -168,9 +196,6 @@ public class InvestorController {
             response.setHeader("content-disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8"));
 
             byte[] buffer = new byte[1024];
-            FileInputStream fis = null; //文件输入流
-            BufferedInputStream bis = null;
-            OutputStream os = null; //输出流
             os = response.getOutputStream();
             fis = new FileInputStream(file);
             bis = new BufferedInputStream(fis);
@@ -179,13 +204,22 @@ public class InvestorController {
                 os.write(buffer);
                 i = bis.read(buffer);
             }
-            bis.close();
-            fis.close();
 
             OutputFormate outputFormate = new OutputFormate("", ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
             return JSONObject.toJSONString(outputFormate);
         } catch (Exception e) {
             return ErrorCode.OTHEREEEOR.toJsonString();
+        } finally {
+            try {
+                if (null != bis) {
+                    bis.close();
+                }
+                if (null != fis) {
+                    fis.close();
+                }
+            } catch (IOException e) {
+                return ErrorCode.OTHEREEEOR.toJsonString();
+            }
         }
     }
 
