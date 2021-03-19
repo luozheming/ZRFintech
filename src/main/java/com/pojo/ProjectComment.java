@@ -37,9 +37,9 @@ public class ProjectComment {
      */
     private String openId;
     /**
-     * 重点关注
+     * 重点关注:1-感兴趣，2-未标记，3-不感兴趣，4-拒绝
      */
-    private Boolean favor;
+    private Integer favor;
     /**
      * 评论内容
      */

@@ -11,6 +11,7 @@ public enum ErrorCode {
     PAGEBELLOWZERO(605,"分页参数错误"),
     NULLSTARS(606,"评分为空"),
     FORBIDREPLY(607,"项目未点评不能回评"),
+    CONTENTLESS(608,"评论字数不得少于200字"),
     OTHEREEEOR(669,"其余未知错误");
 
     private int code;
