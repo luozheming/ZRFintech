@@ -24,6 +24,14 @@ public class Project {
      */
     private String proIndus;
     /**
+     * 融资轮次
+     */
+    private String finRound;
+    /**
+     * 期望融资额度
+     */
+    private String quota;
+    /**
      * 团队人数
      */
     private int teamSize;
@@ -55,6 +63,10 @@ public class Project {
      * 期望点评列表
      */
     List<String> expList;
+    /**
+     * 项目补充信息
+     */
+    private String proCompl;
 
     @Tolerate
     public Project() {}
