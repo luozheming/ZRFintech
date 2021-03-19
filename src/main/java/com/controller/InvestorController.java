@@ -5,13 +5,13 @@ import com.alibaba.fastjson.JSONObject;
 import com.dto.indto.EntPaymentDto;
 import com.dto.indto.GetCommentsDto;
 import com.dto.outdto.OutputFormate;
-import com.pojo.Investor;
 import com.pojo.Project;
 import com.pojo.ProjectComment;
 import com.utils.ErrorCode;
 import com.utils.NumGenerate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -59,7 +59,8 @@ public class InvestorController {
 
                     projectComment = new ProjectComment();
                     BeanUtils.copyProperties(entPaymentDto, projectComment);
-                    projectComment.setId(numGenerate.getNumCode());
+                    projectComment.setId(numGenerate.getNumCode());// 评论主键ID
+                    projectComment.setIsDone(false);// 评论完成标识：false-未评，true-已评
                     projectCommentList.add(projectComment);
                 }
                 // 更新项目expList
@@ -73,8 +74,7 @@ public class InvestorController {
                     mongoTemplate.insert(projectCommentList, ProjectComment.class);
                 }
             }
-            OutputFormate outputFormate = new OutputFormate("", ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
-            return JSONObject.toJSONString(outputFormate);
+            return ErrorCode.SUCCESS.toJsonString();
         }catch (Exception e){
             return ErrorCode.OTHEREEEOR.toJsonString();
         }
@@ -94,7 +94,10 @@ public class InvestorController {
                 return ErrorCode.PAGEBELLOWZERO.toJsonString();
             } else {
                 int startNum = pageNum * pageSize;
-                Query query = new Query(Criteria.where("investorId").is(getCommentsDto.getInvestorId()));
+                Query query = new Query(Criteria.where("investorId").is(getCommentsDto.getInvestorId())
+                        .and("isDone").is(getCommentsDto.getIsDone()))
+                        .with(Sort.by(Sort.Order.asc("isDone")))
+                        .with(Sort.by(Sort.Order.asc("updateTm")));
                 List<ProjectComment> projectComments = mongoTemplate.find(query.skip(startNum).limit(pageSize), ProjectComment.class);
                 OutputFormate outputFormate = new OutputFormate(projectComments, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
                 return JSONObject.toJSONString(outputFormate);
@@ -118,7 +121,11 @@ public class InvestorController {
                 return ErrorCode.PAGEBELLOWZERO.toJsonString();
             } else {
                 int startNum = pageNum * pageSize;
-                Query query = new Query(Criteria.where("openId").is(getCommentsDto.getOpenId()));
+                Criteria criteria = Criteria.where("openId").is(getCommentsDto.getOpenId());
+                if (!StringUtils.isEmpty(getCommentsDto.getProjectNo())) {
+                    criteria = criteria.and("projectNo").is(getCommentsDto.getProjectNo());
+                }
+                Query query = new Query(criteria).with(Sort.by(Sort.Order.asc("isDone"))).with(Sort.by(Sort.Order.asc("updateTm")));
                 List<ProjectComment> projectComments = mongoTemplate.find(query.skip(startNum).limit(pageSize), ProjectComment.class);
                 OutputFormate outputFormate = new OutputFormate(projectComments, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
                 return JSONObject.toJSONString(outputFormate);
@@ -129,20 +136,39 @@ public class InvestorController {
     }
 
     /**
-     * 投资人提交评价
+     * 投资人保存评价，不更新isDone字段
      * @param projectComment
      * @return
      */
-    @PostMapping(value = "/updateCommentByInvestor")
-    public String updateCommentByInvestor(@RequestBody ProjectComment projectComment){
+    @PostMapping(value = "/saveCommentByInvestor")
+    public String saveCommentByInvestor(@RequestBody ProjectComment projectComment){
         try{
             Update update = new Update();
             update.set("favor", projectComment.getFavor());
             update.set("content", projectComment.getContent());
             update.set("updateTm", new Date());
             mongoTemplate.updateFirst(query(where("id").is(projectComment.getId())), update, ProjectComment.class);
-            OutputFormate outputFormate = new OutputFormate("", ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
-            return JSONObject.toJSONString(outputFormate);
+            return ErrorCode.SUCCESS.toJsonString();
+        }catch (Exception e){
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+    }
+
+    /**
+     * 投资人提交评价
+     * @param projectComment
+     * @return
+     */
+    @PostMapping(value = "/commitCommentByInvestor")
+    public String commitCommentByInvestor(@RequestBody ProjectComment projectComment){
+        try{
+            Update update = new Update();
+            update.set("isDone", true);
+            update.set("favor", projectComment.getFavor());
+            update.set("content", projectComment.getContent());
+            update.set("updateTm", new Date());
+            mongoTemplate.updateFirst(query(where("id").is(projectComment.getId())), update, ProjectComment.class);
+            return ErrorCode.SUCCESS.toJsonString();
         }catch (Exception e){
             return ErrorCode.OTHEREEEOR.toJsonString();
         }
@@ -153,17 +179,31 @@ public class InvestorController {
      * @param projectComment
      * @return
      */
-    @PostMapping(value = "/updateCommentByEnt")
-    public String updateCommentByEnt(@RequestBody ProjectComment projectComment){
+    @PostMapping(value = "/commitCommentByEnt")
+    public String commitCommentByEnt(@RequestBody ProjectComment projectComment){
         try{
+            // 查询该评论信息
+            ProjectComment projectCommentResp = mongoTemplate.findById(projectComment.getId(), ProjectComment.class);
+            if (null == projectCommentResp) {
+                return ErrorCode.NULLOBJECT.toJsonString();
+            }
+            // 项目未被点评则不允许回评
+            if (projectCommentResp.getIsDone()) {
+                return ErrorCode.FORBIDREPLY.toJsonString();
+            }
+
+            // 判断评分是否为空
+            if (null == projectComment.getStars() || 0 == projectComment.getStars().intValue()) {
+                return ErrorCode.NULLSTARS.toJsonString();
+            }
+
             Update update = new Update();
             update.set("stars", projectComment.getStars());
             update.set("reply", projectComment.getReply());
             update.set("replyTm", new Date());
             Query query = new Query(Criteria.where("id").is(projectComment.getId()));
             mongoTemplate.updateFirst(query, update, ProjectComment.class);
-            OutputFormate outputFormate = new OutputFormate("", ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
-            return JSONObject.toJSONString(outputFormate);
+            return ErrorCode.SUCCESS.toJsonString();
         } catch (Exception e) {
             return ErrorCode.OTHEREEEOR.toJsonString();
         }

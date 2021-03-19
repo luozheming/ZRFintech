@@ -3,12 +3,14 @@ package com.utils;
 import com.alibaba.fastjson.JSONObject;
 
 public enum ErrorCode {
-    SUCCESS(200, "success"),
+    SUCCESS(200, "成功"),
     USERFIRSTLOGIN(200,"用户首次登陆"),
     NULLOBJECT(601,"对象为空"),
     EMPITYFILE(602,"文件为空"),
     FILEUPLOADFAILED(604,"文件上传失败"),
     PAGEBELLOWZERO(605,"分页参数错误"),
+    NULLSTARS(606,"评分为空"),
+    FORBIDREPLY(607,"项目未点评不能回评"),
     OTHEREEEOR(669,"其余未知错误");
 
     private int code;

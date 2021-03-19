@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.experimental.Tolerate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
@@ -54,7 +55,7 @@ public class ProjectComment {
     /**
      * 评论星级
      */
-    private Integer stars;
+    private BigDecimal stars;
     /**
      * 用户回评
      */

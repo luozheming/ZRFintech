@@ -36,6 +36,7 @@
 |introd|投资人介绍|String||
 |invesEmail|投资人邮箱|String||
 |invesPhotoRoute|投资人照片路径|String||
+|invesOrgPhotoRoute|投资人机构照片路径|String||
 |indusLab1|行业标签1|String||
 |indusLab2|行业标签2|String||
 |indusLab3|行业标签3|String||
@@ -335,12 +336,11 @@
 
     1. mock链接:
     
-    2. dev链接:
+    2. dev链接: ip:port/investor/downLoadBP
     
 - 请求数据（Get）
 ```json
 {
-  "openId": "",
   "projectNo": ""
 }
 ```
@@ -364,7 +364,7 @@
 
     1. mock链接:
     
-    2. dev链接:
+    2. dev链接: ip:port/investor/entPayment
     
 - 请求数据
 ```json
@@ -403,14 +403,15 @@
 
         1. mock链接:
     
-        2. dev链接:
+        2. dev链接: ip:port/investor/getCommentsByInvestorId
     
     - 请求数据（Get）
 ```json
 {
-  "openId":"",
+  "investorId":"",
   "pageNum":"",
-  "pageSize":""
+  "pageSize":"",
+  "isDone": ""
 }
 ```
 
@@ -424,6 +425,7 @@
 			"openId":"",
 			"investorId":"",
 			"content":"",
+            "idDone":"",
 			"stars":"",
 			"reply":"",
 			"updateTm":"",
@@ -432,33 +434,31 @@
 	]
 }
 ```
-2. 投资人评价/修改提交
-    在投资人的评价页面，对用户已经付费的相关待评论的内容进行编辑，注意前端检测评论字数必须在200字以上，否则无法提交。
+2. 投资人评价/保存草稿
+    在投资人的评价页面，对用户已经付费的相关待评论的内容进行编辑保存草稿。
     - 请求url
 
         1. mock链接:
     
-        2. dev链接:
+        2. dev链接: ip:port/investor/saveCommentByInvestor
     
     - 请求数据(Post)
 ```json
-{
-	"data":[
-		{
-			"projectNm":"",
-			"projectNo":"",
-			"openId":"",
-			"investorId":"",
-			"content":"",
-			"stars":"",
-			"reply":"",
-			"updateTm":"",
-			"replyTm":""
-		}
-	]
-}
-```
 
+{
+    "id":"",
+    "projectNm":"",
+    "projectNo":"",
+    "openId":"",
+    "investorId":"",
+    "content":"",
+    "stars":"",
+    "reply":"",
+    "updateTm":"",
+    "replyTm":""
+}
+
+```
    - 返回数据
 ```json
 {
@@ -466,6 +466,40 @@
     "message": ""
 }
 ```
+
+3. 投资人评价/提交
+    在投资人的评价页面，对用户已经付费的相关待评论的内容进行编辑，注意前端检测评论字数必须在200字以上，否则无法提交。
+    - 请求url
+
+        1. mock链接:
+    
+        2. dev链接: ip:port/investor/commitCommentByInvestor
+    
+    - 请求数据(Post)
+```json
+
+{
+    "id":"",
+    "projectNm":"",
+    "projectNo":"",
+    "openId":"",
+    "investorId":"",
+    "content":"",
+    "stars":"",
+    "reply":"",
+    "updateTm":"",
+    "replyTm":""
+}
+
+```
+   - 返回数据
+```json
+{
+    "state": "",
+    "message": ""
+}
+```
+
 3. 用户获取投资人评价
     
     用户登陆到自己已提交expList的请求，可以进行投资人的评论查看。如果Content内容不为空则视为
@@ -475,15 +509,15 @@
 
         1. mock链接:
     
-        2. dev链接:
+        2. dev链接: ip:port/investor/getCommentsByOpenId
     
     - 请求数据（Get）
 ```json
 {
-	"data":{
-			"openId":""		
-		}
-	
+	"openId":"",
+    "pageNum":"",
+    "pageSize":"",
+	"projectNo":""
 }
 ```
 
@@ -516,22 +550,18 @@
    
        1. mock链接:
        
-       2. dev链接:
+       2. dev链接: ip:port/investor/commitCommentByEnt
        
    - 请求数据
   ```json
-  {
-  	"data":[
-  		{
-  			"projectNm":"",
-  			"projectNo":"",
-  			"openId":"",
-  			"investorId":"",
-  			"stars":"",
-  			"reply":""
-  		}
-  	]
-  }
+{   "id":"",
+    "projectNm":"",
+    "projectNo":"",
+    "openId":"",
+    "investorId":"",
+    "stars":"",
+    "reply":""
+}
    ```
    
    
@@ -587,7 +617,7 @@
 2. 用户提交项目后需要回传项目编号以及项目名称，而不是直接返回成功数据。（罗哲明）
 3. /getCommentsByOpenId 分页获取评论信息（客户） 这部分需要对于评论进行isDone字段的排序。
 4. /updateCommentByInvestor 返回数据如果有data的话返回 OutputFormate 格式，没有的话直接ErrorCode.SUCCESS.toJsonString();
-5. 分页获取评待论信息（投资人）依照isDone字段变为两个接口。
+5. 分页获取评待论信息（投资人）依照isDone字段变为两个接口(按同一个接口处理，增加isDone入参字段)。
 6. 投资人提交评价  划分为两个接口，分别是保存和提交，区别在于isDone字段不同。
 
 
