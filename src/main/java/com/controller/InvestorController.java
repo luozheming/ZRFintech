@@ -61,6 +61,7 @@ public class InvestorController {
                     BeanUtils.copyProperties(entPaymentDto, projectComment);
                     projectComment.setId(numGenerate.getNumCode());// 评论主键ID
                     projectComment.setIsDone(false);// 评论完成标识：false-未评，true-已评
+                    projectComment.setFavor(2);// 重点关注:1-感兴趣，2-未标记，3-不感兴趣，4-拒绝
                     projectCommentList.add(projectComment);
                 }
                 // 更新项目expList
@@ -125,7 +126,9 @@ public class InvestorController {
                 if (!StringUtils.isEmpty(getCommentsDto.getProjectNo())) {
                     criteria = criteria.and("projectNo").is(getCommentsDto.getProjectNo());
                 }
-                Query query = new Query(criteria).with(Sort.by(Sort.Order.asc("isDone"))).with(Sort.by(Sort.Order.asc("updateTm")));
+                Query query = new Query(criteria).with(Sort.by(Sort.Order.desc("isDone")))
+                        .with(Sort.by(Sort.Order.asc("favor")))
+                        .with(Sort.by(Sort.Order.asc("updateTm")));
                 List<ProjectComment> projectComments = mongoTemplate.find(query.skip(startNum).limit(pageSize), ProjectComment.class);
                 OutputFormate outputFormate = new OutputFormate(projectComments, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
                 return JSONObject.toJSONString(outputFormate);
@@ -162,6 +165,10 @@ public class InvestorController {
     @PostMapping(value = "/commitCommentByInvestor")
     public String commitCommentByInvestor(@RequestBody ProjectComment projectComment){
         try{
+            // 评论字数不得少于200字
+            if (projectComment.getContent().length() < 200) {
+                return ErrorCode.CONTENTLESS.toJsonString();
+            }
             Update update = new Update();
             update.set("isDone", true);
             update.set("favor", projectComment.getFavor());
