@@ -20,4 +20,12 @@ public class GetCommentsDto {
      * 页面大小
      */
     private int pageSize;
+    /**
+     * 评论完成标识
+     */
+    private Boolean isDone;
+    /**
+     * 项目编号
+     */
+    private String projectNo;
 }
