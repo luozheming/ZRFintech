@@ -62,6 +62,8 @@
 |projectNo|项目编号|String|项目唯一识别编号|
 |projectNm|项目名称|String||
 |proIndus|所属行业|String||
+|finRound|融资轮次|String||
+|quota|期望融资额度|int||
 |teamSize|团队人数|int||
 |finSt|企业营收状况|String||
 |entProvince|企业所在省|String||
@@ -70,6 +72,7 @@
 |openId|上传用户|String||
 |bpRoute|BP路径|String||
 |expList|期望点评列表|Array|investorId列表合集|
+|proCompl|项目补充|String|付费完成后新增项目补充字段|
 
 
 #### 项目评论信息
@@ -256,49 +259,9 @@
 }
 ```
 
-#### 项目上传（表单）
-- 功能描述
-
-    用户点击上传项目，分为模板表单上传和bp文件上传，此处为表单上传功能。后端获取到数据后
-    和（自动生成的项目编号）一起更新用户基础信息projects字段以及项目基础信息部分。
-    
-- 请求url(post)
-
-    1. mock链接:
-    
-    2. dev链接: ip:port/projectfromupload
-
-- 请求数据
-```json
-{
-    "finSt":"",
-    "openId":"",
-    "proVal":"",
-    "operYear":"",
-    "cptEdge":"",
-    "projectNm":"",
-    "expList":[],
-    "projectNo":"",
-    "teamSize":"",
-    "bizModel":"",
-    "ftrPlan":"",
-    "proIndus":"",
-    "proDes":""
-}
-```
-
-- 返回数据
-```json
-{
-    "state": "",
-    "message": ""
-}
-```
-
-#### 项目上传（文件）
+#### 项目上传
 - 功能描述及逻辑
-
-    用户点击上传项目，分为模板表单上传和bp文件上传，此处为文件上传功能。
+    最新修改的接口将文件和表单一起联合进行提交。
     后端接收到文件后，检测是否以.doc/.pdf/.rtf/.docx结尾。
     统一保存到./data/bp/{openId}/{projectNo}/ 路径下，并更新数据库对应bpRoute字段。
     
@@ -306,13 +269,24 @@
 
     1. mock链接:
     
-    2. dev链接: ip:port/uploadfile
+    2. dev链接: ip:port/uploadproject
     
-- 请求数据
+- 请求数据(post)
 ```json
 {
-  "openId": "",
-  "projectNo": "",
+  "projectNm":"",
+  "proIndus":"",
+  "finRound":"",
+  "quota":"",
+  "teamSize":"",
+  "finSt":"",
+  "expList":[],
+  "entProvince":"",
+  "entCity":"",
+  "proDes": "",
+  "openId":"",
+  "bpRoute":"",
+  "proCompl":"",
   "file": "file"
 }
 ```
@@ -612,12 +586,22 @@
 
 
 
+项目补充资料页面
+1. 
+
+
+投资人首页
+
+投资人页面（待获取）
+投资人页面（已获取）
+
+
+
 后端存在问题
 1. /entPayment：返回数据如果有data的话返回 OutputFormate 格式,没有的话直接ErrorCode.SUCCESS.toJsonString();
-2. 用户提交项目后需要回传项目编号以及项目名称，而不是直接返回成功数据。（罗哲明）
+2. 用户提交项目后需要回传项目编号以及项目名称，而不是直接返回成功数据。
 3. /getCommentsByOpenId 分页获取评论信息（客户） 这部分需要对于评论进行isDone字段的排序。
 4. /updateCommentByInvestor 返回数据如果有data的话返回 OutputFormate 格式，没有的话直接ErrorCode.SUCCESS.toJsonString();
 5. 分页获取评待论信息（投资人）依照isDone字段变为两个接口(按同一个接口处理，增加isDone入参字段)。
 6. 投资人提交评价  划分为两个接口，分别是保存和提交，区别在于isDone字段不同。
-
 
