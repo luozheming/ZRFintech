@@ -8,6 +8,7 @@ public enum ErrorCode {
     NULLOBJECT(601,"对象为空"),
     EMPITYFILE(602,"文件为空"),
     FILEUPLOADFAILED(604,"文件上传失败"),
+    PAGEBELLOWZERO(605,"分页参数错误"),
     OTHEREEEOR(669,"其余未知错误");
 
     private int code;

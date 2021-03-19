@@ -81,7 +81,7 @@ public class InvestorController {
     }
 
     /**
-     * 分页获取评论信息（投资人）
+     * 分页获取评待论信息（投资人）
      * @param getCommentsDto
      * @return
      */
@@ -91,7 +91,7 @@ public class InvestorController {
             int pageNum = getCommentsDto.getPageNum();
             int pageSize = getCommentsDto.getPageSize();
             if (pageNum < 0 || pageSize <= 0 || StringUtils.isEmpty(getCommentsDto.getInvestorId())) {
-                return "参数错误";
+                return ErrorCode.PAGEBELLOWZERO.toJsonString();
             } else {
                 int startNum = pageNum * pageSize;
                 Query query = new Query(Criteria.where("investorId").is(getCommentsDto.getInvestorId()));
@@ -115,7 +115,7 @@ public class InvestorController {
             int pageNum = getCommentsDto.getPageNum();
             int pageSize = getCommentsDto.getPageSize();
             if (pageNum < 0 || pageSize <= 0 || StringUtils.isEmpty(getCommentsDto.getOpenId())) {
-                return "参数错误";
+                return ErrorCode.PAGEBELLOWZERO.toJsonString();
             } else {
                 int startNum = pageNum * pageSize;
                 Query query = new Query(Criteria.where("openId").is(getCommentsDto.getOpenId()));

@@ -45,7 +45,7 @@ public class InfoDisplayController {
         int pageSize = pageDto.getPageSize();
         //参数判断
         if (pageNum < 0 || pageSize <= 0) {
-            return "参数错误";
+            return ErrorCode.PAGEBELLOWZERO.toJsonString();
         } else {
             int startNum = pageNum * pageSize;
             List<Project> projects = mongoTemplate.find(new Query().skip(startNum).limit(pageSize), Project.class);
@@ -65,7 +65,7 @@ public class InfoDisplayController {
         int pageSize = pageDto.getPageSize();
         //参数判断
         if (pageNum < 0 || pageSize <= 0) {
-            return "参数错误";
+            return ErrorCode.PAGEBELLOWZERO.toJsonString();
         } else {
             int startNum = pageNum * pageSize;
             List<Investor> investors = mongoTemplate.find(new Query().skip(startNum).limit(pageSize), Investor.class);

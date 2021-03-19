@@ -368,24 +368,23 @@
     
 - 请求数据
 ```json
-{
-	"data":[
-		{
-			"projectNm":"",
-			"investor":"",
-			"projectNo":"",
-			"openId":"",
-			"investorId":""
-		}
-	]
-}
+[
+    {
+        "projectNm":"",
+        "investor":"",
+        "projectNo":"",
+        "openId":"",
+        "investorId":""
+    }
+]
+
 ```
 
 
 - 返回数据
 ```json
 {
-    "state": "",
+    "code": "",
     "message": ""
 }
 ```
@@ -408,6 +407,11 @@
     
     - 请求数据（Get）
 ```json
+{
+  "openId":"",
+  "pageNum":"",
+  "pageSize":""
+}
 ```
 
 - 返回数据
@@ -576,5 +580,14 @@
 2. 对于已经评论的页面可以进行回评，未点评的卡片不能回评。
 3. 对评论进行打星后可以进行回评提交，其余情况都不能进行提交。
 
+
+
+后端存在问题
+1. /entPayment：返回数据如果有data的话返回 OutputFormate 格式,没有的话直接ErrorCode.SUCCESS.toJsonString();
+2. 用户提交项目后需要回传项目编号以及项目名称，而不是直接返回成功数据。（罗哲明）
+3. /getCommentsByOpenId 分页获取评论信息（客户） 这部分需要对于评论进行isDone字段的排序。
+4. /updateCommentByInvestor 返回数据如果有data的话返回 OutputFormate 格式，没有的话直接ErrorCode.SUCCESS.toJsonString();
+5. 分页获取评待论信息（投资人）依照isDone字段变为两个接口。
+6. 投资人提交评价  划分为两个接口，分别是保存和提交，区别在于isDone字段不同。
 
 
