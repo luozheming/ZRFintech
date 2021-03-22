@@ -34,7 +34,7 @@ public class Project {
     /**
      * 团队人数
      */
-    private int teamSize;
+    private String teamSize;
     /**
      * 企业营收状况
      */
@@ -67,6 +67,14 @@ public class Project {
      * 项目补充信息
      */
     private String proCompl;
+    /**
+     * 项目联系人
+     */
+    private String proUser;
+    /**
+     * 项目联系人电话
+     */
+    private String proPhonum;
 
     @Tolerate
     public Project() {}
