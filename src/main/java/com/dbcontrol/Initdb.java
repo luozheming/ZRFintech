@@ -59,13 +59,13 @@ public class Initdb {
         database = database.withCodecRegistry(pojoCodecRegistry);
         MongoCollection<Project> collection = database.getCollection("project", Project.class);
         List<Project> projects = asList(
-                Project.builder().projectNo("658").projectNm("智多星").openId("895").teamSize(35).expList(asList("65","69","73")).build(),
-                Project.builder().projectNo("896").projectNm("腾讯").openId("628").teamSize(59).expList(asList("12","28","69")).build(),
-                Project.builder().projectNo("358").projectNm("蚂蚁金服").openId("318").teamSize(52).expList(asList("2","36","72")).build(),
-                Project.builder().projectNo("985").projectNm("阿里巴巴").openId("358").teamSize(31).expList(asList("65","69","73")).build(),
-                Project.builder().projectNo("115").projectNm("微信").openId("185").teamSize(32).expList(asList("3")).build(),
-                Project.builder().projectNo("562").projectNm("富途").openId("433").teamSize(61).expList(asList("5","38","51")).build(),
-                Project.builder().projectNo("812").projectNm("货拉拉").openId("251").teamSize(15).build()
+                Project.builder().projectNo("658").projectNm("智多星").openId("895").teamSize("0-50").expList(asList("65","69","73")).build(),
+                Project.builder().projectNo("896").projectNm("腾讯").openId("628").teamSize("0-50").expList(asList("12","28","69")).build(),
+                Project.builder().projectNo("358").projectNm("蚂蚁金服").openId("318").teamSize("50-100").expList(asList("2","36","72")).build(),
+                Project.builder().projectNo("985").projectNm("阿里巴巴").openId("358").teamSize("50-100").expList(asList("65","69","73")).build(),
+                Project.builder().projectNo("115").projectNm("微信").openId("185").teamSize("100-500").expList(asList("3")).build(),
+                Project.builder().projectNo("562").projectNm("富途").openId("433").teamSize("100-500").expList(asList("5","38","51")).build(),
+                Project.builder().projectNo("812").projectNm("货拉拉").openId("251").teamSize("1000以上").build()
         );
         collection.insertMany(projects);
     }
