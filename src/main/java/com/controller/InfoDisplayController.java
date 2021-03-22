@@ -7,13 +7,15 @@ import com.pojo.EntUser;
 import com.pojo.Investor;
 import com.pojo.Project;
 import com.utils.ErrorCode;
-import com.utils.NumGenerate;
+import com.utils.CommonUtils;
 import org.bson.internal.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.FindAndReplaceOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,7 +35,7 @@ public class InfoDisplayController {
     private MongoTemplate mongoTemplate;
 
     @Autowired
-    private NumGenerate numGenerate;
+    private CommonUtils commonUtils;
 
     /**
      * 项目展示（分页）
@@ -148,7 +150,7 @@ public class InfoDisplayController {
             return ErrorCode.SUCCESS.toJsonString();
         } else {
             //需要编写项目代码生成器
-            project.setProjectNo(numGenerate.getNumCode());
+            project.setProjectNo(commonUtils.getNumCode());
             mongoTemplate.save(project);
             //文件上传可能会出问题
             if (!file.isEmpty()) {
@@ -201,8 +203,23 @@ public class InfoDisplayController {
      */
     @PostMapping("/deleteMyProject")
     public String deleteMyProject(@RequestParam("openId")String openId,@RequestParam("projectNo")String projectNo){
-
-
+        int deleteIndex=0;
+        //删除项目列表中信息
+        mongoTemplate.findAndRemove(query(where("projectNm").is(projectNo)),Project.class);
+        //删除个人项目列表中信息
+        EntUser entUser = mongoTemplate.findOne(query(where("openId").is(openId)),EntUser.class);
+        List<EntUser.Project> projectList = entUser.getProjects();
+        for(EntUser.Project project:projectList){
+            if(projectNo.equals(project.getProjectNo())){
+                break;
+            }
+            deleteIndex++;
+        }
+        projectList.remove(deleteIndex);
+        Update update = new Update().set("projects",projectList);
+        mongoTemplate.update(EntUser.class)
+                .matching((query(where("openId").is(openId))))
+                .apply(update);
         return ErrorCode.SUCCESS.toJsonString();
     }
 }
