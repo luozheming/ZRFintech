@@ -75,6 +75,10 @@ public class Project {
      * 项目联系人电话
      */
     private String proPhonum;
+    /**
+     * 存草稿标识位
+     */
+    private Boolean isDone;
 
     @Tolerate
     public Project() {}
