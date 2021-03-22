@@ -186,10 +186,14 @@ public class InfoDisplayController {
      */
     @PostMapping("/getMyProjects")
     public String getMyProjects(@RequestParam("openId")String openId){
+        List<Project> projectList = null;
         List<EntUser.Project> projects = mongoTemplate.findOne(query(where("openId").is(openId)),EntUser.class).getProjects();
         //TODO 依照项目列表查询Project表，获取关键信息。
-
-        OutputFormate outputFormate = new OutputFormate(projects);
+        for(EntUser.Project project:projects){
+            Project myproject = mongoTemplate.findOne(query(where("projectNm").is(project.getProjectNm())),Project.class);
+            projectList.add(myproject);
+        }
+        OutputFormate outputFormate = new OutputFormate(projectList);
         return JSONObject.toJSONString(outputFormate);
     }
 
