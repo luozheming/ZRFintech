@@ -14,10 +14,7 @@ import org.springframework.data.mongodb.core.FindAndReplaceOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
@@ -139,7 +136,7 @@ public class InfoDisplayController {
      */
     @PostMapping(value = "uploadproject")
     public String upLoadProject(@RequestPart("file") MultipartFile file, Project project) {
-        //TODO 如果是保存草稿，则更新草稿箱，并不分配项目id
+        //如果是保存草稿，则更新草稿箱，并不分配项目id
         if (!project.getIsDone()) {
             //查找并替换相应的草稿，如果草稿不存在，则进行插入操作
             mongoTemplate.update(Project.class)
@@ -147,6 +144,7 @@ public class InfoDisplayController {
                     .replaceWith(project)
                     .withOptions(FindAndReplaceOptions.options().upsert())
                     .findAndReplace();
+            //TODO 如果存草稿也有文件上传则保存文件
             return ErrorCode.SUCCESS.toJsonString();
         } else {
             //需要编写项目代码生成器
@@ -181,6 +179,28 @@ public class InfoDisplayController {
             OutputFormate outputFormate = new OutputFormate(outputProject);
             return JSONObject.toJSONString(outputFormate);
         }
+    }
+
+    /**
+     * 已上传项目查询
+     */
+    @PostMapping("/getMyProjects")
+    public String getMyProjects(@RequestParam("openId")String openId){
+        List<EntUser.Project> projects = mongoTemplate.findOne(query(where("openId").is(openId)),EntUser.class).getProjects();
+        //TODO 依照项目列表查询Project表，获取关键信息。
+
+        OutputFormate outputFormate = new OutputFormate(projects);
+        return JSONObject.toJSONString(outputFormate);
+    }
+
+    /**
+     * 上传项目删除
+     */
+    @PostMapping("/deleteMyProject")
+    public String deleteMyProject(@RequestParam("openId")String openId,@RequestParam("projectNo")String projectNo){
+
+
+        return ErrorCode.SUCCESS.toJsonString();
     }
 }
 
