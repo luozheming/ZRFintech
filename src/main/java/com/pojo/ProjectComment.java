@@ -64,6 +64,10 @@ public class ProjectComment {
      * 回复时间
      */
     private Date replyTm;
+    /**
+     * 评论资费
+     */
+    private BigDecimal commentAmount;
 
     @Tolerate
     public ProjectComment() {}

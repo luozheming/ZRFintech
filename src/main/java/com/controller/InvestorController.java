@@ -4,6 +4,7 @@ package com.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.dto.indto.EntPaymentDto;
 import com.dto.indto.GetCommentsDto;
+import com.dto.outdto.InvestorCommentAmountDto;
 import com.dto.outdto.OutputFormate;
 import com.pojo.Project;
 import com.pojo.ProjectComment;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
@@ -288,6 +290,35 @@ public class InvestorController {
                 return ErrorCode.OTHEREEEOR.toJsonString();
             }
         }
+    }
+
+    /**
+     * 获取投资人评论资费总金额
+     * @param investorId
+     * @return
+     */
+    @GetMapping(value = "/getCommentAmount")
+    public InvestorCommentAmountDto getCommentAmount(@RequestParam String investorId) {
+        InvestorCommentAmountDto investorCommentAmountDto = new InvestorCommentAmountDto();
+        List<ProjectComment> projectComments = mongoTemplate.find(query(Criteria.where("investorId").is(investorId)), ProjectComment.class);
+        if (!CollectionUtils.isEmpty(projectComments)) {
+            BigDecimal unaccomplishedAmount = new BigDecimal("0.00");
+            BigDecimal accomplishedAmount = new BigDecimal("0.00");
+            BigDecimal commentAmount = null;
+            for (ProjectComment projectComment : projectComments) {
+                // 根据是否完成：true-完成，false-未完成，判断评论金额是否获取
+                commentAmount = projectComment.getCommentAmount() == null ? new BigDecimal("0.00") : projectComment.getCommentAmount();
+                if (projectComment.getIsDone()) {
+                    accomplishedAmount = accomplishedAmount.add(commentAmount);// 未获取金额
+                } else {
+                    unaccomplishedAmount = unaccomplishedAmount.add(commentAmount);// 已获取金额
+                }
+            }
+            investorCommentAmountDto.setInvestorId(investorId);
+            investorCommentAmountDto.setUnaccomplishedAmount(unaccomplishedAmount);
+            investorCommentAmountDto.setAccomplishedAmount(accomplishedAmount);
+        }
+        return investorCommentAmountDto;
     }
 
 }

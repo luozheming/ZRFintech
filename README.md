@@ -37,6 +37,8 @@
 |invesEmail|投资人邮箱|String||
 |invesPhotoRoute|投资人照片路径|String||
 |invesOrgPhotoRoute|投资人机构照片路径|String||
+|price|评论资费原价|BigDecimal||
+|disCountPrice|评论资费折扣价|BigDecimal||
 |indusLab1|行业标签1|String||
 |indusLab2|行业标签2|String||
 |indusLab3|行业标签3|String||
@@ -93,6 +95,7 @@
 |stars|评论星级|int||
 |reply|用户回评|String||
 |replyTm|回复时间|timestamp||
+|commentAmount|评论资费|BigDecimal||
 
 
 ### 功能点列表
@@ -576,7 +579,7 @@
        
        2. dev链接: ip:port/investor/commitCommentByEnt
        
-   - 请求数据
+   - 请求数据（Get）
   ```json
 {   "id":"",
     "projectNm":"",
@@ -588,13 +591,39 @@
 }
    ```
    
-   
    - 返回数据
    ```json
    {
        "state": "",
        "message": ""
    }
+   ```
+
+5. 投资人评论资费总金额页面
+
+    查看投资人评论未获取的总金额以及已经获取的总金额。
+    
+
+   - 请求url
+   
+       1. mock链接:
+       
+       2. dev链接: ip:port/investor/getCommentAmount
+       
+   - 请求数据（Get）
+  ```json
+{   
+    "investorId":""
+}
+   ```
+   
+   - 返回数据
+   ```json
+    {
+      "investorId": "",
+      "unaccomplishedAmount": 0,
+      "accomplishedAmount": 0
+    }
    ```
 
 

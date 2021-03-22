@@ -5,6 +5,8 @@ import lombok.experimental.Tolerate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
+
 @Data
 @Builder
 @Document(value = "investor")
@@ -53,6 +55,14 @@ public class Investor {
      * 机构图片数据
      */
     private String orgPhoto;
+    /**
+     *  评论资费原价
+     */
+    private BigDecimal price;
+    /**
+     * 评论资费折扣价
+     */
+    private BigDecimal disCountPrice;
 
     @Tolerate
     public Investor() {}

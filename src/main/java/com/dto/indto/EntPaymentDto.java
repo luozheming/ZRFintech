@@ -2,6 +2,8 @@ package com.dto.indto;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 @Data
 public class EntPaymentDto {
     /**
@@ -19,9 +21,13 @@ public class EntPaymentDto {
     /**
      * 投资人姓名
      */
-        private String investor;
+    private String investor;
     /**
      *用户唯一识别键
      */
     private String openId;
+    /**
+     *评论资费金额
+     */
+    private BigDecimal commentAmount;
 }
