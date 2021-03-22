@@ -79,6 +79,9 @@ public class Project {
      * 存草稿标识位
      */
     private Boolean isDone;
+    /**
+     * 已付费标识
+     */
 
     @Tolerate
     public Project() {}
