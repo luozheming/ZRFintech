@@ -138,7 +138,7 @@ public class InfoDisplayController {
      * 项目上传（文件）
      */
     @PostMapping(value = "uploadproject")
-    public String upLoadProject(@RequestParam("file") MultipartFile file,@RequestBody Project project) {
+    public String upLoadProject(@RequestPart("file") MultipartFile file, Project project) {
         //需要编写项目代码生成器
         project.setProjectNo(numGenerate.getNumCode());
         mongoTemplate.save(project);
