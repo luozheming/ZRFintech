@@ -72,6 +72,8 @@
 |openId|上传用户|String||
 |bpRoute|BP路径|String||
 |expList|期望点评列表|Array|investorId列表合集|
+|proUser|联系人|String||
+|proPhonum|联系人电话|String||
 |proCompl|项目补充|String|付费完成后新增项目补充字段|
 
 
@@ -259,10 +261,54 @@
 }
 ```
 
+### 查询最新项目草稿
+- 功能描述及逻辑
+    草稿不给项目编号。在项目提交页面点击保存草稿以后（依然是项目上传接口），前端提示已保存草稿。后续点击进入后展示最新草稿。
+    后端依照openid和isDone字段查询对应的项目信息返回给前端。
+    
+- 请求url
+
+    1. mock链接:
+    
+    2. dev链接: ip:port/getdraftbyid
+
+- 请求数据(post)
+```json
+{
+    "openid": ""
+}
+```
+
+
+- 返回数据
+```json
+{
+  "data":{"projectNm":"",
+            "proIndus":"",
+            "finRound":"",
+            "quota":"",
+            "teamSize":"",
+            "finSt":"",
+            "expList":[],
+            "entProvince":"",
+            "entCity":"",
+            "proDes": "",
+            "openId":"",
+            "bpRoute":"",
+            "proCompl":""
+            },
+  "code": "",
+  "message":""
+}
+```
+    
+    
+
 #### 项目上传
 - 功能描述及逻辑
-    最新修改的接口将文件和表单一起联合进行提交。
+    最新修改的接口将文件和表单一起联合进行提交。后端获取到前端提交的表单给与分配的项目编号
     后端接收到文件后，检测是否以.doc/.pdf/.rtf/.docx结尾。
+    文件上传限制10M.
     统一保存到./data/bp/{openId}/{projectNo}/ 路径下，并更新数据库对应bpRoute字段。
     
 - 请求url
@@ -287,6 +333,7 @@
   "openId":"",
   "bpRoute":"",
   "proCompl":"",
+  "isDone":"true",
   "file": "file"
 }
 ```
@@ -295,6 +342,9 @@
 - 返回数据
 ```json
 {
+    "data": {
+    "projectNo": ""
+     },
     "code": "",
     "message": ""
 }
@@ -604,4 +654,5 @@
 4. /updateCommentByInvestor 返回数据如果有data的话返回 OutputFormate 格式，没有的话直接ErrorCode.SUCCESS.toJsonString();
 5. 分页获取评待论信息（投资人）依照isDone字段变为两个接口(按同一个接口处理，增加isDone入参字段)。
 6. 投资人提交评价  划分为两个接口，分别是保存和提交，区别在于isDone字段不同。
+7. isfavor的相关逻辑
 
