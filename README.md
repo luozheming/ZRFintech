@@ -31,7 +31,7 @@
 |:----:|:----:|:---:|:---:|
 |investorId|投资人Id|String|拟采用自增id|
 |orgNm|机构名称|String||
-|pthoneNm|手机号码|String|白名单初始化|
+|phoneNm|手机号码|String|白名单初始化|
 |investor|投资人姓名|String||
 |introd|投资人介绍|String||
 |invesEmail|投资人邮箱|String||

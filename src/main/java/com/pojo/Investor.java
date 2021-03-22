@@ -22,7 +22,7 @@ public class Investor {
     /**
      * 手机号码
      */
-    private String pthoneNm;
+    private String phoneNm;
     /**
      * 投资人姓名
      */
@@ -63,6 +63,14 @@ public class Investor {
      * 评论资费折扣价
      */
     private BigDecimal disCountPrice;
+    /**
+     * 投资人未获取的资费金额
+     */
+    private BigDecimal unaccomplishedAmount;
+    /**
+     * 投资人已获取的资费金额
+     */
+    private BigDecimal accomplishedAmount;
 
     @Tolerate
     public Investor() {}
