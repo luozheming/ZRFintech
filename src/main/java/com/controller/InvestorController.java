@@ -309,9 +309,9 @@ public class InvestorController {
                 // 根据是否完成：true-完成，false-未完成，判断评论金额是否获取
                 commentAmount = projectComment.getCommentAmount() == null ? new BigDecimal("0.00") : projectComment.getCommentAmount();
                 if (projectComment.getIsDone()) {
-                    accomplishedAmount = accomplishedAmount.add(commentAmount);// 未获取金额
+                    accomplishedAmount = accomplishedAmount.add(commentAmount);// 已获取金额
                 } else {
-                    unaccomplishedAmount = unaccomplishedAmount.add(commentAmount);// 已获取金额
+                    unaccomplishedAmount = unaccomplishedAmount.add(commentAmount);// 未获取金额
                 }
             }
             investorCommentAmountDto.setInvestorId(investorId);
