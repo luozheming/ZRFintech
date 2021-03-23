@@ -203,19 +203,18 @@ public class InfoDisplayController {
      */
     @PostMapping("/deleteMyProject")
     public String deleteMyProject(@RequestParam("openId")String openId,@RequestParam("projectNo")String projectNo){
-        int deleteIndex=0;
         //删除项目列表中信息
         mongoTemplate.findAndRemove(query(where("projectNm").is(projectNo)),Project.class);
         //删除个人项目列表中信息
         EntUser entUser = mongoTemplate.findOne(query(where("openId").is(openId)),EntUser.class);
         List<EntUser.Project> projectList = entUser.getProjects();
-        for(EntUser.Project project:projectList){
-            if(projectNo.equals(project.getProjectNo())){
+        int deleteIndex=projectList.size();
+        for(int i=0;i<deleteIndex;i++){
+            if(projectNo.equals(projectList.get(i).getProjectNo())){
+                projectList.remove(i);
                 break;
             }
-            deleteIndex++;
         }
-        projectList.remove(deleteIndex);
         Update update = new Update().set("projects",projectList);
         mongoTemplate.update(EntUser.class)
                 .matching((query(where("openId").is(openId))))
