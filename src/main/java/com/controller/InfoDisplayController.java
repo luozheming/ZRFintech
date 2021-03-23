@@ -239,26 +239,6 @@ public class InfoDisplayController {
         return ErrorCode.SUCCESS.toJsonString();
     }
 
-    /**
-     * 项目详情
-     * @param projectNo
-     * @return
-     */
-    @GetMapping(value = "/getProject")
-    public String getProject(@RequestParam String projectNo){
-        try{
-            Project project = new Project();
-            List<Project> projects = mongoTemplate.find(query(Criteria.where("projectNo").is(projectNo)), Project.class);
-            if (!CollectionUtils.isEmpty(projects)) {
-                project = projects.get(0);
-            }
-            OutputFormate outputFormate = new OutputFormate(project, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
-            return JSONObject.toJSONString(outputFormate);
-        }  catch (Exception e){
-            return ErrorCode.OTHEREEEOR.toJsonString();
-        }
-    }
-
 }
 
 
