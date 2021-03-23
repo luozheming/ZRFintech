@@ -9,7 +9,7 @@ import com.dto.outdto.OutputFormate;
 import com.pojo.Project;
 import com.pojo.ProjectComment;
 import com.utils.ErrorCode;
-import com.utils.NumGenerate;
+import com.utils.CommonUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -40,7 +40,7 @@ public class InvestorController {
     private MongoTemplate mongoTemplate;
 
     @Autowired
-    private NumGenerate numGenerate;
+    private CommonUtils commonUtils;
 
     /**
      * 红包支付
@@ -61,7 +61,7 @@ public class InvestorController {
 
                     projectComment = new ProjectComment();
                     BeanUtils.copyProperties(entPaymentDto, projectComment);
-                    projectComment.setId(numGenerate.getNumCode());// 评论主键ID
+                    projectComment.setId(commonUtils.getNumCode());// 评论主键ID
                     projectComment.setIsDone(false);// 评论完成标识：false-未评，true-已评
                     projectComment.setFavor(2);// 重点关注:1-感兴趣，2-未标记，3-不感兴趣，4-拒绝
                     projectCommentList.add(projectComment);
