@@ -92,6 +92,7 @@
 |investor|投资人姓名|String||
 |projectNo|项目编号|String||
 |projectNm|项目名称|String||
+|entCity|项目所在地城市|String||
 |favor|重点关注|Boolean||
 |openId|上传用户|String||
 |content|评论内容|String||
@@ -175,12 +176,11 @@
 
     1. mock链接:
     
-    2. dev链接:ip:port/investLogin
+    2. dev链接:ip:port/investorLogin
 
 - 请求数据
 ```json
 {
-    "openId": "",   
     "phoneNm":""
 }
 ```
@@ -188,6 +188,14 @@
 - 返回数据
 ```json
 {
+  "data": {
+    "investorId": "",
+    "photo": "",
+    "orgPhoto": "",
+    "unaccomplishedAmount": 0.00,
+    "accomplishedAmount": 0.00
+
+  },
   "state": "",
   "message": ""
 }
@@ -439,6 +447,7 @@
         "projectNm":"",
         "investor":"",
         "projectNo":"",
+        "entCity":"",
         "openId":"",
         "investorId":""
     }
@@ -488,6 +497,7 @@
 		{
 			"projectNm":"",
 			"projectNo":"",
+			"entCity":"",
 			"openId":"",
 			"investorId":"",
 			"content":"",
@@ -659,10 +669,45 @@
    - 返回数据
    ```json
     {
-      "investorId": "",
-      "unaccomplishedAmount": 0,
-      "accomplishedAmount": 0
+    "data":
+        {
+          "investorId": "",
+          "unaccomplishedAmount": 0,
+          "accomplishedAmount": 0
+        }
     }
+    
+   ```
+
+6. 查看项目详情
+
+    查看投资人评论未获取的总金额以及已经获取的总金额。
+    
+
+   - 请求url
+   
+       1. mock链接:
+       
+       2. dev链接: ip:port/getProject
+       
+   - 请求数据（Get）
+  ```json
+{   
+    "projectNo":""
+}
+   ```
+   
+   - 返回数据
+   ```json
+{
+	"data":
+		{
+			"projectNo":"",
+			"projectNm":"",
+			"proIndus":"",
+			"proDes":""
+		}
+}
    ```
 
 

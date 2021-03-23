@@ -6,16 +6,16 @@ import com.dto.outdto.OutputFormate;
 import com.pojo.EntUser;
 import com.pojo.Investor;
 import com.pojo.Project;
-import com.utils.ErrorCode;
 import com.utils.CommonUtils;
+import com.utils.ErrorCode;
 import org.bson.internal.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.FindAndReplaceOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -131,13 +131,36 @@ public class InfoDisplayController {
         return JSONObject.toJSONString(outputFormate);
     }
 
-
-
     /**
      * 项目上传（文件）
      */
     @PostMapping(value = "uploadproject")
-    public String upLoadProject(@RequestPart("file") MultipartFile file, Project project) {
+    public String upLoadProject(@RequestPart(value = "file", required = false) MultipartFile file, Project project) {
+        //文件上传可能会出问题
+        if (null != file) {
+            // 获取文件名
+            String fileName = file.getOriginalFilename();
+            // 获取文件的后缀名
+            //String suffixName = fileName.substring(fileName.lastIndexOf("."));
+            // 文件上传后的路径
+            StringBuilder filePathBuffer = new StringBuilder();
+            String filePath = filePathBuffer.append("D:\\").append(project.getOpenId()).append("\\").append(project.getProjectNo()).append("\\").toString();
+            File dest = new File(filePath + fileName);
+            // 检测是否存在目录
+            if (!dest.getParentFile().exists()) {
+                dest.getParentFile().mkdirs();
+            }
+            try {
+                file.transferTo(dest);
+                //文件保存后更新数据库信息
+                project.setBpRoute(filePath);
+            } catch (IllegalStateException e) {
+                return ErrorCode.FILEUPLOADFAILED.toJsonString();
+            } catch (IOException e) {
+                return ErrorCode.FILEUPLOADFAILED.toJsonString();
+            }
+        }
+
         //如果是保存草稿，则更新草稿箱，并不分配项目id
         if (!project.getIsDone()) {
             //查找并替换相应的草稿，如果草稿不存在，则进行插入操作
@@ -146,38 +169,16 @@ public class InfoDisplayController {
                     .replaceWith(project)
                     .withOptions(FindAndReplaceOptions.options().upsert())
                     .findAndReplace();
-            //TODO 如果存草稿也有文件上传则保存文件
             return ErrorCode.SUCCESS.toJsonString();
         } else {
             //需要编写项目代码生成器
             project.setProjectNo(commonUtils.getNumCode());
             mongoTemplate.save(project);
-            //文件上传可能会出问题
-            if (!file.isEmpty()) {
-                // 获取文件名
-                String fileName = file.getOriginalFilename();
-                // 获取文件的后缀名
-                //String suffixName = fileName.substring(fileName.lastIndexOf("."));
-                // 文件上传后的路径
-                StringBuilder filePathBuffer = new StringBuilder();
-                String filePath = filePathBuffer.append("D:\\").append(project.getOpenId()).append("\\").append(project.getProjectNo()).append("\\").toString();
-                File dest = new File(filePath + fileName);
-                // 检测是否存在目录
-                if (!dest.getParentFile().exists()) {
-                    dest.getParentFile().mkdirs();
-                }
-                try {
-                    file.transferTo(dest);
-                    //文件保存后更新数据库信息
-                    project.setBpRoute(filePath);
-                } catch (IllegalStateException e) {
-                    return ErrorCode.FILEUPLOADFAILED.toJsonString();
-                } catch (IOException e) {
-                    return ErrorCode.FILEUPLOADFAILED.toJsonString();
-                }
-            }
             Project outputProject = Project.builder().projectNo(project.getProjectNo()).projectNm(project.getProjectNm()).build();
             //TODO 项目信息保存完全后更新EntUser下Project字段
+            Update update = new Update();
+            update.addToSet("projects").value(project);
+            mongoTemplate.updateFirst(query(Criteria.where("openId").is(project.getOpenId())), update, EntUser.class);
             OutputFormate outputFormate = new OutputFormate(outputProject);
             return JSONObject.toJSONString(outputFormate);
         }
@@ -237,6 +238,27 @@ public class InfoDisplayController {
                 .apply(update);
         return ErrorCode.SUCCESS.toJsonString();
     }
+
+    /**
+     * 项目详情
+     * @param projectNo
+     * @return
+     */
+    @GetMapping(value = "/getProject")
+    public String getProject(@RequestParam String projectNo){
+        try{
+            Project project = new Project();
+            List<Project> projects = mongoTemplate.find(query(Criteria.where("projectNo").is(projectNo)), Project.class);
+            if (!CollectionUtils.isEmpty(projects)) {
+                project = projects.get(0);
+            }
+            OutputFormate outputFormate = new OutputFormate(project, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
+            return JSONObject.toJSONString(outputFormate);
+        }  catch (Exception e){
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+    }
+
 }
 
 

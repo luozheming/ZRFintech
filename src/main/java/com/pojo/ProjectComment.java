@@ -33,6 +33,10 @@ public class ProjectComment {
      */
     private String projectNm;
     /**
+     * 项目所在地城市
+     */
+    private String entCity;
+    /**
      * 上传用户
      */
     private String openId;

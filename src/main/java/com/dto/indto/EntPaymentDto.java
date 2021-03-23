@@ -15,6 +15,10 @@ public class EntPaymentDto {
      */
     private String projectNm;
     /**
+     * 项目所在地城市
+     */
+    private String entCity;
+    /**
      * 投资人ID
      */
     private String investorId;
