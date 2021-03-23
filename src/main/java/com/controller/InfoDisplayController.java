@@ -184,6 +184,22 @@ public class InfoDisplayController {
     }
 
     /**
+     *项目补充信息
+     */
+    @PostMapping("/completeProject")
+    public String completeProject(@RequestParam("projectNo")String projectNo,@RequestParam("proCompl")String proCompl){
+        if("".equals(proCompl)){
+            return ErrorCode.CONTENTEMPTY.toJsonString();
+        }else {
+            Update update = new Update().set("proCompl", proCompl);
+            mongoTemplate.update(Project.class)
+                    .matching((query(where("projectNo").is(projectNo))))
+                    .apply(update);
+            return ErrorCode.SUCCESS.toJsonString();
+        }
+    }
+
+    /**
      * 已上传项目查询
      */
     @PostMapping("/getMyProjects")

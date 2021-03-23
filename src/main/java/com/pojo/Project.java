@@ -80,8 +80,9 @@ public class Project {
      */
     private Boolean isDone;
     /**
-     * 已付费标识
+     * 付费标识
      */
+    private Boolean isPay;
 
     @Tolerate
     public Project() {}
