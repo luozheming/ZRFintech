@@ -4,6 +4,7 @@ package com.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.dto.indto.EntPaymentDto;
 import com.dto.indto.GetCommentsDto;
+import com.dto.outdto.CommentProjectDto;
 import com.dto.outdto.InvestorCommentAmountDto;
 import com.dto.outdto.OutputFormate;
 import com.pojo.Project;
@@ -69,6 +70,7 @@ public class InvestorController {
                 // 更新项目expList
                 Update update = new Update();
                 update.addToSet("expList").each(expList);
+                update.set("isPay", true);
                 String projectNo = entPaymentDtoList.get(0).getProjectNo();// 项目编号
                 mongoTemplate.updateFirst(query(where("projectNo").is(projectNo)), update, Project.class);
 
@@ -319,6 +321,39 @@ public class InvestorController {
             investorCommentAmountDto.setAccomplishedAmount(accomplishedAmount);
         }
         return investorCommentAmountDto;
+    }
+
+    /**
+     * 查询评论和项目详情
+     * @param id
+     * @return
+     */
+    @GetMapping(value = "/getCommentProject")
+    public String getCommentProject(@RequestParam String id){
+        try{
+            CommentProjectDto commentProjectDto = new CommentProjectDto();
+            // 获取评论信息
+            List<ProjectComment> projectComments = mongoTemplate.find(query(Criteria.where("id").is(id)), ProjectComment.class);
+            if (CollectionUtils.isEmpty(projectComments)) {
+                return ErrorCode.NULLOBJECT.toJsonString();
+            }
+            ProjectComment projectComment = projectComments.get(0);
+            Project project = null;
+            List<Project> projects = mongoTemplate.find(query(Criteria.where("projectNo").is(projectComment.getProjectNo())), Project.class);
+            if (!CollectionUtils.isEmpty(projects)) {
+                project = projects.get(0);
+            }
+            if (null != project) {
+                BeanUtils.copyProperties(project, commentProjectDto);
+            }
+            commentProjectDto.setId(projectComment.getId());
+            commentProjectDto.setContent(projectComment.getContent());
+            commentProjectDto.setFavor(projectComment.getFavor());
+            OutputFormate outputFormate = new OutputFormate(commentProjectDto, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
+            return JSONObject.toJSONString(outputFormate);
+        }  catch (Exception e){
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
     }
 
 }

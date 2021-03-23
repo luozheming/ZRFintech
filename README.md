@@ -679,21 +679,21 @@
     
    ```
 
-6. 查看项目详情
+6. 查看评论、项目详情
 
-    查看投资人评论未获取的总金额以及已经获取的总金额。
+    查看评论以及项目的详情信息。
     
 
    - 请求url
    
        1. mock链接:
        
-       2. dev链接: ip:port/getProject
+       2. dev链接: ip:port/investor/getCommentProject
        
    - 请求数据（Get）
   ```json
 {   
-    "projectNo":""
+    "id":""
 }
    ```
    
@@ -702,10 +702,24 @@
 {
 	"data":
 		{
+			"id":"",
+			"content":"",
+			"favor":"",
 			"projectNo":"",
 			"projectNm":"",
 			"proIndus":"",
-			"proDes":""
+			"finRound":"",
+			"quota":"",
+			"teamSize":"",
+			"finSt":"",
+			"entProvince":"",
+			"entCity":"",
+			"proDes":"",
+			"openId":"",
+			"bpRoute":"",
+			"proCompl":"",
+			"proUser":"",
+			"proPhonum":""
 		}
 }
    ```
