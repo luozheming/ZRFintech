@@ -12,6 +12,7 @@ public enum ErrorCode {
     NULLSTARS(606,"评分为空"),
     FORBIDREPLY(607,"项目未点评不能回评"),
     CONTENTLESS(608,"评论字数不得少于200字"),
+    CONTENTEMPTY(609,"项目补充信息不能为空"),
     OTHEREEEOR(669,"其余未知错误");
 
     private int code;
