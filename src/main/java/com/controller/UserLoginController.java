@@ -32,7 +32,7 @@ public class UserLoginController {
     @Autowired
     private CommonUtils commonUtils;
 
-    @PostMapping(value = "/investorLogin")
+    @PostMapping(value = "/investor/investorLogin")
     public String investorLogin(@RequestBody Investor investor){
         try{
             String phoneNm = investor.getPhoneNm();
@@ -57,7 +57,7 @@ public class UserLoginController {
         }
     }
 
-    @PostMapping(value = "/entUserLogin")
+    @PostMapping(value = "/entuser/entUserLogin")
     public String entUserLogin(@RequestBody EntUser entUser){
         try{
         //如果用户已存在数据库，返回成功信息。否则将用户数据保存至数据库

@@ -64,10 +64,6 @@ public class Project {
      */
     List<String> expList;
     /**
-     * 项目补充信息
-     */
-    private String proCompl;
-    /**
      * 项目联系人
      */
     private String proUser;
