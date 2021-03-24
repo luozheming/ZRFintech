@@ -25,6 +25,14 @@ public class ProjectComment {
      */
     private String investor;
     /**
+     * 投资人照片路径
+     */
+    private String  invesPhotoRoute;
+    /**
+     * 投资人照片信息
+     */
+    private String  photo;
+    /**
      * 项目编号
      */
     private String projectNo;

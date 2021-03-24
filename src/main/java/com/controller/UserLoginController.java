@@ -7,28 +7,30 @@ import com.dto.outdto.OutputFormate;
 import com.pojo.EntUser;
 import com.pojo.Investor;
 import com.pojo.ProjectComment;
+import com.utils.CommonUtils;
 import com.utils.ErrorCode;
-import org.bson.internal.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import static org.springframework.data.mongodb.core.query.Criteria.where;
-import static org.springframework.data.mongodb.core.query.Query.query;
-
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
+
+import static org.springframework.data.mongodb.core.query.Criteria.where;
+import static org.springframework.data.mongodb.core.query.Query.query;
 
 @RestController
 public class UserLoginController {
     @Autowired
     private MongoTemplate mongoTemplate;
+
+    @Autowired
+    private CommonUtils commonUtils;
 
     @PostMapping(value = "/investorLogin")
     public String investorLogin(@RequestBody Investor investor){
@@ -37,8 +39,8 @@ public class UserLoginController {
             Investor findInvestor = mongoTemplate.findOne(query(where("phoneNm").is(phoneNm)),Investor.class);
             if(!StringUtils.isEmpty(findInvestor)){
                 // 获取投资人及机构图片信息
-                findInvestor.setPhoto(getPhoto(findInvestor.getInvesPhotoRoute()));
-                findInvestor.setOrgPhoto(getPhoto(findInvestor.getInvesOrgPhotoRoute()));
+                findInvestor.setPhoto(commonUtils.getPhoto(findInvestor.getInvesPhotoRoute()));
+                findInvestor.setOrgPhoto(commonUtils.getPhoto(findInvestor.getInvesOrgPhotoRoute()));
 
                 // 获取投资人评论的金额总计信息
                 InvestorCommentAmountDto investorCommentAmountDto = getCommentAmount(findInvestor.getInvestorId());
@@ -68,43 +70,6 @@ public class UserLoginController {
     }catch (Exception e){
             return ErrorCode.OTHEREEEOR.toJsonString();
         }
-    }
-
-    /**
-     * 获取图片信息
-     * @param filePath
-     * @return
-     */
-    public String getPhoto(String filePath) {
-        String photo = "";
-        FileInputStream fileInputStream = null;
-        ByteArrayOutputStream bos = null;
-        try {
-            fileInputStream = new FileInputStream(filePath);
-            bos = new ByteArrayOutputStream();
-            byte[] b = new byte[1024];
-            int len = -1;
-            while((len = fileInputStream.read(b)) != -1) {
-                bos.write(b, 0, len);
-            }
-            byte[] fileByte = bos.toByteArray();
-            //进行base64位加密
-            photo = new String(Base64.encode(fileByte));
-        } catch (Exception e) {
-            return "";
-        } finally {
-            try {
-                if (null != fileInputStream) {
-                    fileInputStream.close();
-                }
-                if (null != bos) {
-                    bos.close();
-                }
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
-            }
-        }
-        return photo;
     }
 
     /**

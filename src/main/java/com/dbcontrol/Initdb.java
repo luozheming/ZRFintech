@@ -35,7 +35,6 @@ public class Initdb {
         database = database.withCodecRegistry(pojoCodecRegistry);
         MongoCollection<Investor> collection = database.getCollection("investor", Investor.class);
         List<Investor> Investors = asList(
-                Investor.builder().investorId("0").orgNm("平台").phoneNm("18723565421").investor("平台投资人").introd("投资专家").invesPhotoRoute("E:\\investor\\0\\平台.png").price(new BigDecimal("0")).disCountPrice(new BigDecimal("0")).build(),
                 Investor.builder().investorId("1").orgNm("高瓴资本").phoneNm("19991967502").investor("杨博").introd("团队长").invesPhotoRoute("E:\\investor\\1\\杨博.jpg").price(new BigDecimal("500")).disCountPrice(new BigDecimal("98")).build(),
                 Investor.builder().investorId("2").orgNm("金沙江创投").phoneNm("13585688902").investor("武思宇").introd("资深运营。\n 15亿用户APP。\n值得你信赖").invesPhotoRoute("E:\\investor\\2\\武思宇.jpg").price(new BigDecimal("500")).disCountPrice(new BigDecimal("98")).build(),
                 Investor.builder().investorId("3").orgNm("高瓴资本").phoneNm("18696148635").investor("罗哲明").introd("资深运营。\n 15亿用户APP。\n值得你信赖").invesPhotoRoute("E:\\investor\\3\\罗哲明.jpg").price(new BigDecimal("500")).disCountPrice(new BigDecimal("98")).build(),
