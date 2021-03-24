@@ -90,7 +90,7 @@ public class InvestorController {
      * @param getCommentsDto
      * @return
      */
-    @GetMapping(value = "/getCommentsByInvestorId")
+    @GetMapping(value = "/investor/getCommentsByInvestorId")
     public String getCommentsByInvestorId(GetCommentsDto getCommentsDto){
         try{
             int pageNum = getCommentsDto.getPageNum();
@@ -117,7 +117,7 @@ public class InvestorController {
      * @param getCommentsDto
      * @return
      */
-    @GetMapping(value = "/getCommentsByOpenId")
+    @GetMapping(value = "/entuser/getCommentsByOpenId")
     public String getCommentsByOpenId(GetCommentsDto getCommentsDto){
         try{
             int pageNum = getCommentsDto.getPageNum();
@@ -152,7 +152,7 @@ public class InvestorController {
      * @param projectComment
      * @return
      */
-    @PostMapping(value = "/saveCommentByInvestor")
+    @PostMapping(value = "/investor/saveCommentByInvestor")
     public String saveCommentByInvestor(@RequestBody ProjectComment projectComment){
         try{
             Update update = new Update();
@@ -171,7 +171,7 @@ public class InvestorController {
      * @param projectComment
      * @return
      */
-    @PostMapping(value = "/commitCommentByInvestor")
+    @PostMapping(value = "/investor/commitCommentByInvestor")
     public String commitCommentByInvestor(@RequestBody ProjectComment projectComment){
         try{
             // 评论字数不得少于200字
@@ -195,7 +195,7 @@ public class InvestorController {
      * @param projectComment
      * @return
      */
-    @PostMapping(value = "/commitCommentByEnt")
+    @PostMapping(value = "/entuser/commitCommentByEnt")
     public String commitCommentByEnt(@RequestBody ProjectComment projectComment){
         try{
             // 查询该评论信息
@@ -231,7 +231,7 @@ public class InvestorController {
      * @param projectNo
      * @return
      */
-    @GetMapping(value = "/downLoadBP")
+    @GetMapping(value = "/project/downLoadBP")
     public String downLoadBP(HttpServletResponse response, @RequestParam String projectNo) {
         try {
             // 获取bp文件路径
@@ -304,7 +304,7 @@ public class InvestorController {
      * @param investorId
      * @return
      */
-    @GetMapping(value = "/getCommentAmount")
+    @GetMapping(value = "/investor/getCommentAmount")
     public InvestorCommentAmountDto getCommentAmount(@RequestParam String investorId) {
         InvestorCommentAmountDto investorCommentAmountDto = new InvestorCommentAmountDto();
         List<ProjectComment> projectComments = mongoTemplate.find(query(Criteria.where("investorId").is(investorId)), ProjectComment.class);
@@ -333,7 +333,7 @@ public class InvestorController {
      * @param id
      * @return
      */
-    @GetMapping(value = "/getCommentProject")
+    @GetMapping(value = "/investor/getCommentProject")
     public String getCommentProject(@RequestParam String id) {
         try{
             CommentProjectDto commentProjectDto = new CommentProjectDto();

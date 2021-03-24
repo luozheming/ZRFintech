@@ -16,6 +16,7 @@
 #### bp下载 
 #### 红包模块
 #### 评论模块
+#### 投资人评论资费总金额页面
 
 
 ### 系统架构
@@ -40,8 +41,12 @@
 |invesEmail|投资人邮箱|String||
 |invesPhotoRoute|投资人照片路径|String||
 |invesOrgPhotoRoute|投资人机构照片路径|String||
+|photo|投资人头像数据|String|仅在返回时作为字段使用|
+|orgPhoto|机构图片数据|String|仅在返回时作为字段使用|
 |price|评论资费原价|BigDecimal||
 |disCountPrice|评论资费折扣价|BigDecimal||
+|unaccomplishedAmount|投资人未获取的资费金额|BigDecimal||
+|accomplishedAmount|投资人已获取的资费金额|BigDecimal||
 |indusLab1|行业标签1|String||
 |indusLab2|行业标签2|String||
 |indusLab3|行业标签3|String||
@@ -59,7 +64,6 @@
 |city|城市|String||
 |province|省|String||
 |country|国|String||
-|projects|项目集合|Object| key:projectNo(项目编号)、projectNm(项目名称) |
 
 #### 项目基础信息
 |字段名称|字段释译|字段类型|备注|
@@ -79,9 +83,9 @@
 |expList|期望点评列表|Array|investorId列表合集|
 |proUser|联系人|String||
 |proPhonum|联系人电话|String||
-|proCompl|项目补充|String|付费完成后新增项目补充字段|
 |isDone|存草稿标识位|Boolean||
 |isPay|付费标识|Boolean||
+|proCompl|项目补充|String|付费完成后新增项目补充字段(暂时废除)|
 
 
 #### 项目评论信息
@@ -136,7 +140,7 @@
 
     1. mock链接:
     
-    2. dev链接: ip:port/entUserLogin
+    2. dev链接: ip:port/entuser/entUserLogin
 
 - 请求数据
 ```json
@@ -171,13 +175,13 @@
 - 功能描述
 
     投资人用户信息（主要指联系方式）已经初始化到后端数据库，在获取到手机号后如果与数据库不匹配则跳转到登陆失败页面
-    如果匹配，则跳转到对应的登陆后页面。
+    如果匹配，则跳转到对应的登陆后页面。登陆后 1、初始化投资人的照片信息  2、获取投资人评论和金额信息。
 
 - 请求url
 
     1. mock链接:
     
-    2. dev链接:ip:port/investorLogin
+    2. dev链接:ip:port/investor/investorLogin
 
 - 请求数据
 ```json
@@ -207,6 +211,7 @@
 - 功能描述
     
     用户点击查看投资人页面后，对于投资人信息进行分页展示，每当手机下滑到底部对后端进行请求。
+    
 
 
 
@@ -214,7 +219,7 @@
 
     1. mock链接:
     
-    2. dev链接:ip:port/getInvestorInfo
+    2. dev链接:ip:port/entuser/getInvestorInfo
 
 - 请求数据
 ```json
@@ -251,7 +256,7 @@
 
     1. mock链接:
     
-    2. dev链接:ip:port/getProjectInfo
+    2. dev链接:ip:port/investor/getProjectInfo
 
 - 请求数据
 ```json
@@ -287,7 +292,7 @@
 
     1. mock链接:
     
-    2. dev链接: ip:port/getdraftbyid
+    2. dev链接: ip:port/project/getdraftbyid
 
 - 请求数据(post)
 ```json
@@ -331,7 +336,7 @@
 
     1. mock链接:
     
-    2. dev链接: ip:port/uploadproject
+    2. dev链接: ip:port/project/uploadproject
     
 - 请求数据(post)
 ```json
@@ -376,7 +381,7 @@
 
     1. mock链接:
     
-    2. dev链接: ip:port/investor/downLoadBP
+    2. dev链接: ip:port/project/downLoadBP
     
 - 请求数据（Get）
 ```json
@@ -401,7 +406,7 @@
 
     1. mock链接:
     
-    2. dev链接: ip:port/getMyProjects
+    2. dev链接: ip:port/project/getMyProjects
     
 - 请求数据
 ```json
@@ -427,23 +432,24 @@
 }
 ```
 
-#### 项目补充信息
+#### 上传项目删除
 - 功能描述及逻辑
-    企业用户登陆到我的页面，可以对已上传的项目进行项目信息补充。
-    
+   用户可以在我的页面查询自己已上传的项目。如果想删除该项目的话，经过前端*二次确认*后方可删除。
+
 - 请求url
 
     1. mock链接:
     
-    2. dev链接: ip:port/completeProject
+    2. dev链接: ip:port/project/deleteMyProject
     
 - 请求数据
 ```json
 {
-    "projectNo": "",
-    "proCompl": ""
+   "openId":"",
+    "projectNo":""
 }
 ```
+
 
 - 返回数据
 ```json
@@ -497,7 +503,7 @@
     评论模块涉及到投资人对于用户的项目进行评价，以及用户对于投资人评价的回评。故该模块功能点
     细化为以下几个部分。但所有模块均只涉及对于项目评价信息单表的修改。
     
-1. 投资人待评价获取
+1. 分页获取评待论信息（投资人）
     投资人获取到自己investorId项目的所有评论，对于其中content为空的字段信息，前端显示**提交**，如果
     content字段不为空前端显示**修改**
 
@@ -612,7 +618,7 @@
 
         1. mock链接:
     
-        2. dev链接: ip:port/investor/getCommentsByOpenId
+        2. dev链接: ip:port/entuser/getCommentsByOpenId
     
     - 请求数据（Get）
 ```json
@@ -654,7 +660,7 @@
    
        1. mock链接:
        
-       2. dev链接: ip:port/investor/commitCommentByEnt
+       2. dev链接: ip:port/entuser/commitCommentByEnt
        
    - 请求数据（Get）
   ```json
@@ -676,7 +682,7 @@
    }
    ```
 
-##投资人评论资费总金额页面
+#### 投资人评论资费总金额页面
 
     查看投资人评论未获取的总金额以及已经获取的总金额。
     
@@ -707,7 +713,7 @@
     
    ```
 
-##查看评论、项目详情
+##查看评论、项目详情（投资人）
 
     查看评论以及项目的详情信息。
     

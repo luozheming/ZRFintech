@@ -41,14 +41,4 @@ public class EntUser {
      * 国家
      */
     private String country;
-    /**
-     * 项目
-     */
-    private List<Project> projects;
-
-    @Data
-    public class Project {
-        private String projectNo;
-        private String projectNm;
-    }
 }

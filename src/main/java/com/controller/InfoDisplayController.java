@@ -10,6 +10,7 @@ import com.pojo.Project;
 import com.utils.CommonUtils;
 import com.utils.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.FindAndReplaceOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
@@ -34,12 +35,16 @@ public class InfoDisplayController {
     @Autowired
     private CommonUtils commonUtils;
 
+    @Value("${savedfilepath}")
+    private String savedfilepath;
+
+
     /**
      * 项目展示（分页）
      * @param pageDto
      * @return
      */
-    @PostMapping(value = "getProjectInfo")
+    @PostMapping(value = "/investor/getProjectInfo")
     public String getProjectInfo(@RequestBody PageDto pageDto) {
         int pageNum = pageDto.getPageNum();
         int pageSize = pageDto.getPageSize();
@@ -59,7 +64,7 @@ public class InfoDisplayController {
      * @param pageDto
      * @return
      */
-    @PostMapping(value = "getInvestorInfo")
+    @PostMapping(value = "/entuser/getInvestorInfo")
     public String getInvestorInfo(@RequestBody PageDto pageDto) {
         int pageNum = pageDto.getPageNum();
         int pageSize = pageDto.getPageSize();
@@ -83,7 +88,7 @@ public class InfoDisplayController {
     /**
      *  查询最新项目草稿
      */
-    @PostMapping(value = "/getdraftbyid")
+    @PostMapping(value = "/project/getdraftbyid")
     public String projectFormUpload(@RequestBody EntUser entUser){
         //查询项目草稿
         Project draftProject = mongoTemplate.findOne(query(where("openId").is(entUser.getOpenId()).and("isDone").is(false)),Project.class);
@@ -94,7 +99,7 @@ public class InfoDisplayController {
     /**
      * 项目上传（文件）
      */
-    @PostMapping(value = "uploadproject")
+    @PostMapping(value = "/project/uploadproject")
     public String upLoadProject(@RequestPart(value = "file", required = false) MultipartFile file, Project project) {
         String projectNo = project.getIsDone() ? commonUtils.getNumCode() : null;// 生成主键ID
         //文件上传可能会出问题
@@ -105,7 +110,7 @@ public class InfoDisplayController {
             //String suffixName = fileName.substring(fileName.lastIndexOf("."));
             // 文件上传后的路径
             StringBuilder filePathBuffer = new StringBuilder();
-            String filePath = filePathBuffer.append("D:\\").append(project.getOpenId()).append("\\").append(projectNo).append("\\").toString();
+            String filePath = filePathBuffer.append(savedfilepath).append(project.getOpenId()).append("\\").append(projectNo).append("\\").toString();
             File dest = new File(filePath + fileName);
             // 检测是否存在目录
             if (!dest.getParentFile().exists()) {
@@ -136,35 +141,16 @@ public class InfoDisplayController {
             project.setProjectNo(projectNo);
             mongoTemplate.save(project);
             Project outputProject = Project.builder().projectNo(project.getProjectNo()).projectNm(project.getProjectNm()).build();
-           /* //TODO 项目信息保存完全后更新EntUser下Project字段
-            Update update = new Update();
-            update.addToSet("projects").value(project);
-            mongoTemplate.updateFirst(query(Criteria.where("openId").is(project.getOpenId())), update, EntUser.class);*/
             OutputFormate outputFormate = new OutputFormate(outputProject);
             return JSONObject.toJSONString(outputFormate);
         }
     }
 
-    /**
-     *项目补充信息
-     */
-    @PostMapping("/completeProject")
-    public String completeProject(@RequestBody CompleteProjectDto completeProjectDto){
-        if("".equals(completeProjectDto.getProCompl())){
-            return ErrorCode.CONTENTEMPTY.toJsonString();
-        }else {
-            Update update = new Update().set("proCompl", completeProjectDto.getProCompl());
-            mongoTemplate.update(Project.class)
-                    .matching((query(where("projectNo").is(completeProjectDto.getProjectNo()))))
-                    .apply(update);
-            return ErrorCode.SUCCESS.toJsonString();
-        }
-    }
 
     /**
      * 已上传项目查询
      */
-    @GetMapping("/getMyProjects")
+    @GetMapping("/project/getMyProjects")
     public String getMyProjects(@RequestParam(value = "openId", required = true) String openId){
         List<Project> projectList = mongoTemplate.find(query(where("openId").is(openId).and("isDone").is(true)), Project.class);
         OutputFormate outputFormate = new OutputFormate(projectList);
@@ -174,24 +160,10 @@ public class InfoDisplayController {
     /**
      * 上传项目删除
      */
-    @PostMapping("/deleteMyProject")
+    @PostMapping("/project/deleteMyProject")
     public String deleteMyProject(@RequestParam(value = "projectNo", required = true) String projectNo){
         //删除项目列表中信息
         mongoTemplate.findAndRemove(query(where("projectNo").is(projectNo)),Project.class);
-        /*//删除个人项目列表中信息
-        EntUser entUser = mongoTemplate.findOne(query(where("openId").is(openId)),EntUser.class);
-        List<EntUser.Project> projectList = entUser.getProjects();
-        int deleteIndex=projectList.size();
-        for(int i=0;i<deleteIndex;i++){
-            if(projectNo.equals(projectList.get(i).getProjectNo())){
-                projectList.remove(i);
-                break;
-            }
-        }
-        Update update = new Update().set("projects",projectList);
-        mongoTemplate.update(EntUser.class)
-                .matching((query(where("openId").is(openId))))
-                .apply(update);*/
         return ErrorCode.SUCCESS.toJsonString();
     }
 
