@@ -27,6 +27,10 @@ public class EntPaymentDto {
      */
     private String investor;
     /**
+     * 投资人照片路径
+     */
+    private String  invesPhotoRoute;
+    /**
      *用户唯一识别键
      */
     private String openId;

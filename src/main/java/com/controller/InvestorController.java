@@ -9,8 +9,8 @@ import com.dto.outdto.InvestorCommentAmountDto;
 import com.dto.outdto.OutputFormate;
 import com.pojo.Project;
 import com.pojo.ProjectComment;
-import com.utils.ErrorCode;
 import com.utils.CommonUtils;
+import com.utils.ErrorCode;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -134,6 +134,11 @@ public class InvestorController {
                         .with(Sort.by(Sort.Order.asc("favor")))
                         .with(Sort.by(Sort.Order.asc("updateTm")));
                 List<ProjectComment> projectComments = mongoTemplate.find(query.skip(startNum).limit(pageSize), ProjectComment.class);
+                if (!CollectionUtils.isEmpty(projectComments)) {
+                    for (ProjectComment projectComment : projectComments) {
+                        projectComment.setPhoto(commonUtils.getPhoto(projectComment.getInvesPhotoRoute()));
+                    }
+                }
                 OutputFormate outputFormate = new OutputFormate(projectComments, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
                 return JSONObject.toJSONString(outputFormate);
             }
@@ -199,7 +204,7 @@ public class InvestorController {
                 return ErrorCode.NULLOBJECT.toJsonString();
             }
             // 项目未被点评则不允许回评
-            if (projectCommentResp.getIsDone()) {
+            if (!projectCommentResp.getIsDone()) {
                 return ErrorCode.FORBIDREPLY.toJsonString();
             }
 
@@ -329,7 +334,7 @@ public class InvestorController {
      * @return
      */
     @GetMapping(value = "/getCommentProject")
-    public String getCommentProject(@RequestParam String id){
+    public String getCommentProject(@RequestParam String id) {
         try{
             CommentProjectDto commentProjectDto = new CommentProjectDto();
             // 获取评论信息

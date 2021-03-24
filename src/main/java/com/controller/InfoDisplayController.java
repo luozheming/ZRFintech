@@ -1,6 +1,7 @@
 package com.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.dto.indto.CompleteProjectDto;
 import com.dto.indto.PageDto;
 import com.dto.outdto.OutputFormate;
 import com.pojo.EntUser;
@@ -8,20 +9,16 @@ import com.pojo.Investor;
 import com.pojo.Project;
 import com.utils.CommonUtils;
 import com.utils.ErrorCode;
-import org.bson.internal.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.FindAndReplaceOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 
@@ -74,8 +71,8 @@ public class InfoDisplayController {
             List<Investor> investors = mongoTemplate.find(new Query().skip(startNum).limit(pageSize), Investor.class);
             if (!CollectionUtils.isEmpty(investors)) {
                 for (Investor investor : investors) {
-                    investor.setPhoto(getPhoto(investor.getInvesPhotoRoute()));// 投资人头像
-                    investor.setOrgPhoto(getPhoto(investor.getInvesOrgPhotoRoute()));// 投资人机构图片
+                    investor.setPhoto(commonUtils.getPhoto(investor.getInvesPhotoRoute()));// 投资人头像
+                    investor.setOrgPhoto(commonUtils.getPhoto(investor.getInvesOrgPhotoRoute()));// 投资人机构图片
                 }
             }
             OutputFormate outputFormate = new OutputFormate(investors);
@@ -84,46 +81,9 @@ public class InfoDisplayController {
     }
 
     /**
-     * 获取图片信息
-     * @param filePath
-     * @return
-     */
-    public String getPhoto(String filePath) {
-        String photo = "";
-        FileInputStream fileInputStream = null;
-        ByteArrayOutputStream bos = null;
-        try {
-            fileInputStream = new FileInputStream(filePath);
-            bos = new ByteArrayOutputStream();
-            byte[] b = new byte[1024];
-            int len = -1;
-            while((len = fileInputStream.read(b)) != -1) {
-                bos.write(b, 0, len);
-            }
-            byte[] fileByte = bos.toByteArray();
-            //进行base64位加密
-            photo = new String(Base64.encode(fileByte));
-        } catch (Exception e) {
-            return "";
-        } finally {
-            try {
-                if (null != fileInputStream) {
-                    fileInputStream.close();
-                }
-                if (null != bos) {
-                    bos.close();
-                }
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
-            }
-        }
-        return photo;
-    }
-
-    /**
      *  查询最新项目草稿
      */
-    @PostMapping(value = "getdraftbyid")
+    @PostMapping(value = "/getdraftbyid")
     public String projectFormUpload(@RequestBody EntUser entUser){
         //查询项目草稿
         Project draftProject = mongoTemplate.findOne(query(where("openId").is(entUser.getOpenId()).and("isDone").is(false)),Project.class);
@@ -136,6 +96,7 @@ public class InfoDisplayController {
      */
     @PostMapping(value = "uploadproject")
     public String upLoadProject(@RequestPart(value = "file", required = false) MultipartFile file, Project project) {
+        String projectNo = project.getIsDone() ? commonUtils.getNumCode() : null;// 生成主键ID
         //文件上传可能会出问题
         if (null != file) {
             // 获取文件名
@@ -144,7 +105,7 @@ public class InfoDisplayController {
             //String suffixName = fileName.substring(fileName.lastIndexOf("."));
             // 文件上传后的路径
             StringBuilder filePathBuffer = new StringBuilder();
-            String filePath = filePathBuffer.append("D:\\").append(project.getOpenId()).append("\\").append(project.getProjectNo()).append("\\").toString();
+            String filePath = filePathBuffer.append("D:\\").append(project.getOpenId()).append("\\").append(projectNo).append("\\").toString();
             File dest = new File(filePath + fileName);
             // 检测是否存在目录
             if (!dest.getParentFile().exists()) {
@@ -172,13 +133,13 @@ public class InfoDisplayController {
             return ErrorCode.SUCCESS.toJsonString();
         } else {
             //需要编写项目代码生成器
-            project.setProjectNo(commonUtils.getNumCode());
+            project.setProjectNo(projectNo);
             mongoTemplate.save(project);
             Project outputProject = Project.builder().projectNo(project.getProjectNo()).projectNm(project.getProjectNm()).build();
-            //TODO 项目信息保存完全后更新EntUser下Project字段
+           /* //TODO 项目信息保存完全后更新EntUser下Project字段
             Update update = new Update();
             update.addToSet("projects").value(project);
-            mongoTemplate.updateFirst(query(Criteria.where("openId").is(project.getOpenId())), update, EntUser.class);
+            mongoTemplate.updateFirst(query(Criteria.where("openId").is(project.getOpenId())), update, EntUser.class);*/
             OutputFormate outputFormate = new OutputFormate(outputProject);
             return JSONObject.toJSONString(outputFormate);
         }
@@ -188,13 +149,13 @@ public class InfoDisplayController {
      *项目补充信息
      */
     @PostMapping("/completeProject")
-    public String completeProject(@RequestParam("projectNo")String projectNo,@RequestParam("proCompl")String proCompl){
-        if("".equals(proCompl)){
+    public String completeProject(@RequestBody CompleteProjectDto completeProjectDto){
+        if("".equals(completeProjectDto.getProCompl())){
             return ErrorCode.CONTENTEMPTY.toJsonString();
         }else {
-            Update update = new Update().set("proCompl", proCompl);
+            Update update = new Update().set("proCompl", completeProjectDto.getProCompl());
             mongoTemplate.update(Project.class)
-                    .matching((query(where("projectNo").is(projectNo))))
+                    .matching((query(where("projectNo").is(completeProjectDto.getProjectNo()))))
                     .apply(update);
             return ErrorCode.SUCCESS.toJsonString();
         }
@@ -203,14 +164,9 @@ public class InfoDisplayController {
     /**
      * 已上传项目查询
      */
-    @PostMapping("/getMyProjects")
-    public String getMyProjects(@RequestParam("openId")String openId){
-        List<Project> projectList = null;
-        List<EntUser.Project> projects = mongoTemplate.findOne(query(where("openId").is(openId)),EntUser.class).getProjects();
-        for(EntUser.Project project:projects){
-            Project myproject = mongoTemplate.findOne(query(where("projectNm").is(project.getProjectNm())),Project.class);
-            projectList.add(myproject);
-        }
+    @GetMapping("/getMyProjects")
+    public String getMyProjects(@RequestParam(value = "openId", required = true) String openId){
+        List<Project> projectList = mongoTemplate.find(query(where("openId").is(openId).and("isDone").is(true)), Project.class);
         OutputFormate outputFormate = new OutputFormate(projectList);
         return JSONObject.toJSONString(outputFormate);
     }
@@ -219,10 +175,10 @@ public class InfoDisplayController {
      * 上传项目删除
      */
     @PostMapping("/deleteMyProject")
-    public String deleteMyProject(@RequestParam("openId")String openId,@RequestParam("projectNo")String projectNo){
+    public String deleteMyProject(@RequestParam(value = "projectNo", required = true) String projectNo){
         //删除项目列表中信息
-        mongoTemplate.findAndRemove(query(where("projectNm").is(projectNo)),Project.class);
-        //删除个人项目列表中信息
+        mongoTemplate.findAndRemove(query(where("projectNo").is(projectNo)),Project.class);
+        /*//删除个人项目列表中信息
         EntUser entUser = mongoTemplate.findOne(query(where("openId").is(openId)),EntUser.class);
         List<EntUser.Project> projectList = entUser.getProjects();
         int deleteIndex=projectList.size();
@@ -235,7 +191,7 @@ public class InfoDisplayController {
         Update update = new Update().set("projects",projectList);
         mongoTemplate.update(EntUser.class)
                 .matching((query(where("openId").is(openId))))
-                .apply(update);
+                .apply(update);*/
         return ErrorCode.SUCCESS.toJsonString();
     }
 

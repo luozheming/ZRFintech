@@ -90,10 +90,11 @@
 |id|评论主键|int||
 |investorId|投资人Id|String||
 |investor|投资人姓名|String||
+|invesPhotoRoute|投资人照片路径|String||
 |projectNo|项目编号|String||
 |projectNm|项目名称|String||
 |entCity|项目所在地城市|String||
-|favor|重点关注|Boolean||
+|favor|重点关注|Integer|1-感兴趣，2-未标记，3-不感兴趣，4-拒绝|
 |openId|上传用户|String||
 |content|评论内容|String||
 |updateTm|评论时间|timestamp|最新评论时间|
@@ -426,6 +427,31 @@
 }
 ```
 
+#### 项目补充信息
+- 功能描述及逻辑
+    企业用户登陆到我的页面，可以对已上传的项目进行项目信息补充。
+    
+- 请求url
+
+    1. mock链接:
+    
+    2. dev链接: ip:port/completeProject
+    
+- 请求数据
+```json
+{
+    "projectNo": "",
+    "proCompl": ""
+}
+```
+
+- 返回数据
+```json
+{
+    "code": "",
+    "message": ""
+}
+```
 
 #### 红包模块
 - 功能描述及逻辑
@@ -449,7 +475,8 @@
         "projectNo":"",
         "entCity":"",
         "openId":"",
-        "investorId":""
+        "investorId":"",
+        "invesPhotoRoute": ""
     }
 ]
 
@@ -611,7 +638,8 @@
 			"stars":"",
 			"reply":"",
 			"updateTm":"",
-			"replyTm":""
+			"replyTm":"",
+			"photo":""
 		}
 	]
 }
@@ -648,7 +676,7 @@
    }
    ```
 
-5. 投资人评论资费总金额页面
+##投资人评论资费总金额页面
 
     查看投资人评论未获取的总金额以及已经获取的总金额。
     
@@ -679,7 +707,7 @@
     
    ```
 
-6. 查看评论、项目详情
+##查看评论、项目详情
 
     查看评论以及项目的详情信息。
     
