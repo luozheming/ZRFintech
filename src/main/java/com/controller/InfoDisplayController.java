@@ -1,7 +1,6 @@
 package com.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.dto.indto.CompleteProjectDto;
 import com.dto.indto.PageDto;
 import com.dto.outdto.OutputFormate;
 import com.pojo.EntUser;
@@ -11,10 +10,10 @@ import com.utils.CommonUtils;
 import com.utils.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.FindAndReplaceOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -73,7 +72,8 @@ public class InfoDisplayController {
             return ErrorCode.PAGEBELLOWZERO.toJsonString();
         } else {
             int startNum = pageNum * pageSize;
-            List<Investor> investors = mongoTemplate.find(new Query().skip(startNum).limit(pageSize), Investor.class);
+            // 按isPlatform排序，将平台投资人置前
+            List<Investor> investors = mongoTemplate.find(new Query().with(Sort.by(Sort.Order.desc("isPlatform"))).skip(startNum).limit(pageSize), Investor.class);
             if (!CollectionUtils.isEmpty(investors)) {
                 for (Investor investor : investors) {
                     investor.setPhoto(commonUtils.getPhoto(investor.getInvesPhotoRoute()));// 投资人头像

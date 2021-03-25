@@ -47,6 +47,8 @@
 |disCountPrice|评论资费折扣价|BigDecimal||
 |unaccomplishedAmount|投资人未获取的资费金额|BigDecimal||
 |accomplishedAmount|投资人已获取的资费金额|BigDecimal||
+|isPlatform|是否平台投资人|Boolean|true-是，false-否|
+|indusLabList|行业标签list|List<String>||
 |indusLab1|行业标签1|String||
 |indusLab2|行业标签2|String||
 |indusLab3|行业标签3|String||
