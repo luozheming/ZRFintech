@@ -7,6 +7,7 @@ import com.dto.indto.GetCommentsDto;
 import com.dto.outdto.CommentProjectDto;
 import com.dto.outdto.InvestorCommentAmountDto;
 import com.dto.outdto.OutputFormate;
+import com.pojo.Investor;
 import com.pojo.Project;
 import com.pojo.ProjectComment;
 import com.utils.CommonUtils;
@@ -34,7 +35,6 @@ import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
 @RestController
-@RequestMapping("/investor")
 public class InvestorController {
 
     @Autowired
@@ -48,7 +48,7 @@ public class InvestorController {
      * @param entPaymentDtoList
      * @return
      */
-    @PostMapping(value = "/entPayment")
+    @PostMapping(value = "/investor/entPayment")
     public String entPayment(@RequestBody List<EntPaymentDto> entPaymentDtoList){
         try{
             if (!CollectionUtils.isEmpty(entPaymentDtoList)) {
@@ -100,7 +100,7 @@ public class InvestorController {
             } else {
                 int startNum = pageNum * pageSize;
                 Query query = new Query(Criteria.where("investorId").is(getCommentsDto.getInvestorId())
-                        .and("isDone").is(getCommentsDto.getIsDone()))
+                        .and("isDone").is(getCommentsDto.getIsDone()).and("favor").ne(4))
                         .with(Sort.by(Sort.Order.asc("isDone")))
                         .with(Sort.by(Sort.Order.asc("updateTm")));
                 List<ProjectComment> projectComments = mongoTemplate.find(query.skip(startNum).limit(pageSize), ProjectComment.class);
@@ -307,7 +307,7 @@ public class InvestorController {
     @GetMapping(value = "/investor/getCommentAmount")
     public InvestorCommentAmountDto getCommentAmount(@RequestParam String investorId) {
         InvestorCommentAmountDto investorCommentAmountDto = new InvestorCommentAmountDto();
-        List<ProjectComment> projectComments = mongoTemplate.find(query(Criteria.where("investorId").is(investorId)), ProjectComment.class);
+        List<ProjectComment> projectComments = mongoTemplate.find(query(Criteria.where("investorId").is(investorId).and("favor").ne(4)), ProjectComment.class);
         if (!CollectionUtils.isEmpty(projectComments)) {
             BigDecimal unaccomplishedAmount = new BigDecimal("0.00");
             BigDecimal accomplishedAmount = new BigDecimal("0.00");
@@ -358,6 +358,31 @@ public class InvestorController {
             return JSONObject.toJSONString(outputFormate);
         }  catch (Exception e){
             return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+    }
+
+    /**
+     * 获取投资人首页信息
+     * @param phoneNm
+     * @return
+     */
+    @GetMapping(value = "/investor/getInvestorInfo")
+    public String getInvestorInfo(@RequestParam(value = "phoneNm", required = true) String phoneNm) {
+        Investor findInvestor = mongoTemplate.findOne(query(where("phoneNm").is(phoneNm)),Investor.class);
+        if(!StringUtils.isEmpty(findInvestor)){
+            // 获取投资人及机构图片信息
+            findInvestor.setPhoto(commonUtils.getPhoto(findInvestor.getInvesPhotoRoute()));
+            findInvestor.setOrgPhoto(commonUtils.getPhoto(findInvestor.getInvesOrgPhotoRoute()));
+
+            // 获取投资人评论的金额总计信息
+            InvestorCommentAmountDto investorCommentAmountDto = getCommentAmount(findInvestor.getInvestorId());
+            findInvestor.setAccomplishedAmount(investorCommentAmountDto.getAccomplishedAmount());
+            findInvestor.setUnaccomplishedAmount(investorCommentAmountDto.getUnaccomplishedAmount());
+
+            OutputFormate outputFormate = new OutputFormate(findInvestor);
+            return JSONObject.toJSONString(outputFormate);
+        }else{
+            return ErrorCode.NULLOBJECT.toJsonString();
         }
     }
 

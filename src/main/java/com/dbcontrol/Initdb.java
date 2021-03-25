@@ -7,17 +7,19 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.pojo.Investor;
 import com.pojo.Project;
+import com.utils.CommonUtils;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 import static java.util.Arrays.asList;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
-import java.math.BigDecimal;
-import java.util.List;
-
 public class Initdb {
+
     public static void main(String args[]) {
         initInvestorDB();
 //        initProjectDB();
@@ -35,15 +37,16 @@ public class Initdb {
         database = database.withCodecRegistry(pojoCodecRegistry);
         MongoCollection<Investor> collection = database.getCollection("investor", Investor.class);
         List<Investor> Investors = asList(
-                Investor.builder().investorId("1").orgNm("高瓴资本").phoneNm("19991967502").investor("杨博").introd("团队长").invesPhotoRoute("E:\\investor\\1\\杨博.jpg").price(new BigDecimal("500")).disCountPrice(new BigDecimal("98")).build(),
-                Investor.builder().investorId("2").orgNm("金沙江创投").phoneNm("13585688902").investor("武思宇").introd("资深运营。\n 15亿用户APP。\n值得你信赖").invesPhotoRoute("E:\\investor\\2\\武思宇.jpg").price(new BigDecimal("500")).disCountPrice(new BigDecimal("98")).build(),
-                Investor.builder().investorId("3").orgNm("高瓴资本").phoneNm("18696148635").investor("罗哲明").introd("资深运营。\n 15亿用户APP。\n值得你信赖").invesPhotoRoute("E:\\investor\\3\\罗哲明.jpg").price(new BigDecimal("500")).disCountPrice(new BigDecimal("98")).build(),
-                Investor.builder().investorId("4").orgNm("红衫资本").phoneNm("18392181272").investor("彭星宇").introd("资深运营。\n 15亿用户APP。\n值得你信赖").invesEmail("pengxingyu@cmbchina.com").invesPhotoRoute("E:\\investor\\4\\彭星宇.jpg").price(new BigDecimal("500")).disCountPrice(new BigDecimal("98")).build(),
-                Investor.builder().investorId("5").orgNm("红衫资本").phoneNm("18392181272").investor("唐培轩").introd("资深开发。\n15年经验\n值得你信赖\n中软国际\n精通java后端").invesEmail("tangpeixuan@cmbchina.com").invesPhotoRoute("E:\\investor\\5\\唐培轩.jpg").price(new BigDecimal("500")).disCountPrice(new BigDecimal("98")).build(),
-                Investor.builder().investorId("6").orgNm("招银国际").phoneNm("15685215623").investor("一剑").introd("资深开发。\n15年经验\n值得你信赖\n中软国际\n精通java后端").invesEmail("yijian@cmbchina.com").invesPhotoRoute("E:\\investor\\6\\一剑.jpg").price(new BigDecimal("500")).disCountPrice(new BigDecimal("98")).build(),
-                Investor.builder().investorId("7").orgNm("招银国际").phoneNm("15325896699").investor("董振宇").introd("资深开发。\n15年经验\n值得你信赖\n中软国际\n精通java后端").invesEmail("dongzhenyu@cmbchina.com").invesPhotoRoute("E:\\investor\\7\\董振宇.jpg").price(new BigDecimal("500")).disCountPrice(new BigDecimal("98")).build(),
-                Investor.builder().investorId("8").orgNm("易帆国际").phoneNm("15325896512").investor("黄志云").introd("资深开发。\n15年经验\n值得你信赖").invesEmail("zhiyunhuang@cmbchina.com").invesPhotoRoute("E:\\investor\\8\\黄志云.jpg").price(new BigDecimal("500")).disCountPrice(new BigDecimal("98")).build(),
-                Investor.builder().investorId("9").orgNm("易帆国际").phoneNm("15325896525").investor("张三").introd("资深数据分析。").invesEmail("zhiyunhuang@cmbchina.com").invesPhotoRoute("E:\\investor\\9\\张三.jpg").price(new BigDecimal("500")).disCountPrice(new BigDecimal("98")).build()
+                Investor.builder().investorId(new CommonUtils().getNumCode()).orgNm("企融星").phoneNm("13789256432").investor("平台投资人").introd("投资专家").invesPhotoRoute("E:\\investor\\0\\平台.jpg").invesOrgPhotoRoute("E:\\investor\\0\\平台.jpg").price(new BigDecimal("0")).disCountPrice(new BigDecimal("0")).isPlatform(true).build(),
+                Investor.builder().investorId(new CommonUtils().getNumCode()).orgNm("高瓴资本").phoneNm("19991967502").investor("杨博").introd("团队长").invesPhotoRoute("E:\\investor\\1\\杨博.jpg").invesOrgPhotoRoute("E:\\investor\\1\\杨博.jpg").price(new BigDecimal("500")).disCountPrice(new BigDecimal("98")).isPlatform(false).build(),
+                Investor.builder().investorId(new CommonUtils().getNumCode()).orgNm("金沙江创投").phoneNm("13585688902").investor("武思宇").introd("资深运营。\n 15亿用户APP。\n值得你信赖").invesPhotoRoute("E:\\investor\\2\\武思宇.jpg").invesOrgPhotoRoute("E:\\investor\\2\\武思宇.jpg").price(new BigDecimal("500")).disCountPrice(new BigDecimal("98")).isPlatform(false).build(),
+                Investor.builder().investorId(new CommonUtils().getNumCode()).orgNm("高瓴资本").phoneNm("18696148635").investor("罗哲明").introd("资深运营。\n 15亿用户APP。\n值得你信赖").invesPhotoRoute("E:\\investor\\3\\罗哲明.jpg").invesOrgPhotoRoute("E:\\investor\\3\\罗哲明.jpg").price(new BigDecimal("500")).disCountPrice(new BigDecimal("98")).isPlatform(false).build(),
+                Investor.builder().investorId(new CommonUtils().getNumCode()).orgNm("红衫资本").phoneNm("18392181272").investor("彭星宇").introd("资深运营。\n 15亿用户APP。\n值得你信赖").invesEmail("pengxingyu@cmbchina.com").invesPhotoRoute("E:\\investor\\4\\彭星宇.jpg").invesOrgPhotoRoute("E:\\investor\\4\\彭星宇.jpg").price(new BigDecimal("500")).disCountPrice(new BigDecimal("98")).isPlatform(false).build(),
+                Investor.builder().investorId(new CommonUtils().getNumCode()).orgNm("红衫资本").phoneNm("18392181272").investor("唐培轩").introd("资深开发。\n15年经验\n值得你信赖\n中软国际\n精通java后端").invesEmail("tangpeixuan@cmbchina.com").invesPhotoRoute("E:\\investor\\5\\唐培轩.jpg").invesOrgPhotoRoute("E:\\investor\\5\\唐培轩.jpg").price(new BigDecimal("500")).disCountPrice(new BigDecimal("98")).isPlatform(false).build(),
+                Investor.builder().investorId(new CommonUtils().getNumCode()).orgNm("招银国际").phoneNm("15685215623").investor("一剑").introd("资深开发。\n15年经验\n值得你信赖\n中软国际\n精通java后端").invesEmail("yijian@cmbchina.com").invesPhotoRoute("E:\\investor\\6\\一剑.jpg").invesOrgPhotoRoute("E:\\investor\\6\\一剑.jpg").price(new BigDecimal("500")).disCountPrice(new BigDecimal("98")).isPlatform(false).build(),
+                Investor.builder().investorId(new CommonUtils().getNumCode()).orgNm("招银国际").phoneNm("15325896699").investor("董振宇").introd("资深开发。\n15年经验\n值得你信赖\n中软国际\n精通java后端").invesEmail("dongzhenyu@cmbchina.com").invesPhotoRoute("E:\\investor\\7\\董振宇.jpg").invesOrgPhotoRoute("E:\\investor\\7\\董振宇.jpg").price(new BigDecimal("500")).disCountPrice(new BigDecimal("98")).isPlatform(false).build(),
+                Investor.builder().investorId(new CommonUtils().getNumCode()).orgNm("易帆国际").phoneNm("15325896512").investor("黄志云").introd("资深开发。\n15年经验\n值得你信赖").invesEmail("zhiyunhuang@cmbchina.com").invesPhotoRoute("E:\\investor\\8\\黄志云.jpg").invesOrgPhotoRoute("E:\\investor\\8\\黄志云.jpg").price(new BigDecimal("500")).disCountPrice(new BigDecimal("98")).isPlatform(false).build(),
+                Investor.builder().investorId(new CommonUtils().getNumCode()).orgNm("易帆国际").phoneNm("15325896525").investor("张三").introd("资深数据分析。").invesEmail("zhiyunhuang@cmbchina.com").invesPhotoRoute("E:\\investor\\9\\张三.jpg").invesOrgPhotoRoute("E:\\investor\\9\\张三.jpg").price(new BigDecimal("500")).disCountPrice(new BigDecimal("98")).isPlatform(false).build()
         );
 
         collection.insertMany(Investors);

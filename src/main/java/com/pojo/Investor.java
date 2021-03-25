@@ -1,11 +1,12 @@
 package com.pojo;
+
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @Builder
@@ -44,9 +45,9 @@ public class Investor {
      */
     private String invesEmail;
     /**
-     * 行业标签1
+     * 行业标签list
      */
-    private String indusLab1;
+    private List<String> indusLabList;
     /**
      * 投资人头像数据
      */
@@ -71,6 +72,10 @@ public class Investor {
      * 投资人已获取的资费金额
      */
     private BigDecimal accomplishedAmount;
+    /**
+     * 是否平台投资人：true-是，false-否
+     */
+    private Boolean isPlatform;
 
     @Tolerate
     public Investor() {}
