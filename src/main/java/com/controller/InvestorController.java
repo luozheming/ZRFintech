@@ -148,7 +148,7 @@ public class InvestorController {
     }
 
     /**
-     * 投资人保存评价，不更新isDone字段
+     * 保存评价
      * @param projectComment
      * @return
      */
@@ -156,9 +156,13 @@ public class InvestorController {
     public String saveCommentByInvestor(@RequestBody ProjectComment projectComment){
         try{
             Update update = new Update();
-            update.set("favor", projectComment.getFavor());
-            update.set("content", projectComment.getContent());
-            update.set("updateTm", new Date());
+            if (StringUtils.isEmpty(projectComment.getFavor())) {
+                update.set("favor", projectComment.getFavor());
+            }
+            if (StringUtils.isEmpty(projectComment.getContent())) {
+                update.set("content", projectComment.getContent());
+                update.set("updateTm", new Date());
+            }
             mongoTemplate.updateFirst(query(where("id").is(projectComment.getId())), update, ProjectComment.class);
             return ErrorCode.SUCCESS.toJsonString();
         }catch (Exception e){
