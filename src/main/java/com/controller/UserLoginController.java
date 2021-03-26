@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.dto.outdto.OutputFormate;
 import com.pojo.EntUser;
 import com.pojo.Investor;
-import com.utils.CommonUtils;
 import com.utils.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -21,9 +20,6 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 public class UserLoginController {
     @Autowired
     private MongoTemplate mongoTemplate;
-
-    @Autowired
-    private CommonUtils commonUtils;
 
     @PostMapping(value = "/investor/investorLogin")
     public String investorLogin(@RequestBody Investor investor){
