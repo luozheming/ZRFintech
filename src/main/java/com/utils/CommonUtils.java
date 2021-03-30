@@ -2,8 +2,10 @@ package com.utils;
 
 import org.bson.internal.Base64;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.UUID;
@@ -55,6 +57,30 @@ public class CommonUtils {
             }
         }
         return photo;
+    }
+
+    /**
+     * 上传文件
+     */
+    public void uploadData(MultipartFile file,String savedfilepath) throws IllegalStateException,IOException{
+        //文件上传可能会出问题
+        if (null != file) {
+            // 获取文件名
+            String fileName = file.getOriginalFilename();
+            // 文件上传后的路径
+            File dest = new File(savedfilepath + fileName);
+            // 检测是否存在目录
+            if (!dest.getParentFile().exists()) {
+                dest.getParentFile().mkdirs();
+            }
+            try {
+                file.transferTo(dest);
+            } catch (IllegalStateException e) {
+                throw e;
+            } catch (IOException e) {
+                throw e;
+            }
+        }
     }
 
 }

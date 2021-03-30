@@ -41,6 +41,10 @@ public class Investor {
      */
     private String  invesOrgPhotoRoute;
     /**
+     *
+     */
+    private String invesCardRoute;
+    /**
      * 投资人邮箱
      */
     private String invesEmail;
@@ -52,6 +56,10 @@ public class Investor {
      * 投资人头像数据
      */
     private String photo;
+    /**
+     *投资人名片数据
+     */
+    private String card;
     /**
      * 机构图片数据
      */
