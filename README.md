@@ -41,7 +41,9 @@
 |invesEmail|投资人邮箱|String||
 |invesPhotoRoute|投资人照片路径|String||
 |invesOrgPhotoRoute|投资人机构照片路径|String||
+|invesCardRoute|投资人名片路径|String||
 |photo|投资人头像数据|String|仅在返回时作为字段使用|
+|card|投资人名片数据|String||
 |orgPhoto|机构图片数据|String|仅在返回时作为字段使用|
 |price|评论资费原价|BigDecimal||
 |disCountPrice|评论资费折扣价|BigDecimal||
