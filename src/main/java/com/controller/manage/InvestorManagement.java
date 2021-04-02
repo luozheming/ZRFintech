@@ -3,8 +3,7 @@ package com.controller.manage;
 import com.alibaba.fastjson.JSONObject;
 import com.dto.outdto.OutputFormate;
 import com.pojo.Investor;
-import com.pojo.Project;
-import com.service.InvestorService;
+import com.service.manage.InvestorService;
 import com.utils.CommonUtils;
 import com.utils.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,6 +87,12 @@ public class InvestorManagement {
     @PostMapping("/investor/edit")
     public String editInvestor(Investor investor){
         investorService.editInvestor(investor);
+        return ErrorCode.SUCCESS.toJsonString();
+    }
+
+    @PostMapping("/investor/status")
+    public String status(String investorId, Integer status){
+        investorService.status(investorId, status);
         return ErrorCode.SUCCESS.toJsonString();
     }
 }

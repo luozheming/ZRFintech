@@ -1,18 +1,14 @@
-package com.service;
-import com.alibaba.fastjson.JSONObject;
-import com.dto.outdto.OutputFormate;
+package com.service.manage;
+
 import com.pojo.Investor;
-import com.pojo.Project;
-import com.pojo.ProjectComment;
 import com.utils.CommonUtils;
-import com.utils.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
 import java.util.List;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
@@ -46,5 +42,11 @@ public class InvestorService {
     public void editInvestor(Investor investor){
         mongoTemplate.remove(query(where("investId").is(investor.getInvestorId())),Investor.class);
         mongoTemplate.save(investor);
+    }
+
+    public void status(String investorId, Integer status){
+        Update update = new Update();
+        update.addToSet("status", status);
+        mongoTemplate.updateFirst(query(Criteria.where("investorId").is(investorId)), update, Investor.class);
     }
 }
