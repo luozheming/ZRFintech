@@ -14,6 +14,8 @@ public enum ErrorCode {
     CONTENTLESS(608,"评论字数不得少于200字"),
     CONTENTEMPTY(609,"项目补充信息不能为空"),
     NULLPARAM(610,"参数为空"),
+    EMPITYPHONE(611,"手机号或者密码为空"),
+    EMPITYUSER(612,"用户不存在"),
     OTHEREEEOR(669,"其余未知错误");
 
     private int code;
