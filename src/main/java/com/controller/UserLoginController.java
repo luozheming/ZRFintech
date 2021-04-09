@@ -6,12 +6,12 @@ import com.dto.outdto.OutputFormate;
 import com.pojo.EntUser;
 import com.pojo.Investor;
 import com.utils.ErrorCode;
+import com.utils.HttpClientUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
@@ -20,6 +20,12 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 public class UserLoginController {
     @Autowired
     private MongoTemplate mongoTemplate;
+    @Value("${wx.appId}")
+    private String appId;
+    @Value("${wx.secret}")
+    private String secret;
+    @Value("${wx.auth.code2Session}")
+    private String code2SessionUrl;
 
     @PostMapping(value = "/investor/investorLogin")
     public String investorLogin(@RequestBody Investor investor){
@@ -48,6 +54,24 @@ public class UserLoginController {
             return ErrorCode.USERFIRSTLOGIN.toJsonString();
         }
     }catch (Exception e){
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+    }
+
+    /**
+     * 微信登录
+     * @param js_code
+     * @return
+     */
+    @GetMapping("/wx/getCode2Session")
+    public String getCode2Session(@RequestParam(value = "js_code", required = true) String js_code) {
+        try {
+            String url = code2SessionUrl + "?appId=" + appId + "&secret=" + secret
+                    + "&js_code=" + js_code + "&grant_type=authorization_code";
+            String resp = HttpClientUtil.doGet(url);
+            OutputFormate outputFormate = new OutputFormate(resp, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
+            return JSONObject.toJSONString(outputFormate);
+        } catch (Exception e) {
             return ErrorCode.OTHEREEEOR.toJsonString();
         }
     }
