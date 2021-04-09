@@ -34,15 +34,15 @@ import java.util.Map;
 @Service
 public class WxPayServiceImpl implements WxPayService {
 
-    @Value("appId")
+    @Value("${wx.appId}")
     private String appId;
-    @Value("merchantId")
+    @Value("${wx.merchantId}")
     private String merchantId;
-    @Value("privateKey")
+    @Value("${wx.privateKey}")
     private String privateKey;
-    @Value("merchantSerialNumber")
+    @Value("${wx.merchantSerialNumber}")
     private String merchantSerialNumber;
-    @Value("apiV3Key")
+    @Value("${wx.apiV3Key}")
     private String apiV3Key;
 
     @Autowired

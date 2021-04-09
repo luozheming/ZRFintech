@@ -84,6 +84,10 @@ public class Investor {
      * 是否平台投资人：true-是，false-否
      */
     private Boolean isPlatform;
+    /**
+     * 状态：0-启用，1-禁用
+     */
+    private Integer status;
 
     @Tolerate
     public Investor() {}

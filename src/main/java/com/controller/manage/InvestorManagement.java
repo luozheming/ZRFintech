@@ -8,6 +8,7 @@ import com.utils.CommonUtils;
 import com.utils.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,14 +24,14 @@ public class InvestorManagement {
     InvestorService investorService;
     @Autowired
     CommonUtils commonUtils;
-    @Value("photoSavedFilepath")
+    @Value("${photoSavedFilepath}")
     StringBuilder photoSavedFilepath;
-    @Value("cardSavedFilepath")
+    @Value("${cardSavedFilepath}")
     StringBuilder cardSavedFilepath;
-    @Value("orgphotoSavedFilepath")
+    @Value("${orgphotoSavedFilepath}")
     StringBuilder orgphotoSavedFilepath;
 
-    @PostMapping("/investor/pageList")
+    @GetMapping("/investor/pageList")
     public String getInvestorPageList(int pageNum,int pageSize) {
         if (pageNum < 0 || pageSize <= 0) {
             return ErrorCode.PAGEBELLOWZERO.toJsonString();
@@ -44,13 +45,12 @@ public class InvestorManagement {
         return ErrorCode.PAGEBELLOWZERO.toJsonString();
     }
 
-    @PostMapping("/investor/detail")
+    @GetMapping("/investor/detail")
     public String getInvestorDetail(String investorId){
         Investor investor = investorService.getInvesById(investorId);
         OutputFormate outputFormate = new OutputFormate(investor);
         return JSONObject.toJSONString(outputFormate);
     }
-
 
     @PostMapping("/investor/add")
     public String addInvestor(@RequestPart(value = "photo", required = true) MultipartFile photo,
@@ -58,8 +58,8 @@ public class InvestorManagement {
                               @RequestPart(value = "orgphoto", required = false) MultipartFile orgphoto,
                               Investor investor) {
         String investId = commonUtils.getNumCode();
-        String destPhotoPath  = photoSavedFilepath.append(investId).toString();
-        String destCardPath  = cardSavedFilepath.append(investId).toString();
+        String destPhotoPath  = photoSavedFilepath.toString();
+        String destCardPath  = cardSavedFilepath.toString();
         try{
             commonUtils.uploadData(photo,destPhotoPath);
             commonUtils.uploadData(card,destCardPath);
@@ -68,16 +68,16 @@ public class InvestorManagement {
         }
         if(null!=orgphoto){
             try{
-                String destOrgPath = orgphotoSavedFilepath.append(investId).toString();
+                String destOrgPath = orgphotoSavedFilepath.toString();
                 commonUtils.uploadData(orgphoto,destOrgPath);
-                investor.setInvesOrgPhotoRoute(destOrgPath);
+                investor.setInvesOrgPhotoRoute(destOrgPath + "/" + orgphoto.getOriginalFilename());
             }catch (IllegalStateException | IOException e) {
                 return ErrorCode.OTHEREEEOR.toJsonString();
             }
         }
         investor.setInvestor(investId);
-        investor.setInvesCardRoute(destCardPath);
-        investor.setInvesPhotoRoute(destPhotoPath);
+        investor.setInvesCardRoute(destCardPath + "/" + card.getOriginalFilename());
+        investor.setInvesPhotoRoute(destPhotoPath + "/" + photo.getOriginalFilename());
         investorService.addInvestor(investor);
         OutputFormate outputFormate = new OutputFormate(investId);
         return JSONObject.toJSONString(outputFormate);
