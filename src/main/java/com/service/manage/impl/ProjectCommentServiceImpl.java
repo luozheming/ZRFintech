@@ -31,15 +31,19 @@ public class ProjectCommentServiceImpl implements ProjectCommentService {
     @Override
     public void commit(ProjectComment projectComment) {
         Update update = new Update();
-        update.set("isDone", true);
         if (null != projectComment.getFavor()) {
             update.set("favor", projectComment.getFavor());
         }
         if (!StringUtils.isEmpty(projectComment.getContent())) {
+            update.set("isDone", true);
             update.set("content", projectComment.getContent());
+            update.set("updateTm", new Date());
         }
-        update.set("updateTm", new Date());
-        Criteria criteria = Criteria.where("projectNo").is(projectComment.getProjectNo());
+        if (!StringUtils.isEmpty(projectComment.getReply())) {
+            update.set("reply", projectComment.getReply());
+            update.set("replyTm", new Date());
+        }
+        Criteria criteria = Criteria.where("id").is(projectComment.getId());
         mongoTemplate.updateFirst(query(criteria), update, ProjectComment.class);
     }
 
@@ -48,5 +52,10 @@ public class ProjectCommentServiceImpl implements ProjectCommentService {
         Criteria criteria = Criteria.where("projectNo").is(projectNo);
         List<ProjectComment> projectComments = mongoTemplate.find(query(criteria), ProjectComment.class);
         return projectComments;
+    }
+
+    @Override
+    public Integer count() {
+        return (int) mongoTemplate.count(new Query(),"projectComment");
     }
 }

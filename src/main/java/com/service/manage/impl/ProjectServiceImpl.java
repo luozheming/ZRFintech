@@ -20,6 +20,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Autowired
     private MongoTemplate mongoTemplate;
 
+    @Autowired
     private ProjectCommentService projectCommentService;
 
     @Override

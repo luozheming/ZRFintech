@@ -36,7 +36,7 @@ public class ProjectController {
         try {
             int count = projectService.count();
             int totalPage = count/pageSize;
-            PageListDto pageListDto = new PageListDto<Investor>();
+            PageListDto pageListDto = new PageListDto<Project>();
             pageListDto.setTotal(count);
             if(pageNum <= totalPage){
                 List<Project> projects =  projectService.pageList(pageNum, pageSize);

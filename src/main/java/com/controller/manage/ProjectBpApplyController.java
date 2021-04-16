@@ -38,7 +38,7 @@ public class ProjectBpApplyController {
         try {
             int count = projectBpApplyService.countByEnt(openId);
             int totalPage = count/pageSize;
-            PageListDto pageListDto = new PageListDto<Investor>();
+            PageListDto pageListDto = new PageListDto<ProjectBpApply>();
             pageListDto.setTotal(count);
             if(pageNum <= totalPage){
                 List<ProjectBpApply> projectBpApplyList =  projectBpApplyService.pageListByEnt(pageNum, pageSize, openId);

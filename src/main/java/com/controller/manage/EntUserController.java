@@ -2,7 +2,9 @@ package com.controller.manage;
 
 import com.alibaba.fastjson.JSONObject;
 import com.dto.outdto.OutputFormate;
+import com.dto.outdto.PageListDto;
 import com.pojo.EntUser;
+import com.pojo.ProjectBpApply;
 import com.service.manage.EntUserService;
 import com.utils.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,14 +29,20 @@ public class EntUserController {
      */
     @GetMapping("/pageList")
     public String pageList(Integer pageNum, Integer pageSize) {
-        List<EntUser> entUsers = null;
         try {
-            entUsers = entUserService.pageList(pageNum, pageSize);
+            int count = entUserService.count();
+            int totalPage = count/pageSize;
+            PageListDto pageListDto = new PageListDto<EntUser>();
+            pageListDto.setTotal(count);
+            if(pageNum <= totalPage){
+                List<EntUser> entUsers =  entUserService.pageList(pageNum, pageSize);
+                pageListDto.setList(entUsers);
+            }
+            OutputFormate outputFormate = new OutputFormate(pageListDto);
+            return JSONObject.toJSONString(outputFormate);
         } catch (Exception e) {
             return ErrorCode.OTHEREEEOR.toJsonString();
         }
-        OutputFormate outputFormate = new OutputFormate(entUsers, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
-        return JSONObject.toJSONString(outputFormate);
     }
 
 }

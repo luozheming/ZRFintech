@@ -9,7 +9,7 @@ import java.util.Date;
 
 @Data
 @Builder
-@Document(value = "bpApply")
+@Document(value = "projectBpApply")
 public class ProjectBpApply {
     /**
      * 主键ID
