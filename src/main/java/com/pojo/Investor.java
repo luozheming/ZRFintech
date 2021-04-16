@@ -88,6 +88,38 @@ public class Investor {
      * 状态：0-启用，1-禁用
      */
     private Integer status;
+    /**
+     * 关注领域
+     */
+    private List<String> focusFiled;
+    /**
+     * 投资阶段
+     */
+    private List<String> finRound;
+    /**
+     * 自我简介
+     */
+    private String selfIntroduction;
+    /**
+     * 已成交单数
+     */
+    private Integer accomplishedTimes;
+    /**
+     * 未成交单数
+     */
+    private Integer unAccomplishedTimes;
+    /**
+     * 星级
+     */
+    private BigDecimal stars;
+    /**
+     * 实际星级值
+     */
+    private BigDecimal actualStars;
+    /**
+     * 内部星级加权值
+     */
+    private BigDecimal internalWeightingStars;
 
     @Tolerate
     public Investor() {}

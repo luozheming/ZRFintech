@@ -1,5 +1,6 @@
 package com;
 
+import com.alibaba.fastjson.parser.ParserConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +13,7 @@ public class DemoApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(DemoApplication.class, args);
+//		ParserConfig.getGlobalInstance().setSafeMode(true);
 	}
 
 	@Configuration
@@ -27,9 +29,8 @@ public class DemoApplication {
 
 		@Override
 		public void addResourceHandlers(ResourceHandlerRegistry registry) {
-			// 域名根目录访问微信域名配置校验文件
-			registry.addResourceHandler("/**").addResourceLocations("classpath:/wx/");
-
+			// 域名根目录访问静态文件
+			registry.addResourceHandler("/**").addResourceLocations("classpath:static/dist/","classpath:static/wx/");
 		}
 	}
 
