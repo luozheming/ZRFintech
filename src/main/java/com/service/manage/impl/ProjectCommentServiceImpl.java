@@ -2,7 +2,6 @@ package com.service.manage.impl;
 
 import com.pojo.ProjectComment;
 import com.service.manage.ProjectCommentService;
-import com.utils.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -42,5 +41,12 @@ public class ProjectCommentServiceImpl implements ProjectCommentService {
         update.set("updateTm", new Date());
         Criteria criteria = Criteria.where("projectNo").is(projectComment.getProjectNo());
         mongoTemplate.updateFirst(query(criteria), update, ProjectComment.class);
+    }
+
+    @Override
+    public List<ProjectComment> listByProjectNo(String projectNo) {
+        Criteria criteria = Criteria.where("projectNo").is(projectNo);
+        List<ProjectComment> projectComments = mongoTemplate.find(query(criteria), ProjectComment.class);
+        return projectComments;
     }
 }

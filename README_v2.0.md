@@ -252,7 +252,8 @@
     "indusLabList":"",
     "introd":"",
     "focusFiled":"",
-    "finRound":""
+    "finRound":"",
+    "selfIntroduction":""
 }
 ```
 

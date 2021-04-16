@@ -5,13 +5,16 @@ import lombok.Data;
 import lombok.experimental.Tolerate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.math.BigDecimal;
-import java.util.List;
+import java.util.Date;
 
 @Data
 @Builder
-@Document(value = "project")
-public class Project {
+@Document(value = "bpApply")
+public class ProjectBpApply {
+    /**
+     * 主键ID
+     */
+    private String id;
     /**
      * 项目编号
      */
@@ -57,18 +60,6 @@ public class Project {
      */
     private String proDes;
     /**
-     * 上传用户
-     */
-    private String openId;
-    /**
-     *  BP路径
-     */
-    private String bpRoute;
-    /**
-     * 期望点评列表
-     */
-    List<String> expList;
-    /**
      * 项目联系人
      */
     private String proUser;
@@ -77,22 +68,26 @@ public class Project {
      */
     private String proPhonum;
     /**
-     * 存草稿标识位
+     * 上传用户
      */
-    private Boolean isDone;
+    private String openId;
     /**
-     * 付费标识
+     * 手机号码
      */
-    private Boolean isPay;
+    private String phoneNm;
     /**
-     * 股份出让比例
+     * 申请时间
      */
-    private BigDecimal sharesTransfer;
+    private Date createTime;
     /**
-     * 项目评论信息
+     * 完成时间
      */
-    private List<ProjectComment> projectCommentList;
+    private Date updateTime;
+    /**
+     * 状态:0-未处理，1-已处理，2-不予处理
+     */
+    private Integer status;
 
     @Tolerate
-    public Project() {}
+    public ProjectBpApply() {}
 }

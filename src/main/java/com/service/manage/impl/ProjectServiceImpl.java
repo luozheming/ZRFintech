@@ -1,8 +1,9 @@
 package com.service.manage.impl;
 
 import com.pojo.Project;
+import com.pojo.ProjectComment;
+import com.service.manage.ProjectCommentService;
 import com.service.manage.ProjectService;
-import com.utils.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
@@ -19,16 +20,25 @@ public class ProjectServiceImpl implements ProjectService {
     @Autowired
     private MongoTemplate mongoTemplate;
 
+    private ProjectCommentService projectCommentService;
+
     @Override
     public List<Project> pageList(Integer pageNum, Integer pageSize) {
         int startNum = pageNum * pageSize;
-        List<Project> projects = mongoTemplate.find(new Query().skip(startNum).limit(pageSize), Project.class);
+        List<Project> projects = mongoTemplate.find(new Query(where("isDone").is(true)).skip(startNum).limit(pageSize), Project.class);
         return projects;
     }
 
     @Override
     public Project detail(String projectNo) {
-        Project project = mongoTemplate.findOne(query(where("projectNo").is("")), Project.class);
+        Project project = mongoTemplate.findOne(query(where("projectNo").is(projectNo)), Project.class);
+        List<ProjectComment> projectComments = projectCommentService.listByProjectNo(projectNo);
+        project.setProjectCommentList(projectComments);
         return project;
+    }
+
+    @Override
+    public Integer count() {
+        return (int) mongoTemplate.count(new Query(),"project");
     }
 }

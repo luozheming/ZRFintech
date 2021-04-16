@@ -2,6 +2,7 @@ package com.controller.manage;
 
 import com.alibaba.fastjson.JSONObject;
 import com.dto.outdto.OutputFormate;
+import com.dto.outdto.PageListDto;
 import com.pojo.Investor;
 import com.service.manage.InvestorService;
 import com.utils.CommonUtils;
@@ -36,10 +37,14 @@ public class InvestorManagement {
         if (pageNum < 0 || pageSize <= 0) {
             return ErrorCode.PAGEBELLOWZERO.toJsonString();
         }
-        int totalPage = investorService.getDataCount()/pageSize;
+        int count = investorService.getDataCount();
+        int totalPage = count/pageSize;
         if(pageNum <= totalPage){
+            PageListDto pageListDto = new PageListDto<Investor>();
             List<Investor> investors = investorService.getInvestor(pageNum,pageSize);
-            OutputFormate outputFormate = new OutputFormate(investors);
+            pageListDto.setTotal(count);
+            pageListDto.setList(investors);
+            OutputFormate outputFormate = new OutputFormate(pageListDto);
             return JSONObject.toJSONString(outputFormate);
         }
         return ErrorCode.PAGEBELLOWZERO.toJsonString();
@@ -53,31 +58,34 @@ public class InvestorManagement {
     }
 
     @PostMapping("/investor/add")
-    public String addInvestor(@RequestPart(value = "photo", required = true) MultipartFile photo,
-                              @RequestPart(value = "card", required = true) MultipartFile card,
-                              @RequestPart(value = "orgphoto", required = false) MultipartFile orgphoto,
+    public String addInvestor(@RequestPart(value = "photoFile", required = true) MultipartFile photoFile,
+                              @RequestPart(value = "cardFile", required = false) MultipartFile cardFile,
+                              @RequestPart(value = "orgphotoFile", required = true) MultipartFile orgphotoFile,
                               Investor investor) {
         String investId = commonUtils.getNumCode();
         String destPhotoPath  = photoSavedFilepath.toString();
         String destCardPath  = cardSavedFilepath.toString();
         try{
-            commonUtils.uploadData(photo,destPhotoPath);
-            commonUtils.uploadData(card,destCardPath);
+            commonUtils.uploadData(photoFile,destPhotoPath);
+            commonUtils.uploadData(cardFile,destCardPath);
         } catch (IllegalStateException | IOException e) {
             return ErrorCode.OTHEREEEOR.toJsonString();
         }
-        if(null!=orgphoto){
+        if(null!=orgphotoFile){
             try{
                 String destOrgPath = orgphotoSavedFilepath.toString();
-                commonUtils.uploadData(orgphoto,destOrgPath);
-                investor.setInvesOrgPhotoRoute(destOrgPath + "/" + orgphoto.getOriginalFilename());
+                commonUtils.uploadData(orgphotoFile,destOrgPath);
+                investor.setInvesOrgPhotoRoute(destOrgPath + "/" + orgphotoFile.getOriginalFilename());
             }catch (IllegalStateException | IOException e) {
                 return ErrorCode.OTHEREEEOR.toJsonString();
             }
         }
-        investor.setInvestor(investId);
-        investor.setInvesCardRoute(destCardPath + "/" + card.getOriginalFilename());
-        investor.setInvesPhotoRoute(destPhotoPath + "/" + photo.getOriginalFilename());
+        investor.setInvestorId(investId);
+        investor.setStatus(0);
+        if (null != cardFile) {
+            investor.setInvesCardRoute(destCardPath + "/" + cardFile.getOriginalFilename());
+        }
+        investor.setInvesPhotoRoute(destPhotoPath + "/" + photoFile.getOriginalFilename());
         investorService.addInvestor(investor);
         OutputFormate outputFormate = new OutputFormate(investId);
         return JSONObject.toJSONString(outputFormate);
@@ -85,9 +93,31 @@ public class InvestorManagement {
 
 
     @PostMapping("/investor/edit")
-    public String editInvestor(Investor investor){
-        investorService.editInvestor(investor);
-        return ErrorCode.SUCCESS.toJsonString();
+    public String editInvestor(@RequestPart(value = "photoFile", required = false) MultipartFile photoFile,
+                               @RequestPart(value = "cardFile", required = false) MultipartFile cardFile,
+                               @RequestPart(value = "orgphotoFile", required = false) MultipartFile orgphotoFile,
+                               Investor investor) {
+        String destPhotoPath  = photoSavedFilepath.toString();
+        String destCardPath  = cardSavedFilepath.toString();
+        String destOrgPath = orgphotoSavedFilepath.toString();
+        try{
+            if (null != photoFile) {
+                commonUtils.uploadData(photoFile,destPhotoPath);
+                investor.setInvesPhotoRoute(destPhotoPath + "/" + photoFile.getOriginalFilename());
+            }
+            if (null != cardFile) {
+                commonUtils.uploadData(cardFile,destCardPath);
+                investor.setInvesCardRoute(destCardPath + "/" + cardFile.getOriginalFilename());
+            }
+            if (null != orgphotoFile) {
+                commonUtils.uploadData(orgphotoFile,destOrgPath);
+                investor.setInvesOrgPhotoRoute(destOrgPath + "/" + orgphotoFile.getOriginalFilename());
+            }
+            investorService.editInvestor(investor);
+            return ErrorCode.SUCCESS.toJsonString();
+        } catch (IllegalStateException | IOException e) {
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
     }
 
     @PostMapping("/investor/status")

@@ -3,6 +3,7 @@ package com.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.dto.indto.PageDto;
 import com.dto.outdto.OutputFormate;
+import com.pojo.ProjectBpApply;
 import com.pojo.EntUser;
 import com.pojo.Investor;
 import com.pojo.Project;
@@ -101,7 +102,7 @@ public class InfoDisplayController {
      */
     @PostMapping(value = "/project/uploadproject")
     public String upLoadProject(@RequestPart(value = "file", required = false) MultipartFile file, Project project) {
-        String projectNo = project.getIsDone() ? commonUtils.getNumCode() : null;// 生成主键ID
+        String projectNo = (project.getIsDone() != null && project.getIsDone()) ? commonUtils.getNumCode() : null;// 生成主键ID
         //文件上传可能会出问题
         if (null != file) {
             // 获取文件名
@@ -119,7 +120,7 @@ public class InfoDisplayController {
             try {
                 file.transferTo(dest);
                 //文件保存后更新数据库信息
-                project.setBpRoute(filePath);
+                project.setBpRoute(filePath + fileName);
             } catch (IllegalStateException e) {
                 return ErrorCode.FILEUPLOADFAILED.toJsonString();
             } catch (IOException e) {
@@ -128,7 +129,7 @@ public class InfoDisplayController {
         }
 
         //如果是保存草稿，则更新草稿箱，并不分配项目id
-        if (!project.getIsDone()) {
+        if (project.getIsDone() != null && !project.getIsDone()) {
             //查找并替换相应的草稿，如果草稿不存在，则进行插入操作
             mongoTemplate.update(Project.class)
                     .matching(query(where("openId").is(project.getOpenId()).and("isDone").is(false)))
@@ -146,6 +147,22 @@ public class InfoDisplayController {
         }
     }
 
+    /**
+     * 项目bp申请
+     * @param projectBpApply
+     * @return
+     */
+    @PostMapping("/project/bpApply")
+    public String bpApply(@RequestBody ProjectBpApply projectBpApply) {
+        String id = commonUtils.getNumCode();
+        String projectNo = commonUtils.getNumCode();
+        projectBpApply.setId(id);
+        projectBpApply.setProjectNo(projectNo);
+        mongoTemplate.save(projectBpApply);
+        Project outputProject = Project.builder().projectNo(projectNo).build();
+        OutputFormate outputFormate = new OutputFormate(outputProject);
+        return JSONObject.toJSONString(outputFormate);
+    }
 
     /**
      * 已上传项目查询

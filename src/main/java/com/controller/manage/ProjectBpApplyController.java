@@ -5,6 +5,8 @@ import com.dto.outdto.OutputFormate;
 import com.dto.outdto.PageListDto;
 import com.pojo.Investor;
 import com.pojo.Project;
+import com.pojo.ProjectBpApply;
+import com.service.manage.ProjectBpApplyService;
 import com.service.manage.ProjectService;
 import com.utils.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,11 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/project")
-public class ProjectController {
+@RequestMapping("/projectBpApply")
+public class ProjectBpApplyController {
 
     @Autowired
-    private ProjectService projectService;
+    private ProjectBpApplyService projectBpApplyService;
 
     /**
      * 分页获取项目列表
@@ -28,43 +30,25 @@ public class ProjectController {
      * @param pageSize
      * @return
      */
-    @GetMapping("/pageList")
-    public String pageList(Integer pageNum, Integer pageSize) {
+    @GetMapping("/pageListByEnt")
+    public String pageListByEnt(Integer pageNum, Integer pageSize, String openId) {
         if (pageNum < 0 || pageSize <= 0) {
             return ErrorCode.PAGEBELLOWZERO.toJsonString();
         }
         try {
-            int count = projectService.count();
+            int count = projectBpApplyService.countByEnt(openId);
             int totalPage = count/pageSize;
             PageListDto pageListDto = new PageListDto<Investor>();
             pageListDto.setTotal(count);
             if(pageNum <= totalPage){
-                List<Project> projects =  projectService.pageList(pageNum, pageSize);
-                pageListDto.setList(projects);
+                List<ProjectBpApply> projectBpApplyList =  projectBpApplyService.pageListByEnt(pageNum, pageSize, openId);
+                pageListDto.setList(projectBpApplyList);
             }
             OutputFormate outputFormate = new OutputFormate(pageListDto);
             return JSONObject.toJSONString(outputFormate);
         } catch (Exception e) {
             return ErrorCode.OTHEREEEOR.toJsonString();
         }
-    }
-
-    /**
-     * 查询项目详情
-     *
-     * @param projectNo
-     * @return
-     */
-    @GetMapping("/detail")
-    public String detail(String projectNo) {
-        Project project = null;
-        try {
-            project = projectService.detail(projectNo);
-        } catch (Exception e) {
-            return ErrorCode.OTHEREEEOR.toJsonString();
-        }
-        OutputFormate outputFormate = new OutputFormate(project, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
-        return JSONObject.toJSONString(outputFormate);
     }
 
 }
