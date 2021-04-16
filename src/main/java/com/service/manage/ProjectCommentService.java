@@ -8,4 +8,5 @@ public interface ProjectCommentService {
     List<ProjectComment> pageList(Integer pageNum, Integer pageSize);
     void commit(ProjectComment projectComment);
     List<ProjectComment> listByProjectNo(String projectNo);
+    Integer count();
 }

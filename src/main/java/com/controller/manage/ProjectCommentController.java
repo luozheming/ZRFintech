@@ -2,6 +2,9 @@ package com.controller.manage;
 
 import com.alibaba.fastjson.JSONObject;
 import com.dto.outdto.OutputFormate;
+import com.dto.outdto.PageListDto;
+import com.pojo.Investor;
+import com.pojo.Project;
 import com.pojo.ProjectComment;
 import com.service.manage.ProjectCommentService;
 import com.utils.ErrorCode;
@@ -29,15 +32,20 @@ public class ProjectCommentController {
         if (pageNum < 0 || pageSize <= 0) {
             return ErrorCode.PAGEBELLOWZERO.toJsonString();
         }
-
-        List<ProjectComment> projectComments = null;
         try {
-            projectComments = projectCommentService.pageList(pageNum, pageSize);
+            int count = projectCommentService.count();
+            int totalPage = count/pageSize;
+            PageListDto pageListDto = new PageListDto<ProjectComment>();
+            pageListDto.setTotal(count);
+            if(pageNum <= totalPage){
+                List<ProjectComment> projectComments =  projectCommentService.pageList(pageNum, pageSize);
+                pageListDto.setList(projectComments);
+            }
+            OutputFormate outputFormate = new OutputFormate(pageListDto, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
+            return JSONObject.toJSONString(outputFormate);
         } catch (Exception e) {
             return ErrorCode.OTHEREEEOR.toJsonString();
         }
-        OutputFormate outputFormate = new OutputFormate(projectComments, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
-        return JSONObject.toJSONString(outputFormate);
     }
 
     /**

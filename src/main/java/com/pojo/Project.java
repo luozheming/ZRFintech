@@ -61,6 +61,10 @@ public class Project {
      */
     private String openId;
     /**
+     * 用户手机号
+     */
+    private String phoneNm;
+    /**
      *  BP路径
      */
     private String bpRoute;

@@ -21,4 +21,9 @@ public class EntUserServiceImpl implements EntUserService {
         List<EntUser> entUsers = mongoTemplate.find(new Query().skip(startNum).limit(pageSize), EntUser.class);
         return entUsers;
     }
+
+    @Override
+    public Integer count() {
+        return (int) mongoTemplate.count(new Query(),"entuser");
+    }
 }
