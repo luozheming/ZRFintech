@@ -79,12 +79,14 @@
 |projectNm|项目名称|String||
 |proIndus|所属行业|String||
 |finRound|融资轮次|String||
-|quota|期望融资额度|int||
-|teamSize|团队人数|int||
+|quota|期望融资额度|String||
+|teamSize|团队人数|String||
 |finSt|企业营收状况|String||
+|isRegister|是否注册|Boolean||
 |entProvince|企业所在省|String||
 |entCity|企业所在城市|String||
 |proDes|项目简介|String||
+|sharesTransfer|股份出让比例|BigDecimal||
 |openId|上传用户|String||
 |bpRoute|BP路径|String||
 |expList|期望点评列表|Array|investorId列表合集|
@@ -99,7 +101,7 @@
 #### 项目评论信息
 |字段名称|字段释译|字段类型|备注|
 |:----:|:----:|:---:|:---:|
-|id|评论主键|int||
+|id|评论主键|String||
 |investorId|投资人Id|String||
 |investor|投资人姓名|String||
 |invesPhotoRoute|投资人照片路径|String||
@@ -116,6 +118,48 @@
 |replyTm|回复时间|timestamp||
 |commentAmount|评论资费|BigDecimal||
 
+#### 项目bp定制申请信息
+|字段名称|字段释译|字段类型|备注|
+|:----:|:----:|:---:|:---:|
+|id|主键id|String||
+|projectNo|项目编号|String|项目唯一识别编号|
+|projectNm|项目名称|String||
+|proIndus|所属行业|String||
+|finRound|融资轮次|String||
+|teamSize|团队人数|String||
+|finSt|企业营收状况|String||
+|isRegister|是否注册|Boolean||
+|entProvince|企业所在省|String||
+|entCity|企业所在城市|String||
+|proDes|项目简介|String||
+|sharesTransfer|股份出让比例|BigDecimal||
+|proUser|联系人|String||
+|proPhonum|联系人电话|String||
+|openId|上传用户|String||
+|phoneNm|上传用户手机号码|String||
+|createTime|申请时间|timestamp||
+|updateTime|完成时间|timestamp||
+|status|状态|Integer||状态:0-未处理，1-已处理，2-不予处理
+
+#### VIP卡信息
+|字段名称|字段释译|字段类型|备注|
+|:----:|:----:|:---:|:---:|
+|id|主键id|String||
+|price|原价|BigDecimal||
+|price|折扣价|BigDecimal||
+|bpApplyTimes|商业计划书定制服务次数|Integer||
+|commentTimes|商业计划书专业评审服务次数|Integer||
+|additionalService|其他不限次数的增值服务|List<String>||
+
+#### VIP卡使用情况信息
+|字段名称|字段释译|字段类型|备注|
+|:----:|:----:|:---:|:---:|
+|id|主键id|String||
+|openId|用户openId|String||
+|cardId|VIP卡的主键id|String||
+|bpApplyTimes|商业计划书定制服务剩余次数|Integer||
+|commentTimes|商业计划书专业评审服务剩余次数|Integer||
+|cardCount|购买卡的张数|Integer||
 
 ### 功能点列表
 |功能点|负责人|排期|后端计划完成时间|前后端联调完成时间|
@@ -798,7 +842,37 @@
 }
    ```
 
+##查询VIP卡相关服务使用情况（投资人）
 
+    通过openId查看用户的VIP卡服务剩余使用次数。
+
+- 请求url
+
+    1. mock链接:
+
+    2. dev链接: ip:port/vipCardUsage/detailByEnt
+
+- 请求数据（Get）
+  ```json
+{   
+    "openId":""
+}
+   ```
+
+- 返回数据
+   ```json
+{
+	"data":
+		{
+			"id":"",
+			"openId":"",
+			"cardId":"",
+			"bpApplyTimes":"",
+			"commentTimes":"",
+			"cardCount":""
+		}
+}
+   ```
 
 基础组件：项目编号生成器开发（略）
 

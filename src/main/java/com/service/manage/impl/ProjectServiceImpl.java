@@ -42,4 +42,9 @@ public class ProjectServiceImpl implements ProjectService {
     public Integer count() {
         return (int) mongoTemplate.count(new Query(),"project");
     }
+
+    @Override
+    public List<Project> listByEnt(String openId) {
+        return mongoTemplate.find(query(where("openId").is(openId).and("isDone").is(true)), Project.class);
+    }
 }

@@ -3,13 +3,11 @@ package com.controller.manage;
 import com.alibaba.fastjson.JSONObject;
 import com.dto.outdto.OutputFormate;
 import com.dto.outdto.PageListDto;
-import com.pojo.Investor;
-import com.pojo.Project;
 import com.pojo.ProjectBpApply;
 import com.service.manage.ProjectBpApplyService;
-import com.service.manage.ProjectService;
 import com.utils.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,7 +22,7 @@ public class ProjectBpApplyController {
     private ProjectBpApplyService projectBpApplyService;
 
     /**
-     * 分页获取项目列表
+     * 分页获取项目BP申请列表
      *
      * @param pageNum
      * @param pageSize
@@ -45,6 +43,26 @@ public class ProjectBpApplyController {
                 pageListDto.setList(projectBpApplyList);
             }
             OutputFormate outputFormate = new OutputFormate(pageListDto);
+            return JSONObject.toJSONString(outputFormate);
+        } catch (Exception e) {
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+    }
+
+    /**
+     * 查询BP申请详情
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping("/detailById")
+    public String detailById(String id) {
+        if (StringUtils.isEmpty(id)) {
+            return ErrorCode.NULLPARAM.toJsonString();
+        }
+        try {
+            ProjectBpApply projectBpApply = projectBpApplyService.detailById(id);
+            OutputFormate outputFormate = new OutputFormate(projectBpApply);
             return JSONObject.toJSONString(outputFormate);
         } catch (Exception e) {
             return ErrorCode.OTHEREEEOR.toJsonString();
