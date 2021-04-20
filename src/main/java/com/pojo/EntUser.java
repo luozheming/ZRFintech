@@ -15,7 +15,6 @@ public class EntUser {
     /**
      *用户唯一识别键
      */
-    @Id
     private String openId;
     /**
      *手机号码

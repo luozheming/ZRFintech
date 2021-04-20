@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.experimental.Tolerate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
@@ -59,6 +60,10 @@ public class ProjectBpApply {
      * 项目描述
      */
     private String proDes;
+    /**
+     * 股份出让比例
+     */
+    private BigDecimal sharesTransfer;
     /**
      * 项目联系人
      */

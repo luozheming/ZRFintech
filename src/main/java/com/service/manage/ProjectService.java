@@ -10,4 +10,6 @@ public interface ProjectService {
     Project detail(String projectNo);
 
     Integer count();
+
+    List<Project> listByEnt(String openId);
 }

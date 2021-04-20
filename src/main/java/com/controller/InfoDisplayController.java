@@ -3,10 +3,7 @@ package com.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.dto.indto.PageDto;
 import com.dto.outdto.OutputFormate;
-import com.pojo.ProjectBpApply;
-import com.pojo.EntUser;
-import com.pojo.Investor;
-import com.pojo.Project;
+import com.pojo.*;
 import com.utils.CommonUtils;
 import com.utils.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +12,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.FindAndReplaceOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -154,13 +152,25 @@ public class InfoDisplayController {
      */
     @PostMapping("/project/bpApply")
     public String bpApply(@RequestBody ProjectBpApply projectBpApply) {
-        String id = commonUtils.getNumCode();
-        String projectNo = commonUtils.getNumCode();
+        // 1,记录申请
+        String id = commonUtils.getNumCode();// BP申请主键id
         projectBpApply.setId(id);
-        projectBpApply.setProjectNo(projectNo);
         mongoTemplate.save(projectBpApply);
-        Project outputProject = Project.builder().projectNo(projectNo).build();
-        OutputFormate outputFormate = new OutputFormate(outputProject);
+
+        // 2,扣除申请服务一次
+        VIPCardUsage vipCardUsage = mongoTemplate.findOne(query(where("openId").is(projectBpApply.getOpenId())), VIPCardUsage.class);
+        if (null == vipCardUsage) {
+            return ErrorCode.VIPNOTPAYMENT.toJsonString();
+        } else {
+            if (vipCardUsage.getBpApplyTimes() -1 < 0) {
+                return ErrorCode.VIPNOTENOUGH.toJsonString();
+            }
+            Integer bpApplyTimes = vipCardUsage.getBpApplyTimes() - 1;
+            Update update = new Update();
+            update.set("bpApplyTimes", bpApplyTimes);
+            mongoTemplate.updateFirst(query(where("openId").is(projectBpApply.getOpenId())), update, VIPCardUsage.class);
+        }
+        OutputFormate outputFormate = new OutputFormate(projectBpApply);
         return JSONObject.toJSONString(outputFormate);
     }
 

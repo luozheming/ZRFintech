@@ -10,6 +10,7 @@ import com.dto.outdto.OutputFormate;
 import com.pojo.Investor;
 import com.pojo.Project;
 import com.pojo.ProjectComment;
+import com.pojo.VIPCardUsage;
 import com.utils.CommonUtils;
 import com.utils.ErrorCode;
 import org.springframework.beans.BeanUtils;
@@ -51,7 +52,9 @@ public class InvestorController {
     @PostMapping(value = "/investor/entPayment")
     public String entPayment(@RequestBody List<EntPaymentDto> entPaymentDtoList){
         try{
+            String openId = "";
             if (!CollectionUtils.isEmpty(entPaymentDtoList)) {
+                openId = entPaymentDtoList.get(0).getOpenId();
                 List<ProjectComment> projectCommentList = new ArrayList<>();// 项目评论信息list
                 ProjectComment projectComment = null;
 
@@ -77,6 +80,23 @@ public class InvestorController {
                 // 批量初始化评论信息
                 if (!CollectionUtils.isEmpty(projectCommentList)) {
                     mongoTemplate.insert(projectCommentList, ProjectComment.class);
+                }
+
+                // 扣除用户的vip卡的服务使用次数
+                Integer n = entPaymentDtoList.size();
+                Integer commentTimes = 0;
+                VIPCardUsage vipCardUsage = mongoTemplate.findOne(query(where("openId").is(openId)), VIPCardUsage.class);
+                if (null != vipCardUsage) {
+                    if (n > vipCardUsage.getCommentTimes()) {
+                        return ErrorCode.VIPNOTENOUGH.toJsonString();
+                    } else {
+                        commentTimes = vipCardUsage.getCommentTimes() - n;
+                    }
+                    Update statisticsUpdate = new Update();
+                    statisticsUpdate.set("commentTimes", commentTimes);
+                    mongoTemplate.updateFirst(query(where("openId").is(openId)), update, VIPCardUsage.class);
+                } else {
+                    return ErrorCode.VIPNOTPAYMENT.toJsonString();
                 }
             }
             return ErrorCode.SUCCESS.toJsonString();

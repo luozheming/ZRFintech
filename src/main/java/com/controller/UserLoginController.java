@@ -2,9 +2,12 @@ package com.controller;
 
 
 import com.alibaba.fastjson.JSONObject;
+import com.dto.indto.PurchaseVIPCardDto;
 import com.dto.outdto.OutputFormate;
 import com.pojo.EntUser;
 import com.pojo.Investor;
+import com.service.VIPCardService;
+import com.service.VIPCardUsageService;
 import com.utils.ErrorCode;
 import com.utils.HttpClientUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +23,8 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 public class UserLoginController {
     @Autowired
     private MongoTemplate mongoTemplate;
+    @Autowired
+    private VIPCardUsageService vipCardUsageService;
     @Value("${wx.appId}")
     private String appId;
     @Value("${wx.secret}")
@@ -46,17 +51,23 @@ public class UserLoginController {
     @PostMapping(value = "/entuser/entUserLogin")
     public String entUserLogin(@RequestBody EntUser entUser){
         try{
-        //如果用户已存在数据库，返回成功信息。否则将用户数据保存至数据库
-        if(!StringUtils.isEmpty(mongoTemplate.findOne(query(where("openId").is(entUser.getOpenId())),EntUser.class))){
-            return ErrorCode.SUCCESS.toJsonString();
-        }else{
-            mongoTemplate.insert(entUser);
-            return ErrorCode.USERFIRSTLOGIN.toJsonString();
+            // 初始化VIP卡信息,后续购卡功能开放则去掉该逻辑
+            PurchaseVIPCardDto purchaseVIPCardDto = new PurchaseVIPCardDto();
+            purchaseVIPCardDto.setCardCount(1);
+            purchaseVIPCardDto.setOpenId(entUser.getOpenId());
+            vipCardUsageService.purchaseVIPCard(purchaseVIPCardDto);
+
+            //如果用户已存在数据库，返回成功信息。否则将用户数据保存至数据库
+            if(!StringUtils.isEmpty(mongoTemplate.findOne(query(where("openId").is(entUser.getOpenId())),EntUser.class))){
+                return ErrorCode.SUCCESS.toJsonString();
+            }else{
+                mongoTemplate.insert(entUser);
+                return ErrorCode.USERFIRSTLOGIN.toJsonString();
+            }
+        }catch (Exception e){
+                return ErrorCode.OTHEREEEOR.toJsonString();
+            }
         }
-    }catch (Exception e){
-            return ErrorCode.OTHEREEEOR.toJsonString();
-        }
-    }
 
     /**
      * 微信登录

@@ -25,7 +25,17 @@ public class ProjectBpApplyServiceImpl implements ProjectBpApplyService {
     }
 
     @Override
+    public List<ProjectBpApply> ListByEnt(String openId) {
+        return mongoTemplate.find(new Query(where("openId").is(openId)), ProjectBpApply.class);
+    }
+
+    @Override
     public Integer countByEnt(String openId) {
         return (int) mongoTemplate.count(new Query(where("openId").is(openId)),"projectBpApply");
+    }
+
+    @Override
+    public ProjectBpApply detailById(String id) {
+        return mongoTemplate.findOne(new Query(where("id").is(id)), ProjectBpApply.class);
     }
 }

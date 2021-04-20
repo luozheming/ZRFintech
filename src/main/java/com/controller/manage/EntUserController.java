@@ -1,13 +1,16 @@
 package com.controller.manage;
 
 import com.alibaba.fastjson.JSONObject;
+import com.dto.outdto.EntUserDto;
 import com.dto.outdto.OutputFormate;
 import com.dto.outdto.PageListDto;
 import com.pojo.EntUser;
 import com.pojo.ProjectBpApply;
 import com.service.manage.EntUserService;
 import com.utils.ErrorCode;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,14 +33,7 @@ public class EntUserController {
     @GetMapping("/pageList")
     public String pageList(Integer pageNum, Integer pageSize) {
         try {
-            int count = entUserService.count();
-            int totalPage = count/pageSize;
-            PageListDto pageListDto = new PageListDto<EntUser>();
-            pageListDto.setTotal(count);
-            if(pageNum <= totalPage){
-                List<EntUser> entUsers =  entUserService.pageList(pageNum, pageSize);
-                pageListDto.setList(entUsers);
-            }
+            PageListDto<EntUserDto> pageListDto = entUserService.pageList(pageNum, pageSize);
             OutputFormate outputFormate = new OutputFormate(pageListDto);
             return JSONObject.toJSONString(outputFormate);
         } catch (Exception e) {

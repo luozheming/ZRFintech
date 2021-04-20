@@ -17,6 +17,8 @@ public enum ErrorCode {
     EMPITYPHONE(611,"手机号或者密码为空"),
     EMPITYUSER(612,"用户不存在"),
     PAYMENTEXCEPTION(613,"支付异常"),
+    VIPNOTPAYMENT(614,"未购买VIP服务"),
+    VIPNOTENOUGH(615,"VIP服务额度不足"),
     OTHEREEEOR(669,"其余未知错误");
 
     private int code;
