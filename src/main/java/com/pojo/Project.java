@@ -41,7 +41,7 @@ public class Project {
      */
     private String finSt;
     /**
-     * 是否注册：true-是,false-否
+     * 是否注册公司：false-否，true-是
      */
     private Boolean isRegister;
     /**

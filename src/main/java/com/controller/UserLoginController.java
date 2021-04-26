@@ -2,17 +2,16 @@ package com.controller;
 
 
 import com.alibaba.fastjson.JSONObject;
-import com.dto.indto.PurchaseVIPCardDto;
 import com.dto.outdto.OutputFormate;
 import com.pojo.EntUser;
 import com.pojo.Investor;
-import com.service.VIPCardService;
 import com.service.VIPCardUsageService;
 import com.utils.ErrorCode;
 import com.utils.HttpClientUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,12 +50,6 @@ public class UserLoginController {
     @PostMapping(value = "/entuser/entUserLogin")
     public String entUserLogin(@RequestBody EntUser entUser){
         try{
-            // 初始化VIP卡信息,后续购卡功能开放则去掉该逻辑
-            PurchaseVIPCardDto purchaseVIPCardDto = new PurchaseVIPCardDto();
-            purchaseVIPCardDto.setCardCount(1);
-            purchaseVIPCardDto.setOpenId(entUser.getOpenId());
-            vipCardUsageService.purchaseVIPCard(purchaseVIPCardDto);
-
             //如果用户已存在数据库，返回成功信息。否则将用户数据保存至数据库
             if(!StringUtils.isEmpty(mongoTemplate.findOne(query(where("openId").is(entUser.getOpenId())),EntUser.class))){
                 return ErrorCode.SUCCESS.toJsonString();
@@ -65,9 +58,9 @@ public class UserLoginController {
                 return ErrorCode.USERFIRSTLOGIN.toJsonString();
             }
         }catch (Exception e){
-                return ErrorCode.OTHEREEEOR.toJsonString();
-            }
+            return ErrorCode.OTHEREEEOR.toJsonString();
         }
+    }
 
     /**
      * 微信登录
@@ -85,5 +78,18 @@ public class UserLoginController {
         } catch (Exception e) {
             return ErrorCode.OTHEREEEOR.toJsonString();
         }
+    }
+
+    /**
+     * 客户标记需要联系客服
+     * @param openId
+     * @return
+     */
+    @PostMapping("/entuser/contactService")
+    public String contactService(String openId) {
+        Update update = new Update();
+        update.set("isContactService", true);
+        mongoTemplate.updateFirst(query(where("openId").is(openId)), update, EntUser.class);
+        return ErrorCode.SUCCESS.toJsonString();
     }
 }

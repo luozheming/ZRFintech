@@ -1,0 +1,1 @@
+import{i as e,a as i,b as t}from "./analysis-icon3.d67784d6.js";const c=[{title:"注册用户数",icon:e,price:8e4,up:!0,mom:"环比增长",percent:2.5},{title:"BP上传数",icon:i,price:4e3,up:!0,mom:"同比增长",percent:3},{title:"付费用户数",icon:t,price:3e6,up:!1,mom:"环比降低",percent:2}];export{c as growCardList};

@@ -23,6 +23,10 @@ public class EntPaymentDto {
      */
     private String investorId;
     /**
+     * 是否平台投资人：true-是，false-否
+     */
+    private Boolean isPlatform;
+    /**
      * 投资人姓名
      */
     private String investor;

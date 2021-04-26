@@ -6,10 +6,7 @@ import com.pojo.VIPCardUsage;
 import com.service.VIPCardUsageService;
 import com.utils.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/vipCardUsage")
@@ -34,4 +31,33 @@ public class VIPCardUsageController {
         }
     }
 
+    @PostMapping("/add")
+    public String add(@RequestBody VIPCardUsage vipCardUsage) {
+        try {
+            vipCardUsageService.add(vipCardUsage);
+            return ErrorCode.SUCCESS.toJsonString();
+        } catch (Exception e) {
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+    }
+
+    @PostMapping("/edit")
+    public String edit(@RequestBody VIPCardUsage vipCardUsage) {
+        try {
+            vipCardUsageService.edit(vipCardUsage);
+            return ErrorCode.SUCCESS.toJsonString();
+        } catch (Exception e) {
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+    }
+
+    @PostMapping("/clearTimes")
+    public String clearTimes(String openId) {
+        try {
+            vipCardUsageService.clearTimes(openId);
+            return ErrorCode.SUCCESS.toJsonString();
+        } catch (Exception e) {
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+    }
 }
