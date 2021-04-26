@@ -40,4 +40,9 @@ public class EntUser {
      * 国家
      */
     private String country;
+
+    /**
+     * 是否需要联系客服
+     */
+    private Boolean isContactService;
 }

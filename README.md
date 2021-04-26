@@ -282,7 +282,9 @@
     "photo": "",
     "orgPhoto": "",
     "unaccomplishedAmount": 0.00,
-    "accomplishedAmount": 0.00
+    "accomplishedAmount": 0.00,
+    "unaccomplishedTimes": 0,
+    "accomplishedTimes": 0
 
   },
   "state": "",
@@ -295,9 +297,6 @@
 - 功能描述
     
     用户点击查看投资人页面后，对于投资人信息进行分页展示，每当手机下滑到底部对后端进行请求。
-    
-
-
 
 - 请求url
 

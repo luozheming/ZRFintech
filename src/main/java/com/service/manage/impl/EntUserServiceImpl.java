@@ -57,7 +57,7 @@ public class EntUserServiceImpl implements EntUserService {
                             entUserDto.setOrderCount(projectComments.size());
                             BigDecimal orderAmount = new BigDecimal("0.00");
                             for (ProjectComment projectComment : projectComments) {
-                                orderAmount = orderAmount.add(projectComment.getCommentAmount());
+                                orderAmount = orderAmount.add(projectComment.getCommentAmount() == null ? new BigDecimal("0.00") : projectComment.getCommentAmount());
                             }
                             entUserDto.setOrderAmount(orderAmount);
                         }

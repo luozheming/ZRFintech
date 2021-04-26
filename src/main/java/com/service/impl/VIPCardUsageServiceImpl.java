@@ -1,6 +1,5 @@
 package com.service.impl;
 
-import com.dto.indto.PurchaseVIPCardDto;
 import com.pojo.VIPCard;
 import com.pojo.VIPCardUsage;
 import com.service.VIPCardUsageService;
@@ -9,6 +8,7 @@ import com.utils.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -32,7 +32,7 @@ public class VIPCardUsageServiceImpl implements VIPCardUsageService {
     }
 
     @Override
-    public void purchaseVIPCard(PurchaseVIPCardDto purchaseVIPCardDto) throws Exception {
+    public void add(VIPCardUsage vipCardUsage) throws Exception {
         // 通过vip卡的id获取详细信息
         List<VIPCard> vipCards = mongoTemplate.find(new Query(), VIPCard.class);
         VIPCard vipCard = new VIPCard();
@@ -42,24 +42,35 @@ public class VIPCardUsageServiceImpl implements VIPCardUsageService {
             vipCard = vipCards.get(0);
         }
 
-        // 没有VIP卡的服务初始记录，则新增一笔
-        VIPCardUsage vipCardUsage = mongoTemplate.findOne(query(where("openId").is(purchaseVIPCardDto.getOpenId())), VIPCardUsage.class);
-        if (null == vipCardUsage) {
-            // 为空则初始化一笔vip卡片的可使用服务相关信息
+        VIPCardUsage vipCardUsageResp = mongoTemplate.findOne(query(where("openId").is(vipCardUsage.getOpenId())), VIPCardUsage.class);
+        if (null == vipCardUsageResp) {
+            // 初始化vip卡使用情况数据
             VIPCardUsage vipCardUsageAdd = new VIPCardUsage();
             vipCardUsageAdd.setId(commonUtils.getNumCode());
             vipCardUsageAdd.setCardId(vipCard.getId());
-            vipCardUsageAdd.setOpenId(purchaseVIPCardDto.getOpenId());
-            vipCardUsageAdd.setCardCount(purchaseVIPCardDto.getCardCount());
-            vipCardUsageAdd.setBpApplyTimes(vipCard.getBpApplyTimes() * purchaseVIPCardDto.getCardCount());
-            vipCardUsageAdd.setCommentTimes(vipCard.getCommentTimes() * purchaseVIPCardDto.getCardCount());
+            vipCardUsageAdd.setOpenId(vipCardUsage.getOpenId());
+            vipCardUsageAdd.setCardCount(vipCardUsage.getCardCount());
+            vipCardUsageAdd.setBpApplyTimes(vipCard.getBpApplyTimes() * vipCardUsage.getCardCount());
+            vipCardUsageAdd.setCommentTimes(vipCard.getCommentTimes() * vipCardUsage.getCardCount());
             mongoTemplate.save(vipCardUsageAdd);
-        }/* else {
-            // 不为空，则更新对于vip卡片的可使用服务的次数
-            Update update = new Update();
-            update.set("bpApplyTimes", vipCardUsage.getBpApplyTimes() + vipCard.getBpApplyTimes() * purchaseVIPCardDto.getCardCount());
-            update.set("commentTimes", vipCardUsage.getCommentTimes() + vipCard.getBpApplyTimes() * purchaseVIPCardDto.getCardCount());
-            mongoTemplate.updateFirst(query(where("openId").is(purchaseVIPCardDto.getOpenId())), update, VIPCardUsage.class);
-        }*/
+        } else {
+            throw new Exception(ErrorCode.ONECECARDALREADY.toJsonString());
+        }
+    }
+
+    @Override
+    public void edit(VIPCardUsage vipCardUsage) {
+        Update update = new Update();
+        update.set("bpApplyTimes", vipCardUsage.getBpApplyTimes());
+        update.set("commentTimes", vipCardUsage.getCommentTimes());
+        mongoTemplate.updateFirst(query(where("id").is(vipCardUsage.getId())), update, VIPCardUsage.class);
+    }
+
+    @Override
+    public void clearTimes(String openId) {
+        Update update = new Update();
+        update.set("bpApplyTimes", 0);
+        update.set("commentTimes", 0);
+        mongoTemplate.updateFirst(query(where("openId").is(openId)), update, VIPCardUsage.class);
     }
 }

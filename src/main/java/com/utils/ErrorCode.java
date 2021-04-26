@@ -19,6 +19,8 @@ public enum ErrorCode {
     PAYMENTEXCEPTION(613,"支付异常"),
     VIPNOTPAYMENT(614,"未购买VIP服务"),
     VIPNOTENOUGH(615,"VIP服务额度不足"),
+    ONECECARDALREADY(616,"已经免费领取一次卡片"),
+    REPEATCOMMIT(617,"重复提交"),
     OTHEREEEOR(669,"其余未知错误");
 
     private int code;

@@ -52,17 +52,22 @@ public class InvestorController {
     @PostMapping(value = "/investor/entPayment")
     public String entPayment(@RequestBody List<EntPaymentDto> entPaymentDtoList){
         try{
-            String openId = "";
             if (!CollectionUtils.isEmpty(entPaymentDtoList)) {
-                openId = entPaymentDtoList.get(0).getOpenId();
+                String openId = entPaymentDtoList.get(0).getOpenId();
+
+                Integer commentCount = 0;// 评论服务次数
                 List<ProjectComment> projectCommentList = new ArrayList<>();// 项目评论信息list
                 ProjectComment projectComment = null;
 
                 // 在项目编号下已有投资人id的list中累加
                 List<String> expList = new ArrayList<>();
                 for (EntPaymentDto entPaymentDto: entPaymentDtoList) {
-                    expList.add(entPaymentDto.getInvestorId());
+                    // 非平台投资人需要累积扣除服务次数
+                    if (!entPaymentDto.getIsPlatform()) {
+                        commentCount++;
+                    }
 
+                    expList.add(entPaymentDto.getInvestorId());
                     projectComment = new ProjectComment();
                     BeanUtils.copyProperties(entPaymentDto, projectComment);
                     projectComment.setId(commonUtils.getNumCode());// 评论主键ID
@@ -70,6 +75,23 @@ public class InvestorController {
                     projectComment.setFavor(2);// 重点关注:1-感兴趣，2-未标记，3-不感兴趣，4-拒绝
                     projectCommentList.add(projectComment);
                 }
+
+                // 先扣除用户的vip卡的服务使用次数
+                Integer commentTimes = 0;
+                VIPCardUsage vipCardUsage = mongoTemplate.findOne(query(where("openId").is(openId)), VIPCardUsage.class);
+                if (null != vipCardUsage) {
+                    if (commentCount > vipCardUsage.getCommentTimes()) {
+                        return ErrorCode.VIPNOTENOUGH.toJsonString();
+                    } else {
+                        commentTimes = vipCardUsage.getCommentTimes() - commentCount;
+                    }
+                    Update usageUpdate = new Update();
+                    usageUpdate.set("commentTimes", commentTimes);
+                    mongoTemplate.updateFirst(query(where("openId").is(openId)), usageUpdate, VIPCardUsage.class);
+                } else {
+                    return ErrorCode.VIPNOTPAYMENT.toJsonString();
+                }
+
                 // 更新项目expList
                 Update update = new Update();
                 update.addToSet("expList").each(expList);
@@ -80,23 +102,6 @@ public class InvestorController {
                 // 批量初始化评论信息
                 if (!CollectionUtils.isEmpty(projectCommentList)) {
                     mongoTemplate.insert(projectCommentList, ProjectComment.class);
-                }
-
-                // 扣除用户的vip卡的服务使用次数
-                Integer n = entPaymentDtoList.size();
-                Integer commentTimes = 0;
-                VIPCardUsage vipCardUsage = mongoTemplate.findOne(query(where("openId").is(openId)), VIPCardUsage.class);
-                if (null != vipCardUsage) {
-                    if (n > vipCardUsage.getCommentTimes()) {
-                        return ErrorCode.VIPNOTENOUGH.toJsonString();
-                    } else {
-                        commentTimes = vipCardUsage.getCommentTimes() - n;
-                    }
-                    Update statisticsUpdate = new Update();
-                    statisticsUpdate.set("commentTimes", commentTimes);
-                    mongoTemplate.updateFirst(query(where("openId").is(openId)), update, VIPCardUsage.class);
-                } else {
-                    return ErrorCode.VIPNOTPAYMENT.toJsonString();
                 }
             }
             return ErrorCode.SUCCESS.toJsonString();
@@ -176,10 +181,10 @@ public class InvestorController {
     public String saveCommentByInvestor(@RequestBody ProjectComment projectComment){
         try{
             Update update = new Update();
-            if (StringUtils.isEmpty(projectComment.getFavor())) {
+            if (!StringUtils.isEmpty(projectComment.getFavor())) {
                 update.set("favor", projectComment.getFavor());
             }
-            if (StringUtils.isEmpty(projectComment.getContent())) {
+            if (!StringUtils.isEmpty(projectComment.getContent())) {
                 update.set("content", projectComment.getContent());
                 update.set("updateTm", new Date());
             }
@@ -233,7 +238,7 @@ public class InvestorController {
             }
 
             // 判断评分是否为空
-            if (null == projectComment.getStars() || 0 == projectComment.getStars().intValue()) {
+            if (null == projectComment.getStars()) {
                 return ErrorCode.NULLSTARS.toJsonString();
             }
 
@@ -288,7 +293,7 @@ public class InvestorController {
             if (!file.exists()) {
                 return ErrorCode.NULLOBJECT.toJsonString();
             }
-            String fileName = filePath.substring(filePath.lastIndexOf("\\") + 1, filePath.length());
+            String fileName = filePath.substring(filePath.lastIndexOf(File.separator) + 1, filePath.length());
 
             // 将文件名称进行编码
             response.setContentType("application/vnd.ms-excel;charset=UTF-8");
@@ -333,6 +338,8 @@ public class InvestorController {
         InvestorCommentAmountDto investorCommentAmountDto = new InvestorCommentAmountDto();
         List<ProjectComment> projectComments = mongoTemplate.find(query(Criteria.where("investorId").is(investorId).and("favor").ne(4)), ProjectComment.class);
         if (!CollectionUtils.isEmpty(projectComments)) {
+            Integer unAccomplishedTimes = 0;
+            Integer accomplishedTimes = 0;
             BigDecimal unaccomplishedAmount = new BigDecimal("0.00");
             BigDecimal accomplishedAmount = new BigDecimal("0.00");
             BigDecimal commentAmount = null;
@@ -341,13 +348,17 @@ public class InvestorController {
                 commentAmount = projectComment.getCommentAmount() == null ? new BigDecimal("0.00") : projectComment.getCommentAmount();
                 if (projectComment.getIsDone()) {
                     accomplishedAmount = accomplishedAmount.add(commentAmount);// 已获取金额
+                    accomplishedTimes++;
                 } else {
+                    unAccomplishedTimes++;
                     unaccomplishedAmount = unaccomplishedAmount.add(commentAmount);// 未获取金额
                 }
             }
             investorCommentAmountDto.setInvestorId(investorId);
             investorCommentAmountDto.setUnaccomplishedAmount(unaccomplishedAmount);
             investorCommentAmountDto.setAccomplishedAmount(accomplishedAmount);
+            investorCommentAmountDto.setUnAccomplishedTimes(unAccomplishedTimes);
+            investorCommentAmountDto.setAccomplishedTimes(accomplishedTimes);
         }
         return investorCommentAmountDto;
     }
@@ -402,6 +413,8 @@ public class InvestorController {
             InvestorCommentAmountDto investorCommentAmountDto = getCommentAmount(findInvestor.getInvestorId());
             findInvestor.setAccomplishedAmount(investorCommentAmountDto.getAccomplishedAmount());
             findInvestor.setUnaccomplishedAmount(investorCommentAmountDto.getUnaccomplishedAmount());
+            findInvestor.setAccomplishedTimes(investorCommentAmountDto.getAccomplishedTimes());
+            findInvestor.setUnAccomplishedTimes(investorCommentAmountDto.getUnAccomplishedTimes());
 
             OutputFormate outputFormate = new OutputFormate(findInvestor);
             return JSONObject.toJSONString(outputFormate);

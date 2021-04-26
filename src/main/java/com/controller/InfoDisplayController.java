@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
@@ -35,7 +36,6 @@ public class InfoDisplayController {
 
     @Value("${savedfilepath}")
     private String savedfilepath;
-
 
     /**
      * 项目展示（分页）
@@ -74,7 +74,9 @@ public class InfoDisplayController {
             // 按isPlatform排序，将平台投资人置前
             List<Investor> investors = mongoTemplate.find(new Query().with(Sort.by(Sort.Order.desc("isPlatform"))).skip(startNum).limit(pageSize), Investor.class);
             if (!CollectionUtils.isEmpty(investors)) {
+                List<String> indusLabList = null;
                 for (Investor investor : investors) {
+                    indusLabList = new ArrayList<>();
                     investor.setPhoto(commonUtils.getPhoto(investor.getInvesPhotoRoute()));// 投资人头像
                     investor.setOrgPhoto(commonUtils.getPhoto(investor.getInvesOrgPhotoRoute()));// 投资人机构图片
                 }
@@ -109,7 +111,7 @@ public class InfoDisplayController {
             //String suffixName = fileName.substring(fileName.lastIndexOf("."));
             // 文件上传后的路径
             StringBuilder filePathBuffer = new StringBuilder();
-            String filePath = filePathBuffer.append(savedfilepath).append(project.getOpenId()).append("\\").append(projectNo).append("\\").toString();
+            String filePath = filePathBuffer.append(savedfilepath).append(project.getOpenId()).append(File.separator).append(null == projectNo ? "temp" : projectNo).append(File.separator).toString();
             File dest = new File(filePath + fileName);
             // 检测是否存在目录
             if (!dest.getParentFile().exists()) {
@@ -152,12 +154,7 @@ public class InfoDisplayController {
      */
     @PostMapping("/project/bpApply")
     public String bpApply(@RequestBody ProjectBpApply projectBpApply) {
-        // 1,记录申请
-        String id = commonUtils.getNumCode();// BP申请主键id
-        projectBpApply.setId(id);
-        mongoTemplate.save(projectBpApply);
-
-        // 2,扣除申请服务一次
+        // 1,扣除申请服务一次
         VIPCardUsage vipCardUsage = mongoTemplate.findOne(query(where("openId").is(projectBpApply.getOpenId())), VIPCardUsage.class);
         if (null == vipCardUsage) {
             return ErrorCode.VIPNOTPAYMENT.toJsonString();
@@ -170,6 +167,12 @@ public class InfoDisplayController {
             update.set("bpApplyTimes", bpApplyTimes);
             mongoTemplate.updateFirst(query(where("openId").is(projectBpApply.getOpenId())), update, VIPCardUsage.class);
         }
+
+        // 2,记录申请
+        String id = commonUtils.getNumCode();// BP申请主键id
+        projectBpApply.setId(id);
+        mongoTemplate.save(projectBpApply);
+
         OutputFormate outputFormate = new OutputFormate(projectBpApply);
         return JSONObject.toJSONString(outputFormate);
     }
@@ -195,6 +198,3 @@ public class InfoDisplayController {
     }
 
 }
-
-
-
