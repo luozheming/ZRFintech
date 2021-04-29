@@ -39,8 +39,8 @@ public class DemoApplication {
 			registry.addResourceHandler("/activity/**")
 					.addResourceLocations(basePath + "/activity/dist/");
 			// web版后台管理登录页面
-			registry.addResourceHandler("/web/**")
-					.addResourceLocations(basePath + "/web/dist/");
+			registry.addResourceHandler("/management/**")
+					.addResourceLocations(basePath + "/management/dist/");
 			// 小程序嵌套h5页面
 			registry.addResourceHandler("/applet/**")
 					.addResourceLocations(basePath + "/applet/dist/");

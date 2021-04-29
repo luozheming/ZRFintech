@@ -81,6 +81,10 @@ public class Project {
      */
     private String proPhonum;
     /**
+     * 项目联系人邮箱
+     */
+    private String proEmail;
+    /**
      * 存草稿标识位
      */
     private Boolean isDone;
