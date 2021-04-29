@@ -92,4 +92,6 @@ public class UserLoginController {
         mongoTemplate.updateFirst(query(where("openId").is(openId)), update, EntUser.class);
         return ErrorCode.SUCCESS.toJsonString();
     }
+
+    
 }

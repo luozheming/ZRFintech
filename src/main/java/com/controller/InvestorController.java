@@ -79,7 +79,7 @@ public class InvestorController {
                 // 先扣除用户的vip卡的服务使用次数
                 Integer commentTimes = 0;
                 VIPCardUsage vipCardUsage = mongoTemplate.findOne(query(where("openId").is(openId)), VIPCardUsage.class);
-                if (null != vipCardUsage) {
+                if (null != vipCardUsage && commentCount > 0) {
                     if (commentCount > vipCardUsage.getCommentTimes()) {
                         return ErrorCode.VIPNOTENOUGH.toJsonString();
                     } else {
@@ -88,7 +88,7 @@ public class InvestorController {
                     Update usageUpdate = new Update();
                     usageUpdate.set("commentTimes", commentTimes);
                     mongoTemplate.updateFirst(query(where("openId").is(openId)), usageUpdate, VIPCardUsage.class);
-                } else {
+                } else if (null == vipCardUsage && commentCount > 0) {
                     return ErrorCode.VIPNOTPAYMENT.toJsonString();
                 }
 

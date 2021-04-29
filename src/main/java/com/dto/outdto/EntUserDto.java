@@ -44,4 +44,8 @@ public class EntUserDto {
      * 申请BP定制的记录id
      */
     private String bpApplyId;
+    /**
+     * 是否需要联系客服：true-是，false-否
+     */
+    private Boolean isContactService;
 }

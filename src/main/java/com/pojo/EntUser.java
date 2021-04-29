@@ -42,7 +42,7 @@ public class EntUser {
     private String country;
 
     /**
-     * 是否需要联系客服
+     * 是否需要联系客服：true-是，false-否
      */
     private Boolean isContactService;
 }
