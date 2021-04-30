@@ -197,4 +197,31 @@ public class InfoDisplayController {
         return ErrorCode.SUCCESS.toJsonString();
     }
 
+
+
+    //    ---------------------------------项目一期PC版部分接口调整----------------------------------------------------
+
+    /**
+     * 查询最新项目草稿
+     * @param phoneNm
+     * @return
+     */
+    @GetMapping(value = "/project/draftByPhoneNm")
+    public String draftByPhoneNm(@RequestParam String phoneNm){
+        //查询项目草稿
+        Project draftProject = mongoTemplate.findOne(query(where("phoneNm").is(phoneNm).and("isDone").is(false)),Project.class);
+        OutputFormate outputFormate = new OutputFormate(draftProject);
+        return JSONObject.toJSONString(outputFormate);
+    }
+
+    /**
+     * 已上传项目查询
+     */
+    @GetMapping("/project/projectList")
+    public String projectList(@RequestParam(value = "phoneNm", required = true) String phoneNm){
+        List<Project> projectList = mongoTemplate.find(query(where("phoneNm").is(phoneNm).and("isDone").is(true)), Project.class);
+        OutputFormate outputFormate = new OutputFormate(projectList);
+        return JSONObject.toJSONString(outputFormate);
+    }
+
 }

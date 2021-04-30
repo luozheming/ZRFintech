@@ -2,10 +2,15 @@ package com.controller;
 
 
 import com.alibaba.fastjson.JSONObject;
+import com.dto.indto.EntUserLoginDto;
+import com.dto.indto.EntUserRegisterDto;
+import com.dto.indto.EntUserUpdatePasswordDto;
 import com.dto.outdto.OutputFormate;
 import com.pojo.EntUser;
 import com.pojo.Investor;
+import com.service.UserLoginService;
 import com.service.VIPCardUsageService;
+import com.utils.CommonUtils;
 import com.utils.ErrorCode;
 import com.utils.HttpClientUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +19,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
@@ -30,6 +36,12 @@ public class UserLoginController {
     private String secret;
     @Value("${wx.auth.code2Session}")
     private String code2SessionUrl;
+    @Value("${entUserSavedFilepath}")
+    StringBuilder entUserSavedFilepath;
+    @Autowired
+    private UserLoginService userLoginService;
+    @Autowired
+    private CommonUtils commonUtils;
 
     @PostMapping(value = "/investor/investorLogin")
     public String investorLogin(@RequestBody Investor investor){
@@ -93,5 +105,86 @@ public class UserLoginController {
         return ErrorCode.SUCCESS.toJsonString();
     }
 
-    
+
+//    ---------------------------------项目一期PC版部分接口调整----------------------------------------------------
+
+    /**
+     * 用户注册
+     * @param entUserRegisterDto
+     * @return
+     */
+    @PostMapping("/entuser/register")
+    public String register(@RequestBody EntUserRegisterDto entUserRegisterDto) {
+        try {
+            userLoginService.register(entUserRegisterDto);
+            return ErrorCode.SUCCESS.toJsonString();
+        } catch (Exception e) {
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+    }
+
+    /**
+     * 用户密码登录
+     * @param entUserLoginDto
+     * @return
+     */
+    @PostMapping("/entuser/login")
+    public String login(@RequestBody EntUserLoginDto entUserLoginDto) {
+        try {
+            userLoginService.login(entUserLoginDto);
+            return ErrorCode.SUCCESS.toJsonString();
+        } catch (Exception e) {
+            e.getMessage();
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+    }
+
+    /**
+     * 用户修改密码
+     * @param entUserUpdatePasswordDto
+     * @return
+     */
+    @PostMapping("/entuser/updatePassword")
+    public String updatePassword(@RequestBody EntUserUpdatePasswordDto entUserUpdatePasswordDto) {
+        try {
+            userLoginService.updatePassword(entUserUpdatePasswordDto);
+            return ErrorCode.SUCCESS.toJsonString();
+        } catch (Exception e) {
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+    }
+
+    /**
+     * 修改用户
+     * @param photoFile
+     * @param entUser
+     * @return
+     */
+    @PostMapping("/entuser/edit")
+    public String edit(MultipartFile photoFile, EntUser entUser) {
+        try {
+            String destPhotoPath = entUserSavedFilepath.toString();
+            if (null != photoFile) {
+                commonUtils.uploadData(photoFile, destPhotoPath);
+                entUser.setPhotoRoute(destPhotoPath + "/" + photoFile.getOriginalFilename());
+            }
+            userLoginService.edit(entUser);
+            return ErrorCode.SUCCESS.toJsonString();
+        } catch (Exception e) {
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+    }
+
+    /**
+     * 查询用户详细
+     * @param phoneNm
+     * @return
+     */
+    @GetMapping("/entuser/detail")
+    public String detail(@RequestParam String phoneNm) {
+        EntUser entUser = userLoginService.detail(phoneNm);
+        OutputFormate outputFormate = new OutputFormate(entUser, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
+        return JSONObject.toJSONString(outputFormate);
+    }
+
 }

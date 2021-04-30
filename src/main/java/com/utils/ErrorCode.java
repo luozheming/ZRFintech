@@ -21,6 +21,8 @@ public enum ErrorCode {
     VIPNOTENOUGH(615,"VIP服务额度不足"),
     ONECECARDALREADY(616,"已经免费领取一次卡片"),
     REPEATCOMMIT(617,"重复提交"),
+    EXISTSUSER(618,"用户已存在"),
+    ERRORPASSWORD(619,"密码不正确"),
     OTHEREEEOR(669,"其余未知错误");
 
     private int code;

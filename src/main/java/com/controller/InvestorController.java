@@ -423,4 +423,41 @@ public class InvestorController {
         }
     }
 
+    //    ---------------------------------项目一期PC版部分接口调整----------------------------------------------------
+
+    /**
+     * 分页获取评论信息（客户）
+     * @param getCommentsDto
+     * @return
+     */
+    @GetMapping(value = "/entuser/commentsByPhoneNm")
+    public String commentsByPhoneNm(GetCommentsDto getCommentsDto){
+        try{
+            int pageNum = getCommentsDto.getPageNum();
+            int pageSize = getCommentsDto.getPageSize();
+            if (pageNum < 0 || pageSize <= 0 || StringUtils.isEmpty(getCommentsDto.getOpenId())) {
+                return ErrorCode.PAGEBELLOWZERO.toJsonString();
+            } else {
+                int startNum = pageNum * pageSize;
+                Criteria criteria = Criteria.where("phoneNm").is(getCommentsDto.getPhoneNm());
+                if (!StringUtils.isEmpty(getCommentsDto.getProjectNo())) {
+                    criteria = criteria.and("projectNo").is(getCommentsDto.getProjectNo());
+                }
+                Query query = new Query(criteria).with(Sort.by(Sort.Order.desc("isDone")))
+                        .with(Sort.by(Sort.Order.asc("favor")))
+                        .with(Sort.by(Sort.Order.asc("updateTm")));
+                List<ProjectComment> projectComments = mongoTemplate.find(query.skip(startNum).limit(pageSize), ProjectComment.class);
+                if (!CollectionUtils.isEmpty(projectComments)) {
+                    for (ProjectComment projectComment : projectComments) {
+                        projectComment.setPhoto(commonUtils.getPhoto(projectComment.getInvesPhotoRoute()));
+                    }
+                }
+                OutputFormate outputFormate = new OutputFormate(projectComments, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
+                return JSONObject.toJSONString(outputFormate);
+            }
+        }catch (Exception e){
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+    }
+
 }

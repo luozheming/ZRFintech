@@ -3,6 +3,7 @@ package com.pojo;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.Tolerate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
@@ -40,4 +41,6 @@ public class ActivityRecord {
      */
     private Date createTime;
 
+    @Tolerate
+    public ActivityRecord() {}
 }
