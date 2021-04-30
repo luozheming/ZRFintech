@@ -32,7 +32,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public HomePageDto homePage() {
         HomePageDto homePageDto = new HomePageDto();
-        int entUserCount = (int) mongoTemplate.count(new Query(), "entUser");
+        int entUserCount = (int) mongoTemplate.count(new Query(), "entuser");
         int bpCount = (int) mongoTemplate.count(new Query(Criteria.where("isDone").is(true)), "project");
         int isPayCount = (int) mongoTemplate.count(new Query(Criteria.where("isPay").is(true)), "project");
         homePageDto.setEntUserCount(entUserCount);
