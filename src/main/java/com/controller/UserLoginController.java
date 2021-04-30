@@ -98,10 +98,15 @@ public class UserLoginController {
      * @return
      */
     @PostMapping("/entuser/contactService")
-    public String contactService(String openId) {
+    public String contactService(String openId, String phoneNm) {
         Update update = new Update();
         update.set("isContactService", true);
-        mongoTemplate.updateFirst(query(where("openId").is(openId)), update, EntUser.class);
+        if (!StringUtils.isEmpty(openId)) {
+            mongoTemplate.updateFirst(query(where("openId").is(openId)), update, EntUser.class);
+        } else {
+            mongoTemplate.updateFirst(query(where("phoneNm").is(phoneNm)), update, EntUser.class);
+        }
+
         return ErrorCode.SUCCESS.toJsonString();
     }
 

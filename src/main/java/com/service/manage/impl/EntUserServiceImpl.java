@@ -22,6 +22,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class EntUserServiceImpl implements EntUserService {
@@ -70,12 +71,22 @@ public class EntUserServiceImpl implements EntUserService {
                 List<ProjectBpApply> projectBpApplyList = projectBpApplyService.ListByEnt(entUser.getOpenId());
                 if (!CollectionUtils.isEmpty(projectBpApplyList)) {
                     for (ProjectBpApply projectBpApply : projectBpApplyList) {
-                        entUserDto = new EntUserDto();
-                        BeanUtils.copyProperties(entUser, entUserDto);
-                        entUserDto.setProjectNm(projectBpApply.getProjectNm());
-                        entUserDto.setIsBpApply(true);
-                        entUserDto.setBpApplyId(projectBpApply.getId());
-                        entUserDtoList.add(entUserDto);
+                        for (EntUserDto userDto: entUserDtoList) {
+                            if (userDto.getProjectNo().equals(projectBpApply.getProjectNo())) {
+                                userDto.setIsBpApply(true);
+                                userDto.setBpApplyId(projectBpApply.getId());
+                                break;
+                            }
+                        }
+
+                        if (null == entUserDto) {
+                            entUserDto = new EntUserDto();
+                            BeanUtils.copyProperties(entUser, entUserDto);
+                            entUserDto.setProjectNm(projectBpApply.getProjectNm());
+                            entUserDto.setIsBpApply(true);
+                            entUserDto.setBpApplyId(projectBpApply.getId());
+                            entUserDtoList.add(entUserDto);
+                        }
                     }
                 }
 
