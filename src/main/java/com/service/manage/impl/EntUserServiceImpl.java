@@ -70,12 +70,24 @@ public class EntUserServiceImpl implements EntUserService {
                 List<ProjectBpApply> projectBpApplyList = projectBpApplyService.ListByEnt(entUser.getOpenId());
                 if (!CollectionUtils.isEmpty(projectBpApplyList)) {
                     for (ProjectBpApply projectBpApply : projectBpApplyList) {
-                        entUserDto = new EntUserDto();
-                        BeanUtils.copyProperties(entUser, entUserDto);
-                        entUserDto.setProjectNm(projectBpApply.getProjectNm());
-                        entUserDto.setIsBpApply(true);
-                        entUserDto.setBpApplyId(projectBpApply.getId());
-                        entUserDtoList.add(entUserDto);
+                        Boolean isAdd = false;// 是否已添加
+                        for (EntUserDto userDto: entUserDtoList) {
+                            if (!StringUtils.isEmpty(projectBpApply.getProjectNo()) && userDto.getProjectNo().equals(projectBpApply.getProjectNo())) {
+                                userDto.setIsBpApply(true);
+                                userDto.setBpApplyId(projectBpApply.getId());
+                                isAdd = true;
+                                break;
+                            }
+                        }
+
+                        if (!isAdd) {
+                            entUserDto = new EntUserDto();
+                            BeanUtils.copyProperties(entUser, entUserDto);
+                            entUserDto.setProjectNm(projectBpApply.getProjectNm());
+                            entUserDto.setIsBpApply(true);
+                            entUserDto.setBpApplyId(projectBpApply.getId());
+                            entUserDtoList.add(entUserDto);
+                        }
                     }
                 }
 

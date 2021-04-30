@@ -25,6 +25,10 @@ public class EntUserDto {
      */
     private String gender;
     /**
+     * 项目编号
+     */
+    private String projectNo;
+    /**
      * 项目名称
      */
     private String projectNm;
