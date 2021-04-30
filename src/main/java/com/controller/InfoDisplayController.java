@@ -224,4 +224,53 @@ public class InfoDisplayController {
         return JSONObject.toJSONString(outputFormate);
     }
 
+    /**
+     * 项目上传（文件）
+     */
+    @PostMapping(value = "/project/createProject")
+    public String createProject(@RequestPart(value = "file", required = false) MultipartFile file, Project project) {
+        String projectNo = (project.getIsDone() != null && project.getIsDone()) ? commonUtils.getNumCode() : null;// 生成主键ID
+        //文件上传可能会出问题
+        if (null != file) {
+            // 获取文件名
+            String fileName = file.getOriginalFilename();
+            // 获取文件的后缀名
+            //String suffixName = fileName.substring(fileName.lastIndexOf("."));
+            // 文件上传后的路径
+            StringBuilder filePathBuffer = new StringBuilder();
+            String filePath = filePathBuffer.append(savedfilepath).append(project.getPhoneNm()).append(File.separator).append(null == projectNo ? "temp" : projectNo).append(File.separator).toString();
+            File dest = new File(filePath + fileName);
+            // 检测是否存在目录
+            if (!dest.getParentFile().exists()) {
+                dest.getParentFile().mkdirs();
+            }
+            try {
+                file.transferTo(dest);
+                //文件保存后更新数据库信息
+                project.setBpRoute(filePath + fileName);
+            } catch (IllegalStateException e) {
+                return ErrorCode.FILEUPLOADFAILED.toJsonString();
+            } catch (IOException e) {
+                return ErrorCode.FILEUPLOADFAILED.toJsonString();
+            }
+        }
+
+        //如果是保存草稿，则更新草稿箱，并不分配项目id
+        if (project.getIsDone() != null && !project.getIsDone()) {
+            //查找并替换相应的草稿，如果草稿不存在，则进行插入操作
+            mongoTemplate.update(Project.class)
+                    .matching(query(where("phoneNm").is(project.getPhoneNm()).and("isDone").is(false)))
+                    .replaceWith(project)
+                    .withOptions(FindAndReplaceOptions.options().upsert())
+                    .findAndReplace();
+            return ErrorCode.SUCCESS.toJsonString();
+        } else {
+            //需要编写项目代码生成器
+            project.setProjectNo(projectNo);
+            mongoTemplate.save(project);
+            Project outputProject = Project.builder().projectNo(project.getProjectNo()).projectNm(project.getProjectNm()).build();
+            OutputFormate outputFormate = new OutputFormate(outputProject);
+            return JSONObject.toJSONString(outputFormate);
+        }
+    }
 }
