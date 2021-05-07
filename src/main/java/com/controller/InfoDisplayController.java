@@ -197,4 +197,16 @@ public class InfoDisplayController {
         return ErrorCode.SUCCESS.toJsonString();
     }
 
+    /**
+     * 记录浏览上传项目页面的动作
+     * @param openId
+     * @return
+     */
+    @PostMapping("/entuser/browseProjectPage")
+    public String browseProjectPage(String openId) {
+        Update update = new Update();
+        update.set("isBrowse", true);
+        mongoTemplate.updateFirst(query(where("openId").is(openId)), update, EntUser.class);
+        return ErrorCode.SUCCESS.toJsonString();
+    }
 }
