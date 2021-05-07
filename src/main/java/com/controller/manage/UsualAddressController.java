@@ -6,10 +6,7 @@ import com.pojo.UsualAddress;
 import com.service.manage.UsualAddressService;
 import com.utils.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -24,5 +21,17 @@ public class UsualAddressController {
         List<UsualAddress> usualAddressList = usualAddressService.listByUserId(userId);
         OutputFormate outputFormate = new OutputFormate(usualAddressList, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
         return JSONObject.toJSONString(outputFormate);
+    }
+
+    @PostMapping("/add")
+    public String add(@RequestBody UsualAddress usualAddress) {
+        usualAddressService.add(usualAddress);
+        return ErrorCode.SUCCESS.toJsonString();
+    }
+
+    @PostMapping("/edit")
+    public String edit(@RequestBody UsualAddress usualAddress) {
+        usualAddressService.edit(usualAddress);
+        return ErrorCode.SUCCESS.toJsonString();
     }
 }

@@ -2,6 +2,7 @@ package com.service.manage.impl;
 
 import com.pojo.UsualAddress;
 import com.service.manage.UsualAddressService;
+import com.utils.CommonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Update;
@@ -17,6 +18,8 @@ public class UsualAddressServiceImpl implements UsualAddressService {
 
     @Autowired
     private MongoTemplate mongoTemplate;
+    @Autowired
+    private CommonUtils commonUtils;
 
     @Override
     public List<UsualAddress> listByUserId(String userId) {
@@ -32,5 +35,11 @@ public class UsualAddressServiceImpl implements UsualAddressService {
         update.set("detailAddress", usualAddress.getDetailAddress());
         update.set("zipCode", usualAddress.getZipCode());
         mongoTemplate.updateFirst(query(where("id").is(usualAddress.getId())), update, UsualAddress.class);
+    }
+
+    @Override
+    public void add(UsualAddress usualAddress) {
+        usualAddress.setId(commonUtils.getNumCode());
+        mongoTemplate.save(usualAddress);
     }
 }

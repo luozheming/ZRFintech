@@ -112,6 +112,10 @@ public class UserLoginServiceImpl implements UserLoginService {
 
     @Override
     public EntUser detail(String userId) {
-        return mongoTemplate.findOne(query(where("userId").is(userId)), EntUser.class);
+        EntUser entUser = mongoTemplate.findOne(query(where("userId").is(userId)), EntUser.class);
+        if (null != entUser & !StringUtils.isEmpty(entUser.getPhotoRoute())) {
+            entUser.setPhoto(commonUtils.getPhoto(entUser.getPhotoRoute()));
+        }
+        return entUser;
     }
 }
