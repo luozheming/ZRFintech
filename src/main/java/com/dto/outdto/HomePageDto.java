@@ -16,5 +16,9 @@ public class HomePageDto {
      * 付费用户数
      */
     private Integer isPayCount;
+    /**
+     * 浏览上传项目页面的人数
+     */
+    private Integer isBrowseCount;
 
 }

@@ -45,4 +45,8 @@ public class EntUser {
      * 是否需要联系客服：true-是，false-否
      */
     private Boolean isContactService;
+    /**
+     * 是否浏览上传项目页面
+     */
+    private Boolean isBrowse;
 }
