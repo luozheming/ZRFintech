@@ -10,6 +10,7 @@ import com.pojo.EntUser;
 import com.pojo.Investor;
 import com.service.UserLoginService;
 import com.service.VIPCardUsageService;
+import com.sun.org.apache.xml.internal.serialize.OutputFormat;
 import com.utils.CommonUtils;
 import com.utils.ErrorCode;
 import com.utils.HttpClientUtil;
@@ -124,7 +125,8 @@ public class UserLoginController {
             userLoginService.register(entUserRegisterDto);
             return ErrorCode.SUCCESS.toJsonString();
         } catch (Exception e) {
-            return ErrorCode.OTHEREEEOR.toJsonString();
+            OutputFormate outputFormate = new OutputFormate(null, ErrorCode.OTHEREEEOR.getCode(), e.getMessage());
+            return JSONObject.toJSONString(outputFormate);
         }
     }
 
@@ -136,11 +138,15 @@ public class UserLoginController {
     @PostMapping("/entuser/login")
     public String login(@RequestBody EntUserLoginDto entUserLoginDto) {
         try {
-            userLoginService.login(entUserLoginDto);
-            return ErrorCode.SUCCESS.toJsonString();
+            EntUser entUser = userLoginService.login(entUserLoginDto);
+            if (null == entUser) {
+                return ErrorCode.EMPITYUSER.toJsonString();
+            }
+            OutputFormate outputFormate = new OutputFormate(entUser, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
+            return JSONObject.toJSONString(outputFormate);
         } catch (Exception e) {
-            e.getMessage();
-            return ErrorCode.OTHEREEEOR.toJsonString();
+            OutputFormate outputFormate = new OutputFormate(null, ErrorCode.OTHEREEEOR.getCode(), e.getMessage());
+            return JSONObject.toJSONString(outputFormate);
         }
     }
 
@@ -155,6 +161,7 @@ public class UserLoginController {
             userLoginService.updatePassword(entUserUpdatePasswordDto);
             return ErrorCode.SUCCESS.toJsonString();
         } catch (Exception e) {
+            OutputFormate outputFormate = new OutputFormate(null, ErrorCode.OTHEREEEOR.getCode(), e.getMessage());
             return ErrorCode.OTHEREEEOR.toJsonString();
         }
     }
@@ -181,13 +188,13 @@ public class UserLoginController {
     }
 
     /**
-     * 查询用户详细
-     * @param phoneNm
+     * 查询用户详情
+     * @param userId
      * @return
      */
     @GetMapping("/entuser/detail")
-    public String detail(@RequestParam String phoneNm) {
-        EntUser entUser = userLoginService.detail(phoneNm);
+    public String detail(@RequestParam String userId) {
+        EntUser entUser = userLoginService.detail(userId);
         OutputFormate outputFormate = new OutputFormate(entUser, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
         return JSONObject.toJSONString(outputFormate);
     }

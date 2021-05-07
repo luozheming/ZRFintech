@@ -7,8 +7,8 @@ import com.pojo.EntUser;
 
 public interface UserLoginService {
     void register(EntUserRegisterDto entUserRegisterDto) throws Exception;
-    void login(EntUserLoginDto entUserLoginDto) throws Exception;
+    EntUser login(EntUserLoginDto entUserLoginDto) throws Exception;
     void updatePassword(EntUserUpdatePasswordDto entUserUpdatePasswordDto) throws Exception;
     void edit(EntUser entUser) throws Exception;
-    EntUser detail(String phoneNm);
+    EntUser detail(String userId);
 }

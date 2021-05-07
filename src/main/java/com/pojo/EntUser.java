@@ -31,6 +31,14 @@ public class EntUser {
      */
     private String openId;
     /**
+     * 投资人 Id
+     */
+    private String investorId;
+    /**
+     * 角色编码：ent-商户，investor-投资人
+     */
+    private String roleCode;
+    /**
      *手机号码
      */
     private String phoneNm;

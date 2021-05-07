@@ -12,4 +12,8 @@ public class EntUserRegisterDto {
      * 登录密码
      */
     private String password;
+    /**
+     * 角色编码：ent-商户，investor-投资者
+     */
+    private String roleCode;
 }
