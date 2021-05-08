@@ -9,6 +9,8 @@ import com.utils.CommonUtils;
 import com.utils.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -42,6 +44,13 @@ public class InvestorManagement {
         if(pageNum <= totalPage){
             PageListDto pageListDto = new PageListDto<Investor>();
             List<Investor> investors = investorService.getInvestor(pageNum,pageSize);
+            if (!CollectionUtils.isEmpty(investors)) {
+                for (Investor investor : investors) {
+                    if (!StringUtils.isEmpty(investor.getInvesPhotoRoute())) {
+                        investor.setPhoto(commonUtils.getPhoto(investor.getInvesPhotoRoute()));
+                    }
+                }
+            }
             pageListDto.setTotal(count);
             pageListDto.setList(investors);
             OutputFormate outputFormate = new OutputFormate(pageListDto);

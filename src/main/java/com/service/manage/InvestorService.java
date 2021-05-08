@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -37,6 +38,15 @@ public class InvestorService {
 
     public Investor getInvesById(String investorId){
         Investor investor = mongoTemplate.findOne(query(where("investorId").is(investorId)),Investor.class);
+        if (!StringUtils.isEmpty(investor.getInvesPhotoRoute())) {
+            investor.setPhoto(commonUtils.getPhoto(investor.getInvesPhotoRoute()));
+        }
+        if (!StringUtils.isEmpty(investor.getInvesOrgPhotoRoute())) {
+            investor.setOrgPhoto(commonUtils.getPhoto(investor.getInvesOrgPhotoRoute()));
+        }
+        if (!StringUtils.isEmpty(investor.getInvesCardRoute())) {
+            investor.setCardPhoto(commonUtils.getPhoto(investor.getInvesCardRoute()));
+        }
         // 通过investorId查询所有的评论信息
         List<ProjectComment> projectComments = mongoTemplate.find(query(where("investorId").is(investor).and("favor").ne(4)), ProjectComment.class);
         int accomplishedTimes = 0;

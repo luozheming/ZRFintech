@@ -4,6 +4,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 @Data
 public class EntUserDto {
@@ -52,4 +53,16 @@ public class EntUserDto {
      * 是否需要联系客服：true-是，false-否
      */
     private Boolean isContactService;
+    /**
+     * BP申请时间
+     */
+    private Date bpApplyTime;
+    /**
+     * 项目创建时间
+     */
+    private Date projectCreateTime;
+    /**
+     * 联系投资人最新时间
+     */
+    private Date commentCreateTime;
 }

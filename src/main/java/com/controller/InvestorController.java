@@ -73,6 +73,7 @@ public class InvestorController {
                     projectComment.setId(commonUtils.getNumCode());// 评论主键ID
                     projectComment.setIsDone(false);// 评论完成标识：false-未评，true-已评
                     projectComment.setFavor(2);// 重点关注:1-感兴趣，2-未标记，3-不感兴趣，4-拒绝
+                    projectComment.setCreateTime(new Date());
                     projectCommentList.add(projectComment);
                 }
 

@@ -59,7 +59,7 @@ public class Investor {
     /**
      *投资人名片数据
      */
-    private String card;
+    private String cardPhoto;
     /**
      * 机构图片数据
      */
