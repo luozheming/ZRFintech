@@ -75,7 +75,7 @@ public class InvestorController {
                     projectComment.setFavor(2);// 重点关注:1-感兴趣，2-未标记，3-不感兴趣，4-拒绝
                     projectCommentList.add(projectComment);
                 }
-
+/*
                 // 先扣除用户的vip卡的服务使用次数
                 Integer commentTimes = 0;
                 VIPCardUsage vipCardUsage = mongoTemplate.findOne(query(where("openId").is(openId)), VIPCardUsage.class);
@@ -90,7 +90,7 @@ public class InvestorController {
                     mongoTemplate.updateFirst(query(where("openId").is(openId)), usageUpdate, VIPCardUsage.class);
                 } else if (null == vipCardUsage && commentCount > 0) {
                     return ErrorCode.VIPNOTPAYMENT.toJsonString();
-                }
+                }*/
 
                 // 更新项目expList
                 Update update = new Update();

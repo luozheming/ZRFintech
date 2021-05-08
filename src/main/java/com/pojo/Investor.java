@@ -41,7 +41,7 @@ public class Investor {
      */
     private String  invesOrgPhotoRoute;
     /**
-     *
+     *  投资人名片路径
      */
     private String invesCardRoute;
     /**
