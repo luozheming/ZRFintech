@@ -1,0 +1,1 @@
+import{bd as s,be as o}from"./index.22b3842c.js";const _=s((()=>o((()=>__import__("./index.928c05fa.js")),["./assets/index.928c05fa.js","./assets/index.22b3842c.js","./assets/index.72ccf31d.css","./assets/vendor.afa0338c.js","./assets/vendor.4a5fa02d.css"])));export{_ as C};
