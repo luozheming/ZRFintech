@@ -6,6 +6,7 @@ import lombok.experimental.Tolerate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -100,6 +101,14 @@ public class Project {
      * 项目评论信息
      */
     private List<ProjectComment> projectCommentList;
+    /**
+     * 创建时间
+     */
+    private Date createTime;
+    /**
+     * 更新时间
+     */
+    private Date updateTime;
 
     @Tolerate
     public Project() {}

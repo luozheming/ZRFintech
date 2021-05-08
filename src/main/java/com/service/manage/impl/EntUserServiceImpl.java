@@ -51,6 +51,7 @@ public class EntUserServiceImpl implements EntUserService {
                         entUserDto = new EntUserDto();
                         BeanUtils.copyProperties(entUser, entUserDto);
                         entUserDto.setProjectNm(project.getProjectNm());
+                        entUserDto.setProjectCreateTime(project.getCreateTime());
                         // 查找订单数
                         List<ProjectComment> projectComments = projectCommentService.listByProjectNo(project.getProjectNo());
                         if (!CollectionUtils.isEmpty(projectComments)) {
@@ -60,6 +61,7 @@ public class EntUserServiceImpl implements EntUserService {
                                 orderAmount = orderAmount.add(projectComment.getCommentAmount() == null ? new BigDecimal("0.00") : projectComment.getCommentAmount());
                             }
                             entUserDto.setOrderAmount(orderAmount);
+                            entUserDto.setCommentCreateTime(projectComments.get(projectComments.size()-1).getCreateTime());
                         }
                         entUserDto.setIsBpApply(false);
                         entUserDtoList.add(entUserDto);
@@ -85,6 +87,7 @@ public class EntUserServiceImpl implements EntUserService {
                             BeanUtils.copyProperties(entUser, entUserDto);
                             entUserDto.setProjectNm(projectBpApply.getProjectNm());
                             entUserDto.setIsBpApply(true);
+                            entUserDto.setBpApplyTime(projectBpApply.getCreateTime());
                             entUserDto.setBpApplyId(projectBpApply.getId());
                             entUserDtoList.add(entUserDto);
                         }
