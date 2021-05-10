@@ -13,6 +13,10 @@ public class GetCommentsDto {
      */
     private String openId;
     /**
+     *用户ID
+     */
+    private String userId;
+    /**
      *用户手机号
      */
     private String phoneNm;

@@ -203,13 +203,13 @@ public class InfoDisplayController {
 
     /**
      * 查询最新项目草稿
-     * @param phoneNm
+     * @param userId
      * @return
      */
-    @GetMapping(value = "/project/draftByPhoneNm")
-    public String draftByPhoneNm(@RequestParam String phoneNm){
+    @GetMapping(value = "/project/draftByUserId")
+    public String draftByPhoneNm(@RequestParam String userId){
         //查询项目草稿
-        Project draftProject = mongoTemplate.findOne(query(where("phoneNm").is(phoneNm).and("isDone").is(false)),Project.class);
+        Project draftProject = mongoTemplate.findOne(query(where("userId").is(userId).and("isDone").is(false)),Project.class);
         OutputFormate outputFormate = new OutputFormate(draftProject);
         return JSONObject.toJSONString(outputFormate);
     }
@@ -218,8 +218,8 @@ public class InfoDisplayController {
      * 已上传项目查询
      */
     @GetMapping("/project/projectList")
-    public String projectList(@RequestParam(value = "phoneNm", required = true) String phoneNm){
-        List<Project> projectList = mongoTemplate.find(query(where("phoneNm").is(phoneNm).and("isDone").is(true)), Project.class);
+    public String projectList(@RequestParam(value = "userId", required = true) String userId){
+        List<Project> projectList = mongoTemplate.find(query(where("userId").is(userId).and("isDone").is(true)), Project.class);
         OutputFormate outputFormate = new OutputFormate(projectList);
         return JSONObject.toJSONString(outputFormate);
     }
@@ -238,7 +238,7 @@ public class InfoDisplayController {
             //String suffixName = fileName.substring(fileName.lastIndexOf("."));
             // 文件上传后的路径
             StringBuilder filePathBuffer = new StringBuilder();
-            String filePath = filePathBuffer.append(savedfilepath).append(project.getPhoneNm()).append(File.separator).append(null == projectNo ? "temp" : projectNo).append(File.separator).toString();
+            String filePath = filePathBuffer.append(savedfilepath).append(project.getUserId()).append(File.separator).append(null == projectNo ? "temp" : projectNo).append(File.separator).toString();
             File dest = new File(filePath + fileName);
             // 检测是否存在目录
             if (!dest.getParentFile().exists()) {
@@ -259,7 +259,7 @@ public class InfoDisplayController {
         if (project.getIsDone() != null && !project.getIsDone()) {
             //查找并替换相应的草稿，如果草稿不存在，则进行插入操作
             mongoTemplate.update(Project.class)
-                    .matching(query(where("phoneNm").is(project.getPhoneNm()).and("isDone").is(false)))
+                    .matching(query(where("userId").is(project.getUserId()).and("isDone").is(false)))
                     .replaceWith(project)
                     .withOptions(FindAndReplaceOptions.options().upsert())
                     .findAndReplace();

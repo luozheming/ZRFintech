@@ -61,6 +61,10 @@ public class Project {
      */
     private String openId;
     /**
+     * 用户id
+     */
+    private String userId;
+    /**
      * 用户手机号
      */
     private String phoneNm;

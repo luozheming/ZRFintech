@@ -39,6 +39,10 @@ public class EntPaymentDto {
      */
     private String openId;
     /**
+     *用户ID
+     */
+    private String userId;
+    /**
      *评论资费金额
      */
     private BigDecimal commentAmount;

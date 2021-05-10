@@ -7,10 +7,7 @@ import com.dto.indto.GetCommentsDto;
 import com.dto.outdto.CommentProjectDto;
 import com.dto.outdto.InvestorCommentAmountDto;
 import com.dto.outdto.OutputFormate;
-import com.pojo.Investor;
-import com.pojo.Project;
-import com.pojo.ProjectComment;
-import com.pojo.VIPCardUsage;
+import com.pojo.*;
 import com.utils.CommonUtils;
 import com.utils.ErrorCode;
 import org.springframework.beans.BeanUtils;
@@ -213,6 +210,14 @@ public class InvestorController {
             update.set("content", projectComment.getContent());
             update.set("updateTm", new Date());
             mongoTemplate.updateFirst(query(where("id").is(projectComment.getId())), update, ProjectComment.class);
+
+            // 生成消息推送数据
+            Message message = new Message();
+            message.setId(commonUtils.getNumCode());
+            message.setMsg("您有一条投资人[" + projectComment.getInvestor() + "]反馈待接收");
+            message.setSender("系统消息");
+            message.setCreateTime(new Date());
+            message.setUserId(projectComment.getUserId());
             return ErrorCode.SUCCESS.toJsonString();
         }catch (Exception e){
             return ErrorCode.OTHEREEEOR.toJsonString();
@@ -248,6 +253,22 @@ public class InvestorController {
             update.set("replyTm", new Date());
             Query query = new Query(Criteria.where("id").is(projectComment.getId()));
             mongoTemplate.updateFirst(query, update, ProjectComment.class);
+
+            // 通过手机号码获取投资人用户信息
+            Investor investor = mongoTemplate.findOne(query(where("investorId").is(projectComment.getInvestorId())), Investor.class);
+            String userId = "";
+            if (null != investor) {
+                EntUser entUser = mongoTemplate.findOne(query(where("phoneNm").is(investor.getPhoneNm())), EntUser.class);
+                userId = entUser.getUserId();
+            }
+            // 生成消息推送数据
+            Message message = new Message();
+            message.setId(commonUtils.getNumCode());
+            message.setMsg("您有一条项目[" + projectComment.getProjectNm() + "]客户回评待接收");
+            message.setSender("系统消息");
+            message.setCreateTime(new Date());
+            message.setUserId(userId);
+            mongoTemplate.save(message);
             return ErrorCode.SUCCESS.toJsonString();
         } catch (Exception e) {
             return ErrorCode.OTHEREEEOR.toJsonString();
@@ -430,7 +451,7 @@ public class InvestorController {
      * @param getCommentsDto
      * @return
      */
-    @GetMapping(value = "/entuser/commentsByPhoneNm")
+    @GetMapping(value = "/entuser/commentsByUserId")
     public String commentsByPhoneNm(GetCommentsDto getCommentsDto){
         try{
             int pageNum = getCommentsDto.getPageNum();
@@ -439,7 +460,7 @@ public class InvestorController {
                 return ErrorCode.PAGEBELLOWZERO.toJsonString();
             } else {
                 int startNum = pageNum * pageSize;
-                Criteria criteria = Criteria.where("phoneNm").is(getCommentsDto.getPhoneNm());
+                Criteria criteria = Criteria.where("userId").is(getCommentsDto.getUserId());
                 if (!StringUtils.isEmpty(getCommentsDto.getProjectNo())) {
                     criteria = criteria.and("projectNo").is(getCommentsDto.getProjectNo());
                 }
