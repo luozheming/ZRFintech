@@ -37,9 +37,6 @@ public class UserServiceImpl implements UserService {
         int isBrowseCount = (int) mongoTemplate.count(new Query(where("isBrowse").is(true)), "entuser");
         int bpCount = (int) mongoTemplate.count(new Query(where("isDone").is(true)), "project");
         int isPayCount = (int) mongoTemplate.count(new Query(where("isPay").is(true)), "project");
-        int entUserCount = (int) mongoTemplate.count(new Query(), "entuser");
-        int bpCount = (int) mongoTemplate.count(new Query(Criteria.where("isDone").is(true)), "project");
-        int isPayCount = (int) mongoTemplate.count(new Query(Criteria.where("isPay").is(true)), "project");
         homePageDto.setEntUserCount(entUserCount);
         homePageDto.setIsBrowseCount(isBrowseCount);
         homePageDto.setBpCount(bpCount);
