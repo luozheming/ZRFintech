@@ -52,6 +52,7 @@ public class EntUserServiceImpl implements EntUserService {
                         entUserDto = new EntUserDto();
                         BeanUtils.copyProperties(entUser, entUserDto);
                         entUserDto.setProjectNm(project.getProjectNm());
+                        entUserDto.setProjectCreateTime(project.getCreateTime());
                         // 查找订单数
                         List<ProjectComment> projectComments = projectCommentService.listByProjectNo(project.getProjectNo());
                         if (!CollectionUtils.isEmpty(projectComments)) {
@@ -61,6 +62,7 @@ public class EntUserServiceImpl implements EntUserService {
                                 orderAmount = orderAmount.add(projectComment.getCommentAmount() == null ? new BigDecimal("0.00") : projectComment.getCommentAmount());
                             }
                             entUserDto.setOrderAmount(orderAmount);
+                            entUserDto.setCommentCreateTime(projectComments.get(projectComments.size()-1).getCreateTime());
                         }
                         entUserDto.setIsBpApply(false);
                         entUserDtoList.add(entUserDto);
@@ -71,6 +73,25 @@ public class EntUserServiceImpl implements EntUserService {
                 List<ProjectBpApply> projectBpApplyList = projectBpApplyService.ListByEnt(entUser.getOpenId());
                 if (!CollectionUtils.isEmpty(projectBpApplyList)) {
                     for (ProjectBpApply projectBpApply : projectBpApplyList) {
+                        Boolean isAdd = false;// 是否已添加
+                        for (EntUserDto userDto: entUserDtoList) {
+                            if (!StringUtils.isEmpty(projectBpApply.getProjectNo()) && userDto.getProjectNo().equals(projectBpApply.getProjectNo())) {
+                                userDto.setIsBpApply(true);
+                                userDto.setBpApplyId(projectBpApply.getId());
+                                isAdd = true;
+                                break;
+                            }
+                        }
+
+                        if (!isAdd) {
+                            entUserDto = new EntUserDto();
+                            BeanUtils.copyProperties(entUser, entUserDto);
+                            entUserDto.setProjectNm(projectBpApply.getProjectNm());
+                            entUserDto.setIsBpApply(true);
+                            entUserDto.setBpApplyTime(projectBpApply.getCreateTime());
+                            entUserDto.setBpApplyId(projectBpApply.getId());
+                            entUserDtoList.add(entUserDto);
+                        }
                         for (EntUserDto userDto: entUserDtoList) {
                             if (userDto.getProjectNo().equals(projectBpApply.getProjectNo())) {
                                 userDto.setIsBpApply(true);

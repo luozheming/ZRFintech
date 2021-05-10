@@ -89,4 +89,8 @@ public class EntUser {
 
     @Tolerate
     public EntUser() {}
+    /**
+     * 是否浏览上传项目页面
+     */
+    private Boolean isBrowse;
 }

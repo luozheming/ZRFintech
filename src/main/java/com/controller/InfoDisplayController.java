@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
@@ -140,6 +141,7 @@ public class InfoDisplayController {
         } else {
             //需要编写项目代码生成器
             project.setProjectNo(projectNo);
+            project.setCreateTime(new Date());
             mongoTemplate.save(project);
             Project outputProject = Project.builder().projectNo(project.getProjectNo()).projectNm(project.getProjectNm()).build();
             OutputFormate outputFormate = new OutputFormate(outputProject);
@@ -171,6 +173,7 @@ public class InfoDisplayController {
         // 2,记录申请
         String id = commonUtils.getNumCode();// BP申请主键id
         projectBpApply.setId(id);
+        projectBpApply.setCreateTime(new Date());
         mongoTemplate.save(projectBpApply);
 
         OutputFormate outputFormate = new OutputFormate(projectBpApply);
@@ -272,5 +275,17 @@ public class InfoDisplayController {
             OutputFormate outputFormate = new OutputFormate(outputProject);
             return JSONObject.toJSONString(outputFormate);
         }
+    }
+    /**
+     * 记录浏览上传项目页面的动作
+     * @param openId
+     * @return
+     */
+    @PostMapping("/entuser/browseProjectPage")
+    public String browseProjectPage(String openId) {
+        Update update = new Update();
+        update.set("isBrowse", true);
+        mongoTemplate.updateFirst(query(where("openId").is(openId)), update, EntUser.class);
+        return ErrorCode.SUCCESS.toJsonString();
     }
 }

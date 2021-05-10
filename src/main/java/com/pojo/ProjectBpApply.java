@@ -73,6 +73,10 @@ public class ProjectBpApply {
      */
     private String proPhonum;
     /**
+     * 项目联系人邮箱
+     */
+    private String proEmail;
+    /**
      * 上传用户
      */
     private String openId;
