@@ -93,9 +93,9 @@ public class ProjectBpApply {
      */
     private Date updateTime;
     /**
-     * 状态:0-未处理，1-已处理，2-不予处理
+     * 处理状态:0-未处理，1-已处理，2-不予处理
      */
-    private Integer status;
+    private Integer dealStatus;
 
     @Tolerate
     public ProjectBpApply() {}

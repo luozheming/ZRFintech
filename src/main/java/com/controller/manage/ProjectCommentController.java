@@ -7,9 +7,12 @@ import com.pojo.Investor;
 import com.pojo.Project;
 import com.pojo.ProjectComment;
 import com.service.manage.ProjectCommentService;
+import com.utils.CommonUtils;
 import com.utils.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -19,6 +22,10 @@ public class ProjectCommentController {
 
     @Autowired
     private ProjectCommentService projectCommentService;
+    @Autowired
+    private CommonUtils commonUtils;
+    @Value("${questionFilePath}")
+    private String questionFilePath;
 
     /**
      * 分页获取项目评论列表
@@ -57,6 +64,27 @@ public class ProjectCommentController {
     public String commit(@RequestBody ProjectComment projectComment) {
         try {
             projectCommentService.commit(projectComment);
+        } catch (Exception e) {
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+        return ErrorCode.SUCCESS.toJsonString();
+    }
+
+    /**
+     * 新增追问信息
+     * @param file
+     * @param projectComment
+     * @return
+     */
+    @PostMapping("/add")
+    public String add(MultipartFile file,  ProjectComment projectComment) {
+        try {
+            String filePath = questionFilePath;
+            if (null != file) {
+                commonUtils.uploadData(file, filePath);
+                projectComment.setQuestionFilePath(filePath + "/" + file.getOriginalFilename());
+            }
+            projectCommentService.add(projectComment);
         } catch (Exception e) {
             return ErrorCode.OTHEREEEOR.toJsonString();
         }

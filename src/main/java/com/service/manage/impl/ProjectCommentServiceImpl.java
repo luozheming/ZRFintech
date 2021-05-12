@@ -2,6 +2,7 @@ package com.service.manage.impl;
 
 import com.pojo.ProjectComment;
 import com.service.manage.ProjectCommentService;
+import com.utils.CommonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -20,6 +21,8 @@ public class ProjectCommentServiceImpl implements ProjectCommentService {
 
     @Autowired
     private MongoTemplate mongoTemplate;
+    @Autowired
+    private CommonUtils commonUtils;
 
     @Override
     public List<ProjectComment> pageList(Integer pageNum, Integer pageSize) {
@@ -57,5 +60,14 @@ public class ProjectCommentServiceImpl implements ProjectCommentService {
     @Override
     public Integer count() {
         return (int) mongoTemplate.count(new Query(),"projectComment");
+    }
+
+    @Override
+    public void add(ProjectComment projectComment) {
+        projectComment.setId(commonUtils.getNumCode());
+        projectComment.setIsDone(false);// 评论完成标识：false-未评，true-已评
+        projectComment.setFavor(2);// 重点关注:1-感兴趣，2-未标记，3-不感兴趣，4-拒绝
+        projectComment.setCreateTime(new Date());
+        mongoTemplate.save(projectComment);
     }
 }

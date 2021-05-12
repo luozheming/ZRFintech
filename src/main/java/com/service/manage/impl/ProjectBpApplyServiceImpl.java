@@ -5,11 +5,13 @@ import com.service.manage.ProjectBpApplyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
+import static org.springframework.data.mongodb.core.query.Query.query;
 
 @Service
 public class ProjectBpApplyServiceImpl implements ProjectBpApplyService {
@@ -37,5 +39,12 @@ public class ProjectBpApplyServiceImpl implements ProjectBpApplyService {
     @Override
     public ProjectBpApply detailById(String id) {
         return mongoTemplate.findOne(new Query(where("id").is(id)), ProjectBpApply.class);
+    }
+
+    @Override
+    public void status(String id, Integer dealStatus) {
+        Update update = new Update();
+        update.set("dealStatus", dealStatus);
+        mongoTemplate.updateFirst(query(where("id").is(id)), update, ProjectBpApply.class);
     }
 }

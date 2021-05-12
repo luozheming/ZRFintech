@@ -86,7 +86,7 @@ public class InvestorService {
     }
 
     public void editInvestor(Investor investor){
-        mongoTemplate.remove(query(where("investId").is(investor.getInvestorId())),Investor.class);
+        mongoTemplate.remove(query(where("investorId").is(investor.getInvestorId())),Investor.class);
         mongoTemplate.save(investor);
     }
 
@@ -94,5 +94,16 @@ public class InvestorService {
         Update update = new Update();
         update.set("status", status);
         mongoTemplate.updateFirst(query(Criteria.where("investorId").is(investorId)), update, Investor.class);
+    }
+
+    /**
+     * 更新投资人剩余积分
+     * @param InvestorId
+     * @param surplusAmount
+     */
+    public void updateSurplusAmount(String InvestorId, BigDecimal surplusAmount) {
+        Update update = new Update();
+        update.set("surplusAmount", surplusAmount);
+        mongoTemplate.updateFirst(query(where("InvestorId").is(InvestorId)), update, Investor.class);
     }
 }

@@ -7,11 +7,13 @@ import com.dto.indto.GetCommentsDto;
 import com.dto.outdto.CommentProjectDto;
 import com.dto.outdto.InvestorCommentAmountDto;
 import com.dto.outdto.OutputFormate;
+import com.dto.outdto.ProjectCommentDetailDto;
 import com.pojo.*;
 import com.utils.CommonUtils;
 import com.utils.ErrorCode;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -20,6 +22,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -37,9 +40,10 @@ public class InvestorController {
 
     @Autowired
     private MongoTemplate mongoTemplate;
-
     @Autowired
     private CommonUtils commonUtils;
+    @Value("${commentFilePath}")
+    private String commentFilePath;
 
     /**
      * 红包支付
@@ -70,6 +74,7 @@ public class InvestorController {
                     projectComment.setId(commonUtils.getNumCode());// 评论主键ID
                     projectComment.setIsDone(false);// 评论完成标识：false-未评，true-已评
                     projectComment.setFavor(2);// 重点关注:1-感兴趣，2-未标记，3-不感兴趣，4-拒绝
+                    projectComment.setCommentType(1);// 评论类型：1-点评，2-追问
                     projectComment.setCreateTime(new Date());
                     projectCommentList.add(projectComment);
                 }
@@ -202,12 +207,14 @@ public class InvestorController {
     public String commitCommentByInvestor(@RequestBody ProjectComment projectComment){
         try{
             // 评论字数不得少于200字
-            if (projectComment.getContent().length() < 200) {
+            if (StringUtils.isEmpty(projectComment.getContent()) || (!StringUtils.isEmpty(projectComment.getContent()) && projectComment.getContent().length() < 200)) {
                 return ErrorCode.CONTENTLESS.toJsonString();
             }
             Update update = new Update();
             update.set("isDone", true);
-            update.set("favor", projectComment.getFavor());
+            if (null != projectComment.getFavor()) {
+                update.set("favor", projectComment.getFavor());
+            }
             update.set("content", projectComment.getContent());
             update.set("updateTm", new Date());
             mongoTemplate.updateFirst(query(where("id").is(projectComment.getId())), update, ProjectComment.class);
@@ -218,7 +225,8 @@ public class InvestorController {
             message.setMsg("您有一条投资人[" + projectComment.getInvestor() + "]反馈待接收");
             message.setSender("系统消息");
             message.setCreateTime(new Date());
-            message.setUserId(projectComment.getUserId());
+            message.setUserId(projectComment.getEntUserId());
+            mongoTemplate.save(message);
             return ErrorCode.SUCCESS.toJsonString();
         }catch (Exception e){
             return ErrorCode.OTHEREEEOR.toJsonString();
@@ -262,6 +270,7 @@ public class InvestorController {
                 EntUser entUser = mongoTemplate.findOne(query(where("phoneNm").is(investor.getPhoneNm())), EntUser.class);
                 userId = entUser.getUserId();
             }
+
             // 生成消息推送数据
             Message message = new Message();
             message.setId(commonUtils.getNumCode());
@@ -306,7 +315,7 @@ public class InvestorController {
      * @return
      */
     @GetMapping(value = "/downLoadFile")
-    public String downLoadFile(HttpServletResponse response, String filePath) {
+    public String downLoadFile(HttpServletResponse response, @RequestParam String filePath) {
         FileInputStream fis = null; //文件输入流
         BufferedInputStream bis = null;
         OutputStream os = null; //输出流
@@ -315,7 +324,7 @@ public class InvestorController {
             if (!file.exists()) {
                 return ErrorCode.NULLOBJECT.toJsonString();
             }
-            String fileName = filePath.substring(filePath.lastIndexOf(File.separator) + 1, filePath.length());
+            String fileName = filePath.substring(filePath.lastIndexOf("/") + 1, filePath.length());
 
             // 将文件名称进行编码
             response.setContentType("application/vnd.ms-excel;charset=UTF-8");
@@ -332,8 +341,7 @@ public class InvestorController {
                 i = bis.read(buffer);
             }
 
-            OutputFormate outputFormate = new OutputFormate("", ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
-            return JSONObject.toJSONString(outputFormate);
+            return ErrorCode.SUCCESS.toJsonString();
         } catch (Exception e) {
             return ErrorCode.OTHEREEEOR.toJsonString();
         } finally {
@@ -445,7 +453,7 @@ public class InvestorController {
         }
     }
 
-    //    ---------------------------------项目一期PC版部分接口调整----------------------------------------------------
+    //    ---------------------------------项目一期PC版部分接口调整---------------------------------------- ------------
 
     /**
      * 分页获取评论信息（客户）
@@ -453,7 +461,7 @@ public class InvestorController {
      * @return
      */
     @GetMapping(value = "/entuser/commentsByUserId")
-    public String commentsByPhoneNm(GetCommentsDto getCommentsDto){
+    public String commentsByUserId(GetCommentsDto getCommentsDto){
         try{
             int pageNum = getCommentsDto.getPageNum();
             int pageSize = getCommentsDto.getPageSize();
@@ -482,4 +490,97 @@ public class InvestorController {
         }
     }
 
+    /**
+     * 查询评论和项目详情
+     * @param projectNo
+     * @return
+     */
+    @GetMapping(value = "/investor/projectCommentDetail")
+    public String projectCommentDetail(@RequestParam String projectNo, String investorId) {
+        try{
+            ProjectCommentDetailDto projectCommentDetailDto = new ProjectCommentDetailDto();
+            Query query = query(where("projectNo").is(projectNo));
+            // 获取评论信息
+            if (!StringUtils.isEmpty(investorId)) {
+                query.addCriteria(where("investorId").is(investorId));
+            }
+            List<ProjectComment> projectComments = mongoTemplate.find(query.with(Sort.by(Sort.Order.asc("investorId"))).with(Sort.by(Sort.Order.asc("createTime"))), ProjectComment.class);
+            if (CollectionUtils.isEmpty(projectComments)) {
+                return ErrorCode.NULLOBJECT.toJsonString();
+            }
+            Project project = null;
+            List<Project> projects = mongoTemplate.find(query(Criteria.where("projectNo").is(projectNo)), Project.class);
+            if (!CollectionUtils.isEmpty(projects)) {
+                project = projects.get(0);
+                if (!StringUtils.isEmpty(project.getRoadshowRoute())) {
+                    project.setRoadshow(commonUtils.getPhoto(project.getRoadshowRoute()));
+                }
+            }
+            projectCommentDetailDto.setProject(project);
+            projectCommentDetailDto.setProjectCommentList(projectComments);
+            OutputFormate outputFormate = new OutputFormate(projectCommentDetailDto, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
+            return JSONObject.toJSONString(outputFormate);
+        }  catch (Exception e) {
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+    }
+
+    @PostMapping("/projectComment/markFavor")
+    public String markFavor(@RequestBody ProjectComment projectComment){
+        Update update = new Update();
+        update.set("favor", projectComment.getFavor());
+        update.set("updateTm", new Date());
+        mongoTemplate.updateFirst(query(where("id").is(projectComment.getId())), update, ProjectComment.class);
+        return ErrorCode.SUCCESS.toJsonString();
+    }
+
+    /**
+     * 投资人提交评价
+     * @param projectComment
+     * @return
+     */
+    @PostMapping(value = "/investor/commitComment")
+    public String commitComment(MultipartFile file, ProjectComment projectComment){
+        try{
+            // 上传项目
+            String filePath = commentFilePath;
+            if (null != file) {
+                commonUtils.uploadData(file, filePath);
+                projectComment.setCommentFilePath(filePath + "/" + file.getOriginalFilename());
+            }
+
+            // 提交评论内容
+            Update update = new Update();
+            update.set("isDone", true);
+            if (null != projectComment.getFavor()) {
+                update.set("favor", projectComment.getFavor());
+            }
+            update.set("content", projectComment.getContent());
+            if (!StringUtils.isEmpty(projectComment.getCommentFilePath())) {
+                update.set("commentFilePath", projectComment.getCommentFilePath());
+            }
+            update.set("updateTm", new Date());
+            mongoTemplate.updateFirst(query(where("id").is(projectComment.getId())), update, ProjectComment.class);
+
+            // 更新投资人剩余积分
+            Investor investor = mongoTemplate.findOne(query(where("investorId").is(projectComment.getInvestorId())), Investor.class);
+            BigDecimal surplusAmount = investor.getSurplusAmount() == null ? new BigDecimal("0.00") : investor.getSurplusAmount();
+            surplusAmount = surplusAmount.add(projectComment.getCommentAmount());
+            Update updateInvestor = new Update();
+            updateInvestor.set("surplusAmount", surplusAmount);
+            mongoTemplate.updateFirst(query(where("investorId").is(investor.getInvestor())), update, Investor.class);
+
+            // 生成消息推送数据
+            Message message = new Message();
+            message.setId(commonUtils.getNumCode());
+            message.setMsg("您有一条投资人[" + projectComment.getInvestor() + "]反馈待接收");
+            message.setSender("系统消息");
+            message.setCreateTime(new Date());
+            message.setUserId(projectComment.getEntUserId());
+            mongoTemplate.save(message);
+            return ErrorCode.SUCCESS.toJsonString();
+        }catch (Exception e){
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+    }
 }

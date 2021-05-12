@@ -192,11 +192,22 @@ public class UserLoginController {
      * @param userId
      * @return
      */
-    @GetMapping("/entuser/detail")
+    @GetMapping("                                    /entuser/detail")
     public String detail(@RequestParam String userId) {
         EntUser entUser = userLoginService.detail(userId);
         OutputFormate outputFormate = new OutputFormate(entUser, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
         return JSONObject.toJSONString(outputFormate);
     }
 
+    /**
+     * 通过userId查询投资人信息
+     * @param userId
+     * @return
+     */
+    @GetMapping("/investor/investorByUserId")
+    public String investorByUserId(String userId) {
+        Investor investor = userLoginService.investorById(userId);
+        OutputFormate outputFormate = new OutputFormate(investor, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
+        return JSONObject.toJSONString(outputFormate);
+    }
 }

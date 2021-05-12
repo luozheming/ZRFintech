@@ -4,6 +4,7 @@ import com.dto.indto.EntUserLoginDto;
 import com.dto.indto.EntUserRegisterDto;
 import com.dto.indto.EntUserUpdatePasswordDto;
 import com.pojo.EntUser;
+import com.pojo.Investor;
 import com.service.UserLoginService;
 import com.utils.CommonUtils;
 import com.utils.ErrorCode;
@@ -24,10 +25,8 @@ public class UserLoginServiceImpl implements UserLoginService {
 
     @Autowired
     private MongoTemplate mongoTemplate;
-
     @Autowired
     private CommonUtils commonUtils;
-
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
@@ -37,6 +36,13 @@ public class UserLoginServiceImpl implements UserLoginService {
         EntUser entUser = mongoTemplate.findOne(query(where("phoneNm").is(entUserRegisterDto.getPhoneNm())), EntUser.class);
         if (null != entUser && !StringUtils.isEmpty(entUser.getPassword())) {
             throw new Exception(ErrorCode.EXISTSUSER.getMessage());
+        }
+        Investor investor = null;
+        if ("investor".equals(entUserRegisterDto.getRoleCode())) {
+            investor = mongoTemplate.findOne(query(where("phoneNm").is(entUserRegisterDto.getPhoneNm())), Investor.class);
+            if (null == investor) {
+                throw new Exception("需联系管理员申请注册为投资人");
+            }
         }
         String userId = commonUtils.getNumCode();
         String password = bCryptPasswordEncoder.encode(entUserRegisterDto.getPassword());
@@ -48,6 +54,10 @@ public class UserLoginServiceImpl implements UserLoginService {
             entUserAdd.setPassword(password);
             entUserAdd.setCreateTime(new Date());
             entUserAdd.setRoleCode(entUserRegisterDto.getRoleCode());
+            if ("investor".equals(entUserRegisterDto.getRoleCode())) {
+                entUserAdd.setInvestorId(investor.getInvestorId());
+            }
+            entUserAdd.setUserName("QR123456");
             mongoTemplate.save(entUserAdd);
         } else {
             // 如果小程序之前登录过，则更新这个用户的密码相关信息
@@ -56,6 +66,10 @@ public class UserLoginServiceImpl implements UserLoginService {
             update.set("password", password);
             update.set("updateTime", new Date());
             update.set("roleCode", entUserRegisterDto.getRoleCode());
+            if ("investor".equals(entUserRegisterDto.getRoleCode())) {
+                update.set("investorId", investor.getInvestorId());
+            }
+            update.set("userName", "QR123456");
             mongoTemplate.updateFirst(query(where("phoneNm").is(entUser.getPhoneNm())), update, EntUser.class);
         }
     }
@@ -72,6 +86,17 @@ public class UserLoginServiceImpl implements UserLoginService {
         boolean pass = bCryptPasswordEncoder.matches(entUserLoginDto.getPassword(), entUser.getPassword());
         if (!pass) {
             throw new Exception(ErrorCode.ERRORPASSWORD.getMessage());
+        }
+        String phoneNm = entUser.getPhoneNm();
+        Investor investor = mongoTemplate.findOne(query(where("phoneNm").is(phoneNm)), Investor.class);
+        if (null != investor) {
+            entUser.setInvestorId(investor.getInvestorId());
+            if (StringUtils.isEmpty(entUser.getPhotoRoute())) {
+
+            }
+        }
+        if (!StringUtils.isEmpty(entUser.getPhotoRoute())) {
+            entUser.setPhoto(commonUtils.getPhoto(entUser.getPhotoRoute()));
         }
         return entUser;
     }
@@ -117,5 +142,12 @@ public class UserLoginServiceImpl implements UserLoginService {
             entUser.setPhoto(commonUtils.getPhoto(entUser.getPhotoRoute()));
         }
         return entUser;
+    }
+
+    @Override
+    public Investor investorById(String userId) {
+        EntUser entUser = mongoTemplate.findOne(query(where("userId").is(userId)), EntUser.class);
+        Investor investor = mongoTemplate.findOne(query(where("investorId").is(entUser.getInvestorId())), Investor.class);
+        return investor;
     }
 }

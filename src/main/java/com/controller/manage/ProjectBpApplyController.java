@@ -9,6 +9,7 @@ import com.utils.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -67,6 +68,18 @@ public class ProjectBpApplyController {
         } catch (Exception e) {
             return ErrorCode.OTHEREEEOR.toJsonString();
         }
+    }
+
+    /**
+     * 更新BP申请处理状态
+     * @param id
+     * @param dealStatus
+     * @return
+     */
+    @PostMapping("/dealStatus")
+    public String dealStatus(String id, Integer dealStatus) {
+        projectBpApplyService.status(id, dealStatus);
+        return ErrorCode.SUCCESS.toJsonString();
     }
 
 }

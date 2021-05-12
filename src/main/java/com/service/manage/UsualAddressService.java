@@ -8,4 +8,5 @@ public interface UsualAddressService {
     List<UsualAddress> listByUserId(String userId);
     void edit(UsualAddress usualAddress);
     void add(UsualAddress usualAddress);
+    void delete(String id);
 }

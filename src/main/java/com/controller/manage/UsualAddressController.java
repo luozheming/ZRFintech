@@ -34,4 +34,10 @@ public class UsualAddressController {
         usualAddressService.edit(usualAddress);
         return ErrorCode.SUCCESS.toJsonString();
     }
+
+    @DeleteMapping("/delete")
+    public String delete(String id) {
+        usualAddressService.delete(id);
+        return ErrorCode.SUCCESS.toJsonString();
+    }
 }

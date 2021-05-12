@@ -6,6 +6,7 @@ import lombok.experimental.Tolerate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 @Data
 @Builder
@@ -15,6 +16,10 @@ public class IntegralGoodsOrder {
      * 主键ID
      */
     private String id;
+    /**
+     * 用户id
+     */
+    private String userId;
     /**
      * 商品名称
      */
@@ -46,7 +51,7 @@ public class IntegralGoodsOrder {
     /**
      * 详细地址
      */
-    private BigDecimal detailAddress;
+    private String detailAddress;
     /**
      * 邮政编码
      */
@@ -63,6 +68,18 @@ public class IntegralGoodsOrder {
      * 是否默认地址
      */
     private boolean isDefault;
+    /**
+     * 处理状态:0-未处理，1-已处理，2-不予处理
+     */
+    private Integer dealStatus;
+    /**
+     * 创建时间
+     */
+    private Date createTime;
+    /**
+     * 更新时间
+     */
+    private Date updateTime;
 
     @Tolerate
     public IntegralGoodsOrder(){};

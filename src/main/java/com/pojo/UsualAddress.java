@@ -26,7 +26,7 @@ public class UsualAddress {
     /**
      * 详细地址
      */
-    private BigDecimal detailAddress;
+    private String detailAddress;
     /**
      * 邮政编码
      */
@@ -42,7 +42,7 @@ public class UsualAddress {
     /**
      * 是否默认地址
      */
-    private boolean isDefault;
+    private Boolean isDefault;
 
     @Tolerate
     public UsualAddress(){};

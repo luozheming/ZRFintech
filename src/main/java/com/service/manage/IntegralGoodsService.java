@@ -8,4 +8,5 @@ import java.util.List;
 public interface IntegralGoodsService {
     List<IntegralGoods> pageList(Integer pageNum, Integer pageSize, BigDecimal integralStart, BigDecimal integralEnd);
     Integer count();
+    IntegralGoods detail(String id);
 }

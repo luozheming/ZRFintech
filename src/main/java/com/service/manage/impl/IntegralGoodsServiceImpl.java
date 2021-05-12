@@ -9,11 +9,13 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
+import static org.springframework.data.mongodb.core.query.Query.query;
 
 @Service
 public class IntegralGoodsServiceImpl implements IntegralGoodsService {
@@ -44,5 +46,14 @@ public class IntegralGoodsServiceImpl implements IntegralGoodsService {
     @Override
     public Integer count() {
         return (int) mongoTemplate.count(new Query(),"integralGoods");
+    }
+
+    @Override
+    public IntegralGoods detail(String id) {
+        IntegralGoods integralGoods = mongoTemplate.findOne(query(where("id").is(id)), IntegralGoods.class);
+        if (null != integralGoods && StringUtils.isEmpty(integralGoods.getPhotoRoute())) {
+            integralGoods.setPhoto(commonUtils.getPhoto(integralGoods.getPhotoRoute()));
+        }
+        return integralGoods;
     }
 }

@@ -3,15 +3,11 @@ package com.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.dto.outdto.OutputFormate;
 import com.dto.outdto.PageListDto;
-import com.pojo.IntegralGoods;
 import com.pojo.Message;
 import com.service.MessageService;
 import com.utils.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -44,7 +40,7 @@ public class MessageController {
     }
 
     @DeleteMapping("/delMessage")
-    public String delMessage(String id) {
+    public String delMessage(@RequestParam String id) {
         messageService.deleteMessage(id);
         return ErrorCode.SUCCESS.toJsonString();
     }

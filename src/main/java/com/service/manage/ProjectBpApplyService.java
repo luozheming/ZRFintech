@@ -9,4 +9,5 @@ public interface ProjectBpApplyService {
     List<ProjectBpApply> ListByEnt(String openId);
     Integer countByEnt(String openId);
     ProjectBpApply detailById(String id);
+    void status(String id, Integer dealStatus);
 }

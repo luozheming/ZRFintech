@@ -4,6 +4,7 @@ import com.dto.indto.EntUserLoginDto;
 import com.dto.indto.EntUserRegisterDto;
 import com.dto.indto.EntUserUpdatePasswordDto;
 import com.pojo.EntUser;
+import com.pojo.Investor;
 
 public interface UserLoginService {
     void register(EntUserRegisterDto entUserRegisterDto) throws Exception;
@@ -11,4 +12,5 @@ public interface UserLoginService {
     void updatePassword(EntUserUpdatePasswordDto entUserUpdatePasswordDto) throws Exception;
     void edit(EntUser entUser) throws Exception;
     EntUser detail(String userId);
+    Investor investorById(String userId);
 }

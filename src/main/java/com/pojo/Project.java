@@ -62,9 +62,9 @@ public class Project {
      */
     private String openId;
     /**
-     * 用户id
+     * 企业用户id
      */
-    private String userId;
+    private String entUserId;
     /**
      * 用户手机号
      */
@@ -73,6 +73,14 @@ public class Project {
      *  BP路径
      */
     private String bpRoute;
+    /**
+     *  路演视频内容
+     */
+    private String roadshow;
+    /**
+     *  路演视频路径
+     */
+    private String roadshowRoute;
     /**
      * 期望点评列表
      */

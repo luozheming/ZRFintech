@@ -134,4 +134,5 @@ public class InvestorManagement {
         investorService.status(investorId, status);
         return ErrorCode.SUCCESS.toJsonString();
     }
+
 }

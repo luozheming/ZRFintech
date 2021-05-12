@@ -1,13 +1,15 @@
 package com.utils;
 
+import com.alibaba.fastjson.JSONObject;
+import com.dto.outdto.OutputFormate;
 import org.bson.internal.Base64;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.net.URLEncoder;
 import java.util.UUID;
 
 /**
@@ -79,6 +81,56 @@ public class CommonUtils {
                 throw e;
             } catch (IOException e) {
                 throw e;
+            }
+        }
+    }
+
+    /**
+     * 文件下载
+     * @param response
+     * @param filePath
+     * @return
+     */
+    public String downLoadFile(HttpServletResponse response, String filePath) {
+        FileInputStream fis = null; //文件输入流
+        BufferedInputStream bis = null;
+        OutputStream os = null; //输出流
+        try {
+            File file =  new File(filePath);
+            if (!file.exists()) {
+                return ErrorCode.NULLOBJECT.toJsonString();
+            }
+            String fileName = filePath.substring(filePath.lastIndexOf("/") + 1, filePath.length());
+
+            // 将文件名称进行编码
+            response.setContentType("application/vnd.ms-excel;charset=UTF-8");
+            response.setCharacterEncoding("UTF-8");
+            response.setHeader("content-disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8"));
+
+            byte[] buffer = new byte[1024];
+            os = response.getOutputStream();
+            fis = new FileInputStream(file);
+            bis = new BufferedInputStream(fis);
+            int i = bis.read(buffer);
+            while(i != -1){
+                os.write(buffer);
+                i = bis.read(buffer);
+            }
+
+            OutputFormate outputFormate = new OutputFormate("", ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
+            return JSONObject.toJSONString(outputFormate);
+        } catch (Exception e) {
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        } finally {
+            try {
+                if (null != bis) {
+                    bis.close();
+                }
+                if (null != fis) {
+                    fis.close();
+                }
+            } catch (IOException e) {
+                return ErrorCode.OTHEREEEOR.toJsonString();
             }
         }
     }

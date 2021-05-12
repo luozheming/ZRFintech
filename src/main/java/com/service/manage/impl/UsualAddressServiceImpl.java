@@ -34,6 +34,7 @@ public class UsualAddressServiceImpl implements UsualAddressService {
         update.set("receiverPhoneNm", usualAddress.getReceiverPhoneNm());
         update.set("detailAddress", usualAddress.getDetailAddress());
         update.set("zipCode", usualAddress.getZipCode());
+        update.set("isDefault", usualAddress.getIsDefault());
         mongoTemplate.updateFirst(query(where("id").is(usualAddress.getId())), update, UsualAddress.class);
     }
 
@@ -41,5 +42,10 @@ public class UsualAddressServiceImpl implements UsualAddressService {
     public void add(UsualAddress usualAddress) {
         usualAddress.setId(commonUtils.getNumCode());
         mongoTemplate.save(usualAddress);
+    }
+
+    @Override
+    public void delete(String id) {
+        mongoTemplate.remove(query(where("id").is(id)), UsualAddress.class);
     }
 }

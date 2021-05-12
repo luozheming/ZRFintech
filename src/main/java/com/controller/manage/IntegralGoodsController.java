@@ -5,12 +5,17 @@ import com.dto.outdto.OutputFormate;
 import com.dto.outdto.PageListDto;
 import com.pojo.IntegralGoods;
 import com.service.manage.IntegralGoodsService;
+import com.sun.org.apache.xml.internal.serializer.OutputPropertiesFactory;
+import com.utils.CommonUtils;
 import com.utils.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.smartcardio.CommandAPDU;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -20,9 +25,11 @@ public class IntegralGoodsController {
 
     @Autowired
     private IntegralGoodsService integralGoodsService;
+    @Autowired
+    private CommonUtils commonUtils;
 
     /**
-     * 分页获取项目列表
+     * 分页获取积分商品列表
      *
      * @param pageNum
      * @param pageSize
@@ -49,4 +56,18 @@ public class IntegralGoodsController {
         }
     }
 
+    /**
+     * 查看详情
+     * @param id
+     * @return
+     */
+    @GetMapping("/detail")
+    public String detail(@RequestParam String id) {
+        IntegralGoods integralGoods = integralGoodsService.detail(id);
+        if (null != integralGoods && !StringUtils.isEmpty(integralGoods.getPhotoRoute())) {
+            integralGoods.setPhoto(commonUtils.getPhoto(integralGoods.getPhotoRoute()));
+        }
+        OutputFormate outputFormate = new OutputFormate(integralGoods, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
+        return JSONObject.toJSONString(outputFormate);
+    } 
 }

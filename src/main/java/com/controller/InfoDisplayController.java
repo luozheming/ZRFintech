@@ -14,6 +14,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,6 +38,9 @@ public class InfoDisplayController {
 
     @Value("${savedfilepath}")
     private String savedfilepath;
+
+    @Value("${roadshowFilePath}")
+    private String roadshowFilePath;
 
     /**
      * 项目展示（分页）
@@ -112,7 +116,7 @@ public class InfoDisplayController {
             //String suffixName = fileName.substring(fileName.lastIndexOf("."));
             // 文件上传后的路径
             StringBuilder filePathBuffer = new StringBuilder();
-            String filePath = filePathBuffer.append(savedfilepath).append(project.getOpenId()).append(File.separator).append(null == projectNo ? "temp" : projectNo).append(File.separator).toString();
+            String filePath = filePathBuffer.append(savedfilepath).append(project.getOpenId()).append("/").append(null == projectNo ? "temp" : projectNo).append("/").toString();
             File dest = new File(filePath + fileName);
             // 检测是否存在目录
             if (!dest.getParentFile().exists()) {
@@ -156,7 +160,7 @@ public class InfoDisplayController {
      */
     @PostMapping("/project/bpApply")
     public String bpApply(@RequestBody ProjectBpApply projectBpApply) {
-        // 1,扣除申请服务一次
+        /*// 1,扣除申请服务一次
         VIPCardUsage vipCardUsage = mongoTemplate.findOne(query(where("openId").is(projectBpApply.getOpenId())), VIPCardUsage.class);
         if (null == vipCardUsage) {
             return ErrorCode.VIPNOTPAYMENT.toJsonString();
@@ -168,12 +172,13 @@ public class InfoDisplayController {
             Update update = new Update();
             update.set("bpApplyTimes", bpApplyTimes);
             mongoTemplate.updateFirst(query(where("openId").is(projectBpApply.getOpenId())), update, VIPCardUsage.class);
-        }
+        }*/
 
         // 2,记录申请
         String id = commonUtils.getNumCode();// BP申请主键id
         projectBpApply.setId(id);
         projectBpApply.setCreateTime(new Date());
+        projectBpApply.setDealStatus(0);
         mongoTemplate.save(projectBpApply);
 
         OutputFormate outputFormate = new OutputFormate(projectBpApply);
@@ -212,7 +217,7 @@ public class InfoDisplayController {
     @GetMapping(value = "/project/draftByUserId")
     public String draftByPhoneNm(@RequestParam String userId){
         //查询项目草稿
-        Project draftProject = mongoTemplate.findOne(query(where("userId").is(userId).and("isDone").is(false)),Project.class);
+        Project draftProject = mongoTemplate.findOne(query(where("entUserId").is(userId).and("isDone").is(false)),Project.class);
         OutputFormate outputFormate = new OutputFormate(draftProject);
         return JSONObject.toJSONString(outputFormate);
     }
@@ -222,7 +227,7 @@ public class InfoDisplayController {
      */
     @GetMapping("/project/projectList")
     public String projectList(@RequestParam(value = "userId", required = true) String userId){
-        List<Project> projectList = mongoTemplate.find(query(where("userId").is(userId).and("isDone").is(true)), Project.class);
+        List<Project> projectList = mongoTemplate.find(query(where("entUserId").is(userId).and("isDone").is(true)), Project.class);
         OutputFormate outputFormate = new OutputFormate(projectList);
         return JSONObject.toJSONString(outputFormate);
     }
@@ -241,7 +246,7 @@ public class InfoDisplayController {
             //String suffixName = fileName.substring(fileName.lastIndexOf("."));
             // 文件上传后的路径
             StringBuilder filePathBuffer = new StringBuilder();
-            String filePath = filePathBuffer.append(savedfilepath).append(project.getUserId()).append(File.separator).append(null == projectNo ? "temp" : projectNo).append(File.separator).toString();
+            String filePath = filePathBuffer.append(savedfilepath).append(project.getEntUserId()).append("/").append(null == projectNo ? "temp" : projectNo).append("/").toString();
             File dest = new File(filePath + fileName);
             // 检测是否存在目录
             if (!dest.getParentFile().exists()) {
@@ -262,7 +267,7 @@ public class InfoDisplayController {
         if (project.getIsDone() != null && !project.getIsDone()) {
             //查找并替换相应的草稿，如果草稿不存在，则进行插入操作
             mongoTemplate.update(Project.class)
-                    .matching(query(where("userId").is(project.getUserId()).and("isDone").is(false)))
+                    .matching(query(where("userId").is(project.getEntUserId()).and("isDone").is(false)))
                     .replaceWith(project)
                     .withOptions(FindAndReplaceOptions.options().upsert())
                     .findAndReplace();
@@ -276,6 +281,7 @@ public class InfoDisplayController {
             return JSONObject.toJSONString(outputFormate);
         }
     }
+
     /**
      * 记录浏览上传项目页面的动作
      * @param openId
@@ -287,5 +293,43 @@ public class InfoDisplayController {
         update.set("isBrowse", true);
         mongoTemplate.updateFirst(query(where("openId").is(openId)), update, EntUser.class);
         return ErrorCode.SUCCESS.toJsonString();
+    }
+
+    /**
+     * 路演视频上传
+     * @param file
+     * @return
+     */
+    @PostMapping("/entuser/uploadRoadShowFile")
+    public String uploadRoadShowFile(MultipartFile file, Project project) {
+        if (StringUtils.isEmpty(project.getProjectNo())) {
+            project.setProjectNo(commonUtils.getNumCode());
+        }
+        //文件上传可能会出问题
+        if (null != file) {
+            // 获取文件名
+            String fileName = file.getOriginalFilename();
+            // 文件上传后的路径
+            StringBuilder filePathBuffer = new StringBuilder();
+            String filePath = filePathBuffer.append(roadshowFilePath).append(project.getEntUserId()).append("/").append(project.getProjectNo()).append("/").toString();
+            File dest = new File(filePath + fileName);
+            // 检测是否存在目录
+            if (!dest.getParentFile().exists()) {
+                dest.getParentFile().mkdirs();
+            }
+            try {
+                file.transferTo(dest);
+                //文件保存后更新数据库信息
+                project.setRoadshowRoute(filePath + fileName);
+                OutputFormate outputFormate = new OutputFormate(project, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
+                return JSONObject.toJSONString(outputFormate);
+            } catch (IllegalStateException e) {
+                return ErrorCode.FILEUPLOADFAILED.toJsonString();
+            } catch (IOException e) {
+                return ErrorCode.FILEUPLOADFAILED.toJsonString();
+            }
+        } else {
+            return ErrorCode.EMPITYFILE.toJsonString();
+        }
     }
 }

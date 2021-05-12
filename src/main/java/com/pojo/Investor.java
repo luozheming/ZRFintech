@@ -81,6 +81,10 @@ public class Investor {
      */
     private BigDecimal accomplishedAmount;
     /**
+     * 投资人剩余金额
+     */
+    private BigDecimal surplusAmount;
+    /**
      * 是否平台投资人：true-是，false-否
      */
     private Boolean isPlatform;
