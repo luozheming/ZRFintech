@@ -12,4 +12,6 @@ public interface ProjectService {
     Integer count();
 
     List<Project> listByEnt(String openId);
+
+    void delete(String projectNo);
 }

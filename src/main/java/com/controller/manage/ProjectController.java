@@ -8,6 +8,7 @@ import com.pojo.Project;
 import com.service.manage.ProjectService;
 import com.utils.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -65,6 +66,17 @@ public class ProjectController {
         }
         OutputFormate outputFormate = new OutputFormate(project, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
         return JSONObject.toJSONString(outputFormate);
+    }
+
+    /**
+     * 通过projectNo删除项目
+     * @param projectNo
+     * @return
+     */
+    @DeleteMapping("/delete")
+    public String delete(String projectNo) {
+        projectService.delete(projectNo);
+        return ErrorCode.SUCCESS.toJsonString();
     }
 
 }

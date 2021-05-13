@@ -73,7 +73,7 @@ public class InfoDisplayController {
         } else {
             int startNum = pageNum * pageSize;
             // 按isPlatform排序，将平台投资人置前
-            List<Investor> investors = mongoTemplate.find(new Query().with(Sort.by(Sort.Order.desc("isPlatform"))).skip(startNum).limit(pageSize), Investor.class);
+            List<Investor> investors = mongoTemplate.find(new Query(where("status").is(0)).with(Sort.by(Sort.Order.desc("isPlatform"))).skip(startNum).limit(pageSize), Investor.class);
             if (!CollectionUtils.isEmpty(investors)) {
                 List<String> indusLabList = null;
                 for (Investor investor : investors) {
