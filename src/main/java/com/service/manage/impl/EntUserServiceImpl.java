@@ -24,6 +24,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.springframework.data.mongodb.core.query.Criteria.where;
+
 @Service
 public class EntUserServiceImpl implements EntUserService {
 
@@ -41,7 +43,7 @@ public class EntUserServiceImpl implements EntUserService {
         PageListDto pageListDto = new PageListDto<EntUserDto>();
         List<EntUserDto> entUserDtoList = new ArrayList<>();
 
-        List<EntUser> entUsers = mongoTemplate.find(new Query(), EntUser.class);
+        List<EntUser> entUsers = mongoTemplate.find(new Query(where("roleCode").is("ent")), EntUser.class);
         if (!CollectionUtils.isEmpty(entUsers)) {
             EntUserDto entUserDto = null;
             for (EntUser entUser : entUsers) {
@@ -92,13 +94,13 @@ public class EntUserServiceImpl implements EntUserService {
                             entUserDto.setBpApplyId(projectBpApply.getId());
                             entUserDtoList.add(entUserDto);
                         }
-                        for (EntUserDto userDto: entUserDtoList) {
+                        /*for (EntUserDto userDto: entUserDtoList) {
                             if (userDto.getProjectNo().equals(projectBpApply.getProjectNo())) {
                                 userDto.setIsBpApply(true);
                                 userDto.setBpApplyId(projectBpApply.getId());
                                 break;
                             }
-                        }
+                        }*/
 
                         if (null == entUserDto) {
                             entUserDto = new EntUserDto();

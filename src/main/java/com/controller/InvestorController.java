@@ -583,4 +583,16 @@ public class InvestorController {
             return ErrorCode.OTHEREEEOR.toJsonString();
         }
     }
+
+    /**
+     * 通过investorId获取投资人信息
+     * @param investorId
+     * @return
+     */
+    @GetMapping("/investor/investorByInvestorId")
+    public String investorByInvestorId(@RequestParam String investorId) {
+        Investor investor = mongoTemplate.findOne(query(where("investorId").is(investorId)), Investor.class);
+        OutputFormate outputFormate = new OutputFormate(investor, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
+        return JSONObject.toJSONString(outputFormate);
+    }
 }

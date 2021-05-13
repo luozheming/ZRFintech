@@ -73,6 +73,10 @@ public class Investor {
      */
     private BigDecimal disCountPrice;
     /**
+     * 追问价格
+     */
+    private BigDecimal questionPrice;
+    /**
      * 投资人未获取的资费金额
      */
     private BigDecimal unaccomplishedAmount;

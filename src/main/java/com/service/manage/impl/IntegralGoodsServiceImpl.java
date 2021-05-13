@@ -56,4 +56,10 @@ public class IntegralGoodsServiceImpl implements IntegralGoodsService {
         }
         return integralGoods;
     }
+
+    @Override
+    public void add(IntegralGoods integralGoods) {
+        integralGoods.setId(commonUtils.getNumCode());
+        mongoTemplate.save(integralGoods);
+    }
 }

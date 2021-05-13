@@ -67,6 +67,7 @@ public class UserLoginController {
             if(!StringUtils.isEmpty(mongoTemplate.findOne(query(where("openId").is(entUser.getOpenId())),EntUser.class))){
                 return ErrorCode.SUCCESS.toJsonString();
             }else{
+                entUser.setRoleCode("ent");
                 mongoTemplate.insert(entUser);
                 return ErrorCode.USERFIRSTLOGIN.toJsonString();
             }
@@ -192,7 +193,7 @@ public class UserLoginController {
      * @param userId
      * @return
      */
-    @GetMapping("                                    /entuser/detail")
+    @GetMapping("/entuser/detail")
     public String detail(@RequestParam String userId) {
         EntUser entUser = userLoginService.detail(userId);
         OutputFormate outputFormate = new OutputFormate(entUser, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());

@@ -5,17 +5,14 @@ import com.dto.outdto.OutputFormate;
 import com.dto.outdto.PageListDto;
 import com.pojo.IntegralGoods;
 import com.service.manage.IntegralGoodsService;
-import com.sun.org.apache.xml.internal.serializer.OutputPropertiesFactory;
 import com.utils.CommonUtils;
 import com.utils.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import javax.smartcardio.CommandAPDU;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -27,6 +24,8 @@ public class IntegralGoodsController {
     private IntegralGoodsService integralGoodsService;
     @Autowired
     private CommonUtils commonUtils;
+    @Value("${integralGoodsFilePath}")
+    private String integralGoodsFilePath;
 
     /**
      * 分页获取积分商品列表
@@ -69,5 +68,27 @@ public class IntegralGoodsController {
         }
         OutputFormate outputFormate = new OutputFormate(integralGoods, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
         return JSONObject.toJSONString(outputFormate);
-    } 
+    }
+
+    /**
+     * 积分商品新增
+     * @param photoFile
+     * @param integralGoods
+     * @return
+     */
+    @PostMapping("/add")
+    public String add(MultipartFile photoFile, IntegralGoods integralGoods) {
+        try {
+            String filePath = integralGoodsFilePath;
+            if (null != photoFile) {
+                commonUtils.uploadData(photoFile, filePath);
+                integralGoods.setPhotoRoute(filePath + "/" + photoFile.getOriginalFilename());
+            }
+            integralGoodsService.add(integralGoods);
+        } catch (Exception e) {
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+        return ErrorCode.SUCCESS.toJsonString();
+    }
+
 }

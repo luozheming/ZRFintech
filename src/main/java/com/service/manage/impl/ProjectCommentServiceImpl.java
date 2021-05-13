@@ -1,5 +1,6 @@
 package com.service.manage.impl;
 
+import com.pojo.Investor;
 import com.pojo.ProjectComment;
 import com.service.manage.ProjectCommentService;
 import com.utils.CommonUtils;
@@ -14,6 +15,7 @@ import org.springframework.util.StringUtils;
 import java.util.Date;
 import java.util.List;
 
+import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
 @Service
@@ -46,13 +48,13 @@ public class ProjectCommentServiceImpl implements ProjectCommentService {
             update.set("reply", projectComment.getReply());
             update.set("replyTm", new Date());
         }
-        Criteria criteria = Criteria.where("id").is(projectComment.getId());
+        Criteria criteria = where("id").is(projectComment.getId());
         mongoTemplate.updateFirst(query(criteria), update, ProjectComment.class);
     }
 
     @Override
     public List<ProjectComment> listByProjectNo(String projectNo) {
-        Criteria criteria = Criteria.where("projectNo").is(projectNo);
+        Criteria criteria = where("projectNo").is(projectNo);
         List<ProjectComment> projectComments = mongoTemplate.find(query(criteria), ProjectComment.class);
         return projectComments;
     }
