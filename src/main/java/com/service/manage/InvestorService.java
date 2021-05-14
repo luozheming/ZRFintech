@@ -28,7 +28,7 @@ public class InvestorService {
 
     public List<Investor> getInvestor(int pageNum,int pageSize){
         int startNum = pageNum*pageSize;
-        return mongoTemplate.find(new Query().with(Sort.by(Sort.Order.asc("status"))).skip(startNum).limit(pageSize), Investor.class);
+        return mongoTemplate.find(new Query().with(Sort.by(Sort.Order.desc("isPlatform"))).with(Sort.by(Sort.Order.desc("status"))).skip(startNum).limit(pageSize), Investor.class);
     }
 
     public int getDataCount(){

@@ -72,4 +72,9 @@ public class ProjectCommentServiceImpl implements ProjectCommentService {
         projectComment.setCreateTime(new Date());
         mongoTemplate.save(projectComment);
     }
+
+    @Override
+    public void delete(String id) {
+        mongoTemplate.remove(query(where("id").is(id)), ProjectComment.class);
+    }
 }
