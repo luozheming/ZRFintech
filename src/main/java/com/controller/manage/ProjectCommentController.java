@@ -63,4 +63,19 @@ public class ProjectCommentController {
         return ErrorCode.SUCCESS.toJsonString();
     }
 
+    /**
+     * 删除评论
+     * @param id
+     * @return
+     */
+    @DeleteMapping("/delete")
+    public String delete(@RequestParam String id) {
+        try {
+            projectCommentService.delete(id);
+        } catch (Exception e) {
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+        return ErrorCode.SUCCESS.toJsonString();
+    }
+
 }

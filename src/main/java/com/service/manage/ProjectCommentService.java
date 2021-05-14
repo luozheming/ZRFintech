@@ -9,4 +9,5 @@ public interface ProjectCommentService {
     void commit(ProjectComment projectComment);
     List<ProjectComment> listByProjectNo(String projectNo);
     Integer count();
+    void delete(String id);
 }
