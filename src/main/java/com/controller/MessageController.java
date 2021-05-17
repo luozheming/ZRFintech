@@ -40,8 +40,19 @@ public class MessageController {
     }
 
     @DeleteMapping("/delMessage")
-    public String delMessage(@RequestParam String id) {
-        messageService.deleteMessage(id);
+    public String delMessage(String userId, String id) {
+        messageService.deleteMessage(userId, id);
+        return ErrorCode.SUCCESS.toJsonString();
+    }
+
+    /**
+     * 消息标记已读
+     * @param userId
+     * @return
+     */
+    @PostMapping("/readMessage")
+    public String readMessage(String userId) {
+        messageService.readMessage(userId);
         return ErrorCode.SUCCESS.toJsonString();
     }
 

@@ -2,11 +2,14 @@ package com.service.impl;
 
 import com.pojo.Message;
 import com.service.MessageService;
+import com.utils.CommonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -18,6 +21,8 @@ public class MessageServiceImpl implements MessageService {
 
     @Autowired
     private MongoTemplate mongoTemplate;
+    @Autowired
+    private CommonUtils commonUtils;
 
     @Override
     public List<Message> pageList(String userId, Integer pageNum, Integer pageSize) {
@@ -33,7 +38,28 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public void deleteMessage(String id) {
-        mongoTemplate.remove(query(where("id").is(id)), Message.class);
+    public void deleteMessage(String userId, String id) {
+        if (!StringUtils.isEmpty(userId)) {
+            // 清空用户的消息
+            mongoTemplate.remove(query(where("userId").is(userId)), Message.class);
+        } else {
+            // 删除一条用户的消息
+            mongoTemplate.remove(query(where("id").is(id)), Message.class);
+        }
+    }
+
+    @Override
+    public void readMessage(String userId) {
+        Update update = new Update();
+        update.set("status", 1);
+        mongoTemplate.updateMulti(query(where("userId").is(userId).and("status").is(0)), update, Message.class);
+    }
+
+    @Override
+    public void add(Message message) {
+        if (StringUtils.isEmpty(message.getId())) {
+            message.setId(commonUtils.getNumCode());
+        }
+        mongoTemplate.save(message);
     }
 }

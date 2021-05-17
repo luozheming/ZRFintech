@@ -91,4 +91,19 @@ public class IntegralGoodsController {
         return ErrorCode.SUCCESS.toJsonString();
     }
 
+    @PostMapping("/edit")
+    public String edit(MultipartFile photoFile, IntegralGoods integralGoods) {
+        try {
+            String filePath = integralGoodsFilePath;
+            if (null != photoFile) {
+                commonUtils.uploadData(photoFile, filePath);
+                integralGoods.setPhotoRoute(filePath + "/" + photoFile.getOriginalFilename());
+            }
+            integralGoodsService.edit(integralGoods);
+        } catch (Exception e) {
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+        return ErrorCode.SUCCESS.toJsonString();
+    }
+
 }

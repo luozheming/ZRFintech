@@ -9,6 +9,7 @@ import com.dto.outdto.InvestorCommentAmountDto;
 import com.dto.outdto.OutputFormate;
 import com.dto.outdto.ProjectCommentDetailDto;
 import com.pojo.*;
+import com.service.MessageService;
 import com.utils.CommonUtils;
 import com.utils.ErrorCode;
 import org.springframework.beans.BeanUtils;
@@ -44,6 +45,8 @@ public class InvestorController {
     private CommonUtils commonUtils;
     @Value("${commentFilePath}")
     private String commentFilePath;
+    @Autowired
+    private MessageService messageService;
 
     /**
      * 红包支付
@@ -220,13 +223,20 @@ public class InvestorController {
             mongoTemplate.updateFirst(query(where("id").is(projectComment.getId())), update, ProjectComment.class);
 
             // 生成消息推送数据
+            String msg = "";
+            if (1 == projectComment.getCommentType()) {
+                msg = "您有一条投资人[" + projectComment.getInvestor() + "]反馈待接收";
+            } else if (2 == projectComment.getCommentType()) {
+                msg = "您有一条追问投资人[" + projectComment.getInvestor() + "]已回复";
+            }
             Message message = new Message();
             message.setId(commonUtils.getNumCode());
-            message.setMsg("您有一条投资人[" + projectComment.getInvestor() + "]反馈待接收");
+            message.setMsg(msg);
             message.setSender("系统消息");
             message.setCreateTime(new Date());
             message.setUserId(projectComment.getEntUserId());
-            mongoTemplate.save(message);
+            message.setStatus(0);
+            messageService.add(message);
             return ErrorCode.SUCCESS.toJsonString();
         }catch (Exception e){
             return ErrorCode.OTHEREEEOR.toJsonString();
@@ -278,7 +288,8 @@ public class InvestorController {
             message.setSender("系统消息");
             message.setCreateTime(new Date());
             message.setUserId(userId);
-            mongoTemplate.save(message);
+            message.setStatus(0);
+            messageService.add(message);
             return ErrorCode.SUCCESS.toJsonString();
         } catch (Exception e) {
             return ErrorCode.OTHEREEEOR.toJsonString();
@@ -571,13 +582,20 @@ public class InvestorController {
             mongoTemplate.updateFirst(query(where("investorId").is(investor.getInvestor())), update, Investor.class);
 
             // 生成消息推送数据
+            String msg = "";
+            if (1 == projectComment.getCommentType()) {
+                msg = "您有一条投资人[" + projectComment.getInvestor() + "]反馈待接收";
+            } else if (2 == projectComment.getCommentType()) {
+                msg = "您有一条追问投资人[" + projectComment.getInvestor() + "]已回复";
+            }
             Message message = new Message();
             message.setId(commonUtils.getNumCode());
-            message.setMsg("您有一条投资人[" + projectComment.getInvestor() + "]反馈待接收");
+            message.setMsg(msg);
             message.setSender("系统消息");
             message.setCreateTime(new Date());
             message.setUserId(projectComment.getEntUserId());
-            mongoTemplate.save(message);
+            message.setStatus(0);
+            messageService.add(message);
             return ErrorCode.SUCCESS.toJsonString();
         }catch (Exception e){
             return ErrorCode.OTHEREEEOR.toJsonString();

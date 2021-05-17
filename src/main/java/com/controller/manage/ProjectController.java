@@ -72,6 +72,7 @@ public class ProjectController {
      */
     @DeleteMapping("/delete")
     public String delete(@RequestParam String projectNo) {
+
         projectService.delete(projectNo);
         return ErrorCode.SUCCESS.toJsonString();
     }

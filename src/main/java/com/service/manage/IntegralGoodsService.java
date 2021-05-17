@@ -10,4 +10,5 @@ public interface IntegralGoodsService {
     Integer count();
     IntegralGoods detail(String id);
     void add(IntegralGoods integralGoods);
+    void edit(IntegralGoods integralGoods);
 }

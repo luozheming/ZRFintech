@@ -34,6 +34,9 @@ public class MvcConfig implements WebMvcConfigurer {
         // 小程序嵌套h5页面
         registry.addResourceHandler("/applet/**")
                 .addResourceLocations(basePath + "/applet/dist/");
+        // pc版登录界面
+        registry.addResourceHandler("/pc/**")
+                .addResourceLocations(basePath + "/pc/dist/");
         // 根目录访问页面
         registry.addResourceHandler("/**")
                 .addResourceLocations("classpath:static/","classpath:static/wx/");

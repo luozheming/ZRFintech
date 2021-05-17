@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -61,5 +62,17 @@ public class IntegralGoodsServiceImpl implements IntegralGoodsService {
     public void add(IntegralGoods integralGoods) {
         integralGoods.setId(commonUtils.getNumCode());
         mongoTemplate.save(integralGoods);
+    }
+
+    @Override
+    public void edit(IntegralGoods integralGoods) {
+        Update update = new Update();
+        if (!StringUtils.isEmpty(integralGoods.getPhotoRoute())) {
+            update.set("photoRoute", integralGoods.getPhotoRoute());
+        }
+        update.set("goodsName", integralGoods.getGoodsName());
+        update.set("integral", integralGoods.getIntegral());
+        update.set("goodsDesc", integralGoods.getGoodsDesc());
+        mongoTemplate.updateFirst(query(where("id").is(integralGoods.getId())), update, IntegralGoods.class);
     }
 }

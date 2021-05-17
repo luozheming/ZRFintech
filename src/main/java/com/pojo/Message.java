@@ -31,6 +31,10 @@ public class Message {
      * 创建时间
      */
     private Date createTime;
+    /**
+     * 状态: 0-未读，1-已读
+     */
+    private Integer status;
 
     @Tolerate
     public Message(){};
