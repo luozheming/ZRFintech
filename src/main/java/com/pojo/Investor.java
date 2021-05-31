@@ -65,13 +65,37 @@ public class Investor {
      */
     private String orgPhoto;
     /**
-     *  评论资费原价
+     *  投资人线上问答资费原价
      */
     private BigDecimal price;
     /**
-     * 评论资费折扣价
+     * 投资人线上问答资费折扣价
      */
     private BigDecimal disCountPrice;
+    /**
+     *  投资人1V1交流（线上）资费原价
+     */
+    private BigDecimal onlinePrice;
+    /**
+     * 投资人1V1交流（线上）资费折扣价
+     */
+    private BigDecimal onlineDisCountPrice;
+    /**
+     *  投资人1V1交流（线下）资费原价
+     */
+    private BigDecimal offlinePrice;
+    /**
+     * 投资人1V1交流（线下）资费折扣价
+     */
+    private BigDecimal offlineDisCountPrice;
+    /**
+     *  定制商业计划书资费原价
+     */
+    private BigDecimal bpMadePrice;
+    /**
+     * 定制商业计划书资费折扣价
+     */
+    private BigDecimal bpMadeDisCountPrice;
     /**
      * 投资人未获取的资费金额
      */

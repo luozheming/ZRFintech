@@ -1,6 +1,8 @@
 package com.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.pojo.Order;
+import com.service.OrderService;
 import com.service.WxPayService;
 import com.utils.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,15 +29,38 @@ public class WxPayController {
 
     @Autowired
     private WxPayService wxPayService;
+    @Autowired
+    private OrderService orderService;
 
     @PostMapping("/notify")
     public String notify(HttpServletRequest request, HttpServletResponse response) {
         Map map = new HashMap<>();
         try {
             String requestData = readData(request);
+            System.out.println("支付异步回调接口开始：requestData = " + requestData);
             // 需要通过证书序列号查找对应的证书，verifyNotify 中有验证证书的序列号
-            String plainText = wxPayService.verifyNotify(requestData);
-            if (!StringUtils.isEmpty(plainText)) {
+            String verifyData = wxPayService.verifyNotify(requestData);
+            System.out.println("支付异步回调接口结束：verifyData = " + verifyData);
+            if (!StringUtils.isEmpty(verifyData)) {
+                Integer payStatus = 0;
+                JSONObject jsonObject = JSONObject.parseObject(verifyData);
+                String outTradeNo = jsonObject.getString("out_trade_no");
+                String transactionId = jsonObject.getString("transaction_id");
+                Order order = orderService.detailByOrderNo(outTradeNo);
+                if ("SUCCESS".equals(jsonObject.getString("trade_state"))) {
+                    payStatus = 1;
+                    JSONObject amount = jsonObject.getJSONObject("amount");
+                    BigDecimal total = new BigDecimal(amount.getString("total"));
+                    if (total.divide(new BigDecimal("100")).compareTo(order.getPayAmount()) != 0) {
+                        payStatus = 5;
+                    }
+                } else {
+                    payStatus = 3;
+                }
+                order.setPayStatus(payStatus);
+                order.setTransactionId(transactionId);
+                orderService.update(order);
+
                 response.setStatus(200);
                 map.put("code", "SUCCESS");
                 map.put("message", "SUCCESS");

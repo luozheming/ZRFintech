@@ -31,6 +31,10 @@ public class EntPaymentDto {
      */
     private String investor;
     /**
+     * 投资人机构名称
+     */
+    private String investorOrgNm;
+    /**
      * 投资人照片路径
      */
     private String  invesPhotoRoute;
@@ -42,4 +46,8 @@ public class EntPaymentDto {
      *评论资费金额
      */
     private BigDecimal commentAmount;
+    /**
+     * 对接方式:1-线上问答，2-线上1V1交流，3-线下1V1交流
+     */
+    private Integer commentType;
 }

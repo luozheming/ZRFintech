@@ -21,26 +21,26 @@ public class ActivityRecordController {
 
     @PostMapping("/add")
     public String add(@RequestBody ActivityRecord activityRecord) {
-        ActivityRecord activityRecordResp = activityRecordService.detailByPhoneNm(activityRecord.getParticipantPhoneNm());
-        if (null != activityRecordResp) {
-            return ErrorCode.REPEATCOMMIT.toJsonString();
-        }
+//        ActivityRecord activityRecordResp = activityRecordService.detailByPhoneNm(activityRecord.getParticipantPhoneNm());
+//        if (null != activityRecordResp) {
+//            return ErrorCode.REPEATCOMMIT.toJsonString();
+//        }
         activityRecordService.add(activityRecord);
         return ErrorCode.SUCCESS.toJsonString();
     }
 
     @GetMapping("/pageList")
-    public String pageList(Integer pageNum, Integer pageSize) {
+    public String pageList(Integer pageNum, Integer pageSize, Integer activityType) {
         if (pageNum < 0 || pageSize <= 0) {
             return ErrorCode.PAGEBELLOWZERO.toJsonString();
         }
         try {
-            int count = activityRecordService.count();
+            int count = activityRecordService.count(activityType);
             int totalPage = count/pageSize;
             PageListDto pageListDto = new PageListDto<Project>();
             pageListDto.setTotal(count);
             if(pageNum <= totalPage){
-                List<ActivityRecord> activityRecords =  activityRecordService.pageList(pageNum, pageSize);
+                List<ActivityRecord> activityRecords =  activityRecordService.pageList(pageNum, pageSize, activityType);
                 pageListDto.setList(activityRecords);
             }
             OutputFormate outputFormate = new OutputFormate(pageListDto);

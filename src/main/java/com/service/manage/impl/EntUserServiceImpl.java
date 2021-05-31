@@ -120,7 +120,9 @@ public class EntUserServiceImpl implements EntUserService {
             pageEndRow = count;
             pageStartRow = pageSize * (totalPages - 1);
         }
-        entUserDtoList = entUserDtoList.subList(pageStartRow, pageEndRow);
+        if (count > 0) {
+            entUserDtoList = entUserDtoList.subList(pageStartRow, pageEndRow);
+        }
 
         pageListDto.setTotal(count);
         pageListDto.setList(entUserDtoList);

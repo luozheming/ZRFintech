@@ -25,6 +25,10 @@ public class ProjectComment {
      */
     private String investor;
     /**
+     * 投资人机构名称
+     */
+    private String investorOrgNm;
+    /**
      * 投资人照片路径
      */
     private String  invesPhotoRoute;
@@ -84,6 +88,22 @@ public class ProjectComment {
      * 创建时间
      */
     private Date createTime;
+    /**
+     * 更新时间
+     */
+    private Date updateTime;
+    /**
+     * 评论类型:1-线上问答，2-线上1V1交流，3-线下1V1交流
+     */
+    private Integer commentType;
+    /**
+     * 评论状态：0-待评论，1-已评论，2-已回评，3-已确认，4-已取消，5-已预约，6-取消预约，7-对接完成，8-对接失败
+     */
+    private Integer status;
+    /**
+     * 通用处理状态:0-未处理，1-处理中，2-已处理
+     */
+    private Integer commonStatus;
 
     @Tolerate
     public ProjectComment() {}

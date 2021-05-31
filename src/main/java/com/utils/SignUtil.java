@@ -1,5 +1,6 @@
 package com.utils;
 
+import okhttp3.HttpUrl;
 import org.apache.commons.codec.binary.Base64;
 
 import java.io.UnsupportedEncodingException;
@@ -23,7 +24,7 @@ public class SignUtil {
      * @throws SignatureException
      * @throws UnsupportedEncodingException
      */
-    public static byte[] sign256(String data, PrivateKey privateKey) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException,
+    public static byte[] sign256(String data, PrivateKey privateKey) throws NoSuchAlgorithmException, InvalidKeyException,
             SignatureException, UnsupportedEncodingException {
 
         Signature signature = Signature.getInstance(SIGNATURE_ALGORITHM);
@@ -74,5 +75,27 @@ public class SignUtil {
             return null;
         }
         return result;
+    }
+
+    /**
+     * 构建签名信息
+     * @param method
+     * @param url
+     * @param nonceStr
+     * @param body
+     * @return
+     */
+    public static String buildMessage(String method, HttpUrl url, String nonceStr, String body) {
+        String canonicalUrl = url.encodedPath();
+        if (url.encodedQuery() != null) {
+            canonicalUrl += "?" + url.encodedQuery();
+        }
+        String timeStamp = String.valueOf(System.currentTimeMillis());// 时间戳
+        //官方的方法自动做了换行的所有动作，注意唤起支付的参数不一样需要更换（这里是统一下单所以直接照搬即可）
+        return method + "\n"
+                + canonicalUrl + "\n"
+                + timeStamp + "\n"
+                + nonceStr + "\n"
+                + body + "\n";
     }
 }

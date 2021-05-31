@@ -1,6 +1,7 @@
 package com.service.impl;
 
 import com.pojo.ActivityRecord;
+import com.pojo.Project;
 import com.service.ActivityRecordService;
 import com.utils.CommonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
@@ -25,6 +27,7 @@ public class ActivityRecordServiceImpl implements ActivityRecordService {
     @Override
     public void add(ActivityRecord activityRecord) {
         activityRecord.setId(commonUtils.getNumCode());
+        activityRecord.setCreateTime(new Date());
         mongoTemplate.save(activityRecord);
     }
 
@@ -34,14 +37,35 @@ public class ActivityRecordServiceImpl implements ActivityRecordService {
     }
 
     @Override
-    public List<ActivityRecord> pageList(Integer pageNum, Integer pageSize) {
+    public List<ActivityRecord> pageList(Integer pageNum, Integer pageSize, Integer activityType) {
         int startNum = pageNum * pageSize;
-        List<ActivityRecord> activityRecords = mongoTemplate.find(new Query().skip(startNum).limit(pageSize), ActivityRecord.class);
+        Query query = new Query();
+        if (null != activityType) {
+            query.addCriteria(where("activityType").is(activityType));
+        }
+        List<ActivityRecord> activityRecords = mongoTemplate.find(query.skip(startNum).limit(pageSize), ActivityRecord.class);
+        if (1 == activityType) {
+            for (ActivityRecord activityRecord : activityRecords) {
+                Project project = mongoTemplate.findOne(query(where("projectNo").is(activityRecord.getProjectNo())), Project.class);
+                if (null != project) {
+                    activityRecord.setProjectStatus(project.getStatus());
+                }
+            }
+        }
         return activityRecords;
     }
 
     @Override
-    public Integer count() {
-        return (int) mongoTemplate.count(new Query(),"activityRecord");
+    public Integer count(Integer activityType) {
+        Query query = new Query();
+        if (null != activityType) {
+            query.addCriteria(where("activityType").is(activityType));
+        }
+        return (int) mongoTemplate.count(query,"activityRecord");
+    }
+
+    @Override
+    public void delete(String id) {
+        mongoTemplate.remove(query(where("id").is(id)), ActivityRecord.class);
     }
 }

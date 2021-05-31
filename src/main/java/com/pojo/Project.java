@@ -22,6 +22,10 @@ public class Project {
      */
     private String projectNm;
     /**
+     * 项目类型：1-融资项目，2-路演项目，3-路演转融资
+     */
+    private Integer projectType;
+    /**
      * 所属行业
      */
     private String proIndus;
@@ -86,6 +90,10 @@ public class Project {
      */
     private String proEmail;
     /**
+     * 项目联系人微信号
+     */
+    private String proWeChatNo;
+    /**
      * 存草稿标识位
      */
     private Boolean isDone;
@@ -109,6 +117,18 @@ public class Project {
      * 更新时间
      */
     private Date updateTime;
+    /**
+     * 状态（路演项目）：1-审核中，2-等待审核结果，3-审核通过，4-暂未通过
+     */
+    private Integer status;
+    /**
+     * 活动id
+     */
+    private String activityId;
+    /**
+     * 对接方式:1-线上问答，2-线上1V1交流，3-线下1V1交流
+     */
+    private String commentTypeDesc;
 
     @Tolerate
     public Project() {}
