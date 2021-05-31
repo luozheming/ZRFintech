@@ -28,4 +28,8 @@ public class WxPayDto {
      * 签名
      */
     private String paySign;
+    /**
+     * 订单号
+     */
+    private String outTradeNo;
 }

@@ -78,4 +78,16 @@ public class ProjectCommentController {
         return ErrorCode.SUCCESS.toJsonString();
     }
 
+    /**
+     * 修改评论的状态
+     * @param id
+     * @param status
+     * @return
+     */
+    @PostMapping("/status")
+    public String status(String id, Integer status) {
+        projectCommentService.status(id, status);
+        return ErrorCode.SUCCESS.toJsonString();
+    }
+
 }

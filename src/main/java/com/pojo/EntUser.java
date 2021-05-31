@@ -6,6 +6,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -49,4 +50,12 @@ public class EntUser {
      * 是否浏览上传项目页面
      */
     private Boolean isBrowse;
+    /**
+     * 是否浏览路演上传项目页面
+     */
+    private Boolean isShowBrowse;
+    /**
+     * 创建时间
+     */
+    private Date createTime;
 }

@@ -2,10 +2,15 @@ package com.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.dto.indto.PageDto;
+import com.dto.indto.ProjectFormUploadDto;
 import com.dto.outdto.OutputFormate;
-import com.pojo.*;
+import com.pojo.EntUser;
+import com.pojo.Investor;
+import com.pojo.Project;
+import com.pojo.ProjectBpApply;
 import com.utils.CommonUtils;
 import com.utils.ErrorCode;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
@@ -14,6 +19,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -91,9 +97,9 @@ public class InfoDisplayController {
      *  查询最新项目草稿
      */
     @PostMapping(value = "/project/getdraftbyid")
-    public String projectFormUpload(@RequestBody EntUser entUser){
+    public String projectFormUpload(@RequestBody ProjectFormUploadDto projectFormUploadDto){
         //查询项目草稿
-        Project draftProject = mongoTemplate.findOne(query(where("openId").is(entUser.getOpenId()).and("isDone").is(false)),Project.class);
+        Project draftProject = mongoTemplate.findOne(query(where("openId").is(projectFormUploadDto.getOpenId()).and("isDone").is(false).and("projectType").is(projectFormUploadDto.getProjectType())),Project.class);
         OutputFormate outputFormate = new OutputFormate(draftProject);
         return JSONObject.toJSONString(outputFormate);
     }
@@ -133,7 +139,7 @@ public class InfoDisplayController {
         if (project.getIsDone() != null && !project.getIsDone()) {
             //查找并替换相应的草稿，如果草稿不存在，则进行插入操作
             mongoTemplate.update(Project.class)
-                    .matching(query(where("openId").is(project.getOpenId()).and("isDone").is(false)))
+                    .matching(query(where("openId").is(project.getOpenId()).and("isDone").is(false).and("projectType").is(project.getProjectType())))
                     .replaceWith(project)
                     .withOptions(FindAndReplaceOptions.options().upsert())
                     .findAndReplace();
@@ -142,7 +148,15 @@ public class InfoDisplayController {
             //需要编写项目代码生成器
             project.setProjectNo(projectNo);
             project.setCreateTime(new Date());
+            // 项目类型：1-融资项目，2-路演项目，3-路演转融资
+            if (2 == project.getProjectType()) {
+                // 状态（路演项目）：1-审核中，2-等待审核结果，3-审核通过，4-暂未通过
+                project.setStatus(1);
+            }
             mongoTemplate.save(project);
+
+            // 项目提交后删除对应的草稿项目
+            mongoTemplate.remove(query(where("openId").is(project.getOpenId()).and("isDone").is(false).and("projectType").is(project.getProjectType())), Project.class);
             Project outputProject = Project.builder().projectNo(project.getProjectNo()).projectNm(project.getProjectNm()).build();
             OutputFormate outputFormate = new OutputFormate(outputProject);
             return JSONObject.toJSONString(outputFormate);
@@ -156,6 +170,8 @@ public class InfoDisplayController {
      */
     @PostMapping("/project/bpApply")
     public String bpApply(@RequestBody ProjectBpApply projectBpApply) {
+        /*
+        // 暂时删除vip卡逻辑代码
         // 1,扣除申请服务一次
         VIPCardUsage vipCardUsage = mongoTemplate.findOne(query(where("openId").is(projectBpApply.getOpenId())), VIPCardUsage.class);
         if (null == vipCardUsage) {
@@ -168,12 +184,17 @@ public class InfoDisplayController {
             Update update = new Update();
             update.set("bpApplyTimes", bpApplyTimes);
             mongoTemplate.updateFirst(query(where("openId").is(projectBpApply.getOpenId())), update, VIPCardUsage.class);
+        }*/
+        // 通过项目编号查找项目
+        Project project = mongoTemplate.findOne(query(where("projectNo").is(projectBpApply.getProjectNo())), Project.class);
+        if (null != project) {
+            BeanUtils.copyProperties(project, projectBpApply);
         }
-
         // 2,记录申请
         String id = commonUtils.getNumCode();// BP申请主键id
         projectBpApply.setId(id);
         projectBpApply.setCreateTime(new Date());
+        projectBpApply.setStatus(0);
         mongoTemplate.save(projectBpApply);
 
         OutputFormate outputFormate = new OutputFormate(projectBpApply);
@@ -184,8 +205,21 @@ public class InfoDisplayController {
      * 已上传项目查询
      */
     @GetMapping("/project/getMyProjects")
-    public String getMyProjects(@RequestParam(value = "openId", required = true) String openId){
-        List<Project> projectList = mongoTemplate.find(query(where("openId").is(openId).and("isDone").is(true)), Project.class);
+    public String getMyProjects(@RequestParam(value = "openId", required = true) String openId, String projectType){
+        Query query = new Query();
+        query.addCriteria(where("openId").is(openId));
+        List<Integer> projectTypeList = new ArrayList<>();
+        if (!StringUtils.isEmpty(projectType)) {
+            for (String projectTypeStr : projectType.split(",")) {
+                projectTypeList.add(Integer.valueOf(projectTypeStr));
+            }
+            query.addCriteria(where("projectType").in(projectTypeList));
+            if (projectType.indexOf("1") == 1) {
+                query.addCriteria(where("isDone").is(true));
+            }
+        }
+        query.with(Sort.by(Sort.Order.asc("isDone")));
+        List<Project> projectList = mongoTemplate.find(query, Project.class);
         OutputFormate outputFormate = new OutputFormate(projectList);
         return JSONObject.toJSONString(outputFormate);
     }
@@ -206,10 +240,15 @@ public class InfoDisplayController {
      * @return
      */
     @PostMapping("/entuser/browseProjectPage")
-    public String browseProjectPage(String openId) {
+    public String browseProjectPage(String openId, Integer projectType) {
         Update update = new Update();
-        update.set("isBrowse", true);
+        if (1 == projectType) {
+            update.set("isBrowse", true);
+        } else if (2 == projectType) {
+            update.set("isRoadShowBrowse", true);
+        }
         mongoTemplate.updateFirst(query(where("openId").is(openId)), update, EntUser.class);
         return ErrorCode.SUCCESS.toJsonString();
     }
+
 }
