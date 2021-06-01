@@ -1,5 +1,6 @@
 package com.service.manage.impl;
 
+import com.pojo.Order;
 import com.pojo.Project;
 import com.pojo.ProjectComment;
 import com.service.manage.ProjectCommentService;
@@ -47,6 +48,12 @@ public class ProjectCommentServiceImpl implements ProjectCommentService {
                     projectComment.setCommonStatus(2);
                 } else if (3 == projectComment.getStatus() || 5 == projectComment.getStatus()) {
                     projectComment.setCommonStatus(1);
+                }
+
+                // 获取对应订单处理状态
+                Order order = mongoTemplate.findOne(query(where("bizId").is(projectComment.getId())), Order.class);
+                if (null != order) {
+                    projectComment.setOrderPayStatus(order.getPayStatus());
                 }
             }
         }

@@ -104,6 +104,10 @@ public class ProjectComment {
      * 通用处理状态:0-未处理，1-处理中，2-已处理
      */
     private Integer commonStatus;
+    /**
+     * 订单支付状态
+     */
+    private Integer orderPayStatus;
 
     @Tolerate
     public ProjectComment() {}

@@ -41,6 +41,10 @@ public class Order {
      */
     private Integer payStatus;
     /**
+     * 支付类型；1-线上，2-线下
+     */
+    private Integer paymentType;
+    /**
      * 创建时间
      */
     private Date createTime;

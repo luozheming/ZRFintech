@@ -9,4 +9,6 @@ public interface OrderService {
     Order detailByOrderNo(String orderNo);
     void update(Order order);
     void delete(String orderNo);
+    void status(String orderNo, Integer payStatus);
+    void statusByBizId(String bizId, Integer payStatus);
 }

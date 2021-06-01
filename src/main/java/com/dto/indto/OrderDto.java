@@ -26,4 +26,8 @@ public class OrderDto {
      * 业务类型
      */
     private Integer bizType;
+    /**
+     * 支付类型；1-线上，2-线下
+     */
+    private Integer paymentType;
 }
