@@ -67,4 +67,16 @@ public class OrderController {
 
         return ErrorCode.SUCCESS.toJsonString();
     }
+
+    @PostMapping("/status")
+    public String status(String orderNo, Integer payStatus) {
+        orderService.status(orderNo, payStatus);
+        return ErrorCode.SUCCESS.toJsonString();
+    }
+
+    @PostMapping("/statusByBizId")
+    public String statusByBizId(String bizId, Integer payStatus) {
+        orderService.statusByBizId(bizId, payStatus);
+        return ErrorCode.SUCCESS.toJsonString();
+    }
 }

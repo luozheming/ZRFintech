@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
@@ -36,14 +37,17 @@ public class OrderServiceImpl implements OrderService {
         // 生成订单号
         String orderNo = commonUtils.getNumCode().substring(0, 32);// 订单号
         // 微信统一支付
-        WxPayDto wxPayDto = wxPayService.wxPay(orderNo, orderDto.getOpenId(), orderDto.getPayAmount().multiply(new BigDecimal("100")));
-        wxPayDto.setOutTradeNo(orderNo);
+        WxPayDto wxPayDto = null;
+        if (1 == orderDto.getPaymentType()) {
+            wxPayDto = wxPayService.wxPay(orderNo, orderDto.getOpenId(), orderDto.getPayAmount().multiply(new BigDecimal("100")));
+            wxPayDto.setOutTradeNo(orderNo);
+        }
         // 初始化订单信息
         Order order = new Order();
         BeanUtils.copyProperties(orderDto, order);
         order.setOrderNo(orderNo);
         order.setPayStatus(0);// 支付状态：0-未支付，1-支付中，2-支付成功，3-支付失败，4-支付超时
-        if (null == wxPayDto) {
+        if (1 == orderDto.getPaymentType() && null == wxPayDto) {
             order.setPayStatus(3);
         }
         mongoTemplate.insert(order, "order");
@@ -70,6 +74,22 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void delete(String orderNo) {
         mongoTemplate.remove(query(where("orderNo").is(orderNo)), Order.class);
+    }
+
+    @Override
+    public void status(String orderNo, Integer payStatus) {
+        Update update = new Update();
+        update.set("payStatus", payStatus);
+        update.set("updateTime", new Date());
+        mongoTemplate.updateFirst(query(where("orderNo").is(orderNo)), update, Order.class);
+    }
+
+    @Override
+    public void statusByBizId(String bizId, Integer payStatus) {
+        Update update = new Update();
+        update.set("payStatus", payStatus);
+        update.set("updateTime", new Date());
+        mongoTemplate.updateFirst(query(where("bizId").is(bizId)), update, Order.class);
     }
 
 }
