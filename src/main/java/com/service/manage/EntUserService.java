@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface EntUserService {
 
-     PageListDto<EntUserDto> pageList(Integer pageNum, Integer pageSize);
+     PageListDto<EntUserDto> pageList(Integer pageNum, Integer pageSize) throws  Exception;
      Integer count();
 
 }

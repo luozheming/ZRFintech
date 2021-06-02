@@ -29,6 +29,8 @@ public class EntUserController {
             OutputFormate outputFormate = new OutputFormate(pageListDto);
             return JSONObject.toJSONString(outputFormate);
         } catch (Exception e) {
+            System.out.println(e);
+            System.out.println(e.getMessage());
             return ErrorCode.OTHEREEEOR.toJsonString();
         }
     }

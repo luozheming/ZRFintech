@@ -2,6 +2,7 @@ package com.service.manage.impl;
 
 import com.enums.CommentType;
 import com.pojo.Project;
+import com.pojo.ProjectBpApply;
 import com.pojo.ProjectComment;
 import com.service.manage.ProjectCommentService;
 import com.service.manage.ProjectService;
@@ -39,6 +40,11 @@ public class ProjectServiceImpl implements ProjectService {
                     for (Integer commentType : commentTypes)
                     commentTypeDesc = commentTypeDesc + "," + CommentType.getMessage(commentType);
                 }
+                ProjectBpApply projectBpApply = mongoTemplate.findOne(query(where("projectNo").is(project.getProjectNo())), ProjectBpApply.class);
+                if (null != projectBpApply) {
+                    commentTypeDesc = commentTypeDesc + "," + "定制商业计划书";
+                }
+
                 if (!StringUtils.isEmpty(commentTypeDesc)) {
                     commentTypeDesc = commentTypeDesc.substring(1);
                 }
