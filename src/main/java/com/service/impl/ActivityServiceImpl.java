@@ -69,7 +69,7 @@ public class ActivityServiceImpl implements ActivityService {
         List<Activity> activities = mongoTemplate.find(query.skip(startNum).limit(pageSize), Activity.class);
         if (!CollectionUtils.isEmpty(activities)) {
             for (Activity activity : activities) {
-                if (!StringUtils.isEmpty(activity.getEndDate()) && DateUtil.getFormatDate(new Date(), "yyyy-MM-dd HH:mm:ss").compareTo(activity.getEndDate()) > 0) {
+                if (!StringUtils.isEmpty(activity.getEndDate()) && DateUtil.dateToStr(new Date(), "yyyy-MM-dd HH:mm:ss").compareTo(activity.getEndDate()) > 0) {
                     activity.setStatus(2);
                 }
                 if (!StringUtils.isEmpty(activity.getPhotoRoute())) {
