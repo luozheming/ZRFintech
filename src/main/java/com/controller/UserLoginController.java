@@ -22,6 +22,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Date;
+
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
@@ -67,6 +69,7 @@ public class UserLoginController {
             if(!StringUtils.isEmpty(mongoTemplate.findOne(query(where("openId").is(entUser.getOpenId())),EntUser.class))){
                 return ErrorCode.SUCCESS.toJsonString();
             }else{
+                entUser.setCreateTime(new Date());
                 entUser.setRoleCode("ent");
                 mongoTemplate.insert(entUser);
                 return ErrorCode.USERFIRSTLOGIN.toJsonString();

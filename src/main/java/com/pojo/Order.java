@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.experimental.Tolerate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
@@ -16,13 +17,13 @@ public class Order {
      */
     private String orderNo;
     /**
-     * 项目编号
+     * 业务id(如：评论id)
      */
-    private String projectNo;
+    private String bizId;
     /**
-     * 投资人编号
+     * 业务类型：详细见OrderBizType
      */
-    private String investorId;
+    private Integer bizType;
     /**
      * 支付方
      */
@@ -30,15 +31,19 @@ public class Order {
     /**
      * 支付流水号
      */
-    private String businessNo;
+    private String transactionId;
     /**
      * 支付金额
      */
-    private String payAmount;
+    private BigDecimal payAmount;
     /**
-     * 支付状态：0-未支付，1-支付中，2-支付成功，3-支付失败，4-支付超时
+     * 支付状态：0-未支付，1-支付中，2-支付成功，3-支付失败，4-支付超时，5-支付异常
      */
     private Integer payStatus;
+    /**
+     * 支付类型；1-线上，2-线下
+     */
+    private Integer paymentType;
     /**
      * 创建时间
      */

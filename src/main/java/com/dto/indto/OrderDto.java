@@ -7,19 +7,27 @@ import java.math.BigDecimal;
 @Data
 public class OrderDto {
     /**
-     * 项目编号
+     * 订单号
      */
-    private String projectNo;
+    private String orderNo;
     /**
      * 支付方
      */
     private String openId;
     /**
-     * 投资人编号
-     */
-    private String investorId;
-    /**
      * 支付金额
      */
     private BigDecimal payAmount;
+    /**
+     * 业务id(如：评论id,活动id)
+     */
+    private String bizId;
+    /**
+     * 业务类型
+     */
+    private Integer bizType;
+    /**
+     * 支付类型；1-线上，2-线下
+     */
+    private Integer paymentType;
 }

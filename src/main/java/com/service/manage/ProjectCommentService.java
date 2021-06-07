@@ -11,4 +11,5 @@ public interface ProjectCommentService {
     Integer count();
     void add(ProjectComment projectComment);
     void delete(String id);
+    void status(String id, Integer status);
 }

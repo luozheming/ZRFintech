@@ -56,20 +56,19 @@ public class InvestorController {
     @PostMapping(value = "/investor/entPayment")
     public String entPayment(@RequestBody List<EntPaymentDto> entPaymentDtoList){
         try{
+            List<ProjectComment> projectCommentList = new ArrayList<>();// 项目评论信息list
             if (!CollectionUtils.isEmpty(entPaymentDtoList)) {
                 String openId = entPaymentDtoList.get(0).getOpenId();
 
-                Integer commentCount = 0;// 评论服务次数
-                List<ProjectComment> projectCommentList = new ArrayList<>();// 项目评论信息list
+//                Integer commentCount = 0;// 评论服务次数
                 ProjectComment projectComment = null;
-
                 // 在项目编号下已有投资人id的list中累加
                 List<String> expList = new ArrayList<>();
                 for (EntPaymentDto entPaymentDto: entPaymentDtoList) {
-                    // 非平台投资人需要累积扣除服务次数
-                    if (!entPaymentDto.getIsPlatform()) {
-                        commentCount++;
-                    }
+//                    // 非平台投资人需要累积扣除服务次数
+//                    if (!StringUtils.isEmpty(entPaymentDto.getIsPlatform()) && !entPaymentDto.getIsPlatform()) {
+//                        commentCount++;
+//                    }
 
                     expList.add(entPaymentDto.getInvestorId());
                     projectComment = new ProjectComment();
@@ -79,9 +78,13 @@ public class InvestorController {
                     projectComment.setFavor(2);// 重点关注:1-感兴趣，2-未标记，3-不感兴趣，4-拒绝
                     projectComment.setCommentType(1);// 评论类型：1-点评，2-追问
                     projectComment.setCreateTime(new Date());
+                    projectComment.setUpdateTime(new Date());
+                    projectComment.setStatus(0);
                     projectCommentList.add(projectComment);
                 }
-/*
+
+                /*
+                // 暂时删除vip卡逻辑代码
                 // 先扣除用户的vip卡的服务使用次数
                 Integer commentTimes = 0;
                 VIPCardUsage vipCardUsage = mongoTemplate.findOne(query(where("openId").is(openId)), VIPCardUsage.class);
@@ -108,9 +111,18 @@ public class InvestorController {
                 // 批量初始化评论信息
                 if (!CollectionUtils.isEmpty(projectCommentList)) {
                     mongoTemplate.insert(projectCommentList, ProjectComment.class);
+
+                    // 如果项目类型：1-融资项目，2-路演项目，3-路演转融资 为路演项目，有在线问答评论后更新项目类型为路演转融资
+                    Project project = mongoTemplate.findOne(query(where("projectNo").is(projectComment.getProjectNo())), Project.class);
+                    if (2 == project.getProjectType()) {
+                        Update updateProject = new Update();
+                        updateProject.set("projectType", 3);
+                        mongoTemplate.updateFirst(query(where("projectNo").is(project.getProjectNo())), updateProject, Project.class);
+                    }
                 }
             }
-            return ErrorCode.SUCCESS.toJsonString();
+            OutputFormate outputFormate = new OutputFormate(projectCommentList, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
+            return JSONObject.toJSONString(outputFormate);
         }catch (Exception e){
             return ErrorCode.OTHEREEEOR.toJsonString();
         }
@@ -161,9 +173,10 @@ public class InvestorController {
                 if (!StringUtils.isEmpty(getCommentsDto.getProjectNo())) {
                     criteria = criteria.and("projectNo").is(getCommentsDto.getProjectNo());
                 }
-                Query query = new Query(criteria).with(Sort.by(Sort.Order.desc("isDone")))
-                        .with(Sort.by(Sort.Order.asc("favor")))
-                        .with(Sort.by(Sort.Order.asc("updateTm")));
+//                Query query = new Query(criteria).with(Sort.by(Sort.Order.desc("isDone")))
+//                        .with(Sort.by(Sort.Order.asc("favor")))
+//                        .with(Sort.by(Sort.Order.asc("updateTm")));
+                Query query = new Query(criteria).with(Sort.by(Sort.Order.desc("updateTime")));
                 List<ProjectComment> projectComments = mongoTemplate.find(query.skip(startNum).limit(pageSize), ProjectComment.class);
                 if (!CollectionUtils.isEmpty(projectComments)) {
                     for (ProjectComment projectComment : projectComments) {
@@ -219,7 +232,9 @@ public class InvestorController {
                 update.set("favor", projectComment.getFavor());
             }
             update.set("content", projectComment.getContent());
-            update.set("updateTm", new Date());
+            update.set("updateTm", new Date());// 评论时间
+            update.set("status", 1);
+            update.set("updateTime", new Date());// 最新操作时间
             mongoTemplate.updateFirst(query(where("id").is(projectComment.getId())), update, ProjectComment.class);
 
             // 生成消息推送数据
@@ -237,6 +252,7 @@ public class InvestorController {
             message.setUserId(projectComment.getEntUserId());
             message.setStatus(0);
             messageService.add(message);
+
             return ErrorCode.SUCCESS.toJsonString();
         }catch (Exception e){
             return ErrorCode.OTHEREEEOR.toJsonString();
@@ -270,6 +286,7 @@ public class InvestorController {
             update.set("stars", projectComment.getStars());
             update.set("reply", projectComment.getReply());
             update.set("replyTm", new Date());
+            update.set("status", 2);
             Query query = new Query(Criteria.where("id").is(projectComment.getId()));
             mongoTemplate.updateFirst(query, update, ProjectComment.class);
 

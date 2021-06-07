@@ -14,4 +14,6 @@ public interface ProjectService {
     List<Project> listByEnt(String openId);
 
     void delete(String projectNo);
+
+    void status(String projectNo, Integer status);
 }

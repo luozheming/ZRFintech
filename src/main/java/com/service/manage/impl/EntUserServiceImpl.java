@@ -39,7 +39,7 @@ public class EntUserServiceImpl implements EntUserService {
     private ProjectCommentService projectCommentService;
 
     @Override
-    public PageListDto<EntUserDto> pageList(Integer pageNum, Integer pageSize) {
+    public PageListDto<EntUserDto> pageList(Integer pageNum, Integer pageSize) throws Exception {
         PageListDto pageListDto = new PageListDto<EntUserDto>();
         List<EntUserDto> entUserDtoList = new ArrayList<>();
 
@@ -54,7 +54,10 @@ public class EntUserServiceImpl implements EntUserService {
                         entUserDto = new EntUserDto();
                         BeanUtils.copyProperties(entUser, entUserDto);
                         entUserDto.setProjectNm(project.getProjectNm());
-                        entUserDto.setProjectCreateTime(project.getCreateTime());
+                        entUserDto.setProjectNo(project.getProjectNo());
+                        if (null != project.getCreateTime()) {
+                            entUserDto.setProjectCreateTime(project.getCreateTime());
+                        }
                         // 查找订单数
                         List<ProjectComment> projectComments = projectCommentService.listByProjectNo(project.getProjectNo());
                         if (!CollectionUtils.isEmpty(projectComments)) {
@@ -90,7 +93,9 @@ public class EntUserServiceImpl implements EntUserService {
                             BeanUtils.copyProperties(entUser, entUserDto);
                             entUserDto.setProjectNm(projectBpApply.getProjectNm());
                             entUserDto.setIsBpApply(true);
-                            entUserDto.setBpApplyTime(projectBpApply.getCreateTime());
+                            if (null != projectBpApply.getCreateTime()) {
+                                entUserDto.setBpApplyTime(projectBpApply.getCreateTime());
+                            }
                             entUserDto.setBpApplyId(projectBpApply.getId());
                             entUserDtoList.add(entUserDto);
                         }
@@ -139,7 +144,9 @@ public class EntUserServiceImpl implements EntUserService {
             pageEndRow = count;
             pageStartRow = pageSize * (totalPages - 1);
         }
-        entUserDtoList = entUserDtoList.subList(pageStartRow, pageEndRow);
+        if (count > 0) {
+            entUserDtoList = entUserDtoList.subList(pageStartRow, pageEndRow);
+        }
 
         pageListDto.setTotal(count);
         pageListDto.setList(entUserDtoList);

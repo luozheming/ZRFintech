@@ -3,7 +3,6 @@ package com.controller.manage;
 import com.alibaba.fastjson.JSONObject;
 import com.dto.outdto.OutputFormate;
 import com.dto.outdto.PageListDto;
-import com.pojo.Investor;
 import com.pojo.Project;
 import com.service.manage.ProjectService;
 import com.utils.ErrorCode;
@@ -74,6 +73,12 @@ public class ProjectController {
     public String delete(@RequestParam String projectNo) {
 
         projectService.delete(projectNo);
+        return ErrorCode.SUCCESS.toJsonString();
+    }
+
+    @PostMapping("/status")
+    public String status(String projectNo, Integer status) {
+        projectService.status(projectNo, status);
         return ErrorCode.SUCCESS.toJsonString();
     }
 
