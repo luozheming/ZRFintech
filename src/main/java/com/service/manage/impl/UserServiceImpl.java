@@ -70,9 +70,9 @@ public class UserServiceImpl implements UserService {
 
         // 查询当天用户增长数
         String date = DateUtil.dateToStr(new Date(), "yyyy-MM-dd");
-        Date dateStart = DateUtil.strToDate(date + " 00:00:00", "yyyy-MM-dd HH:MM:SS");
-        Date dateEnd = DateUtil.strToDate(date + " 23:59:59", "yyyy-MM-dd HH:MM:SS");
-        int entUserAddCountPerDay= (int) mongoTemplate.count(query(where("createTime").lt(dateEnd).gt(dateStart).and("phoneNm").nin(internalPhoneNo.split(","))), EntUser.class);
+        Date dateStart = DateUtil.strToDate(date + " 00:00:00", "yyyy-MM-dd HH:mm:ss");
+        Date dateEnd = DateUtil.strToDate(date + " 23:59:59", "yyyy-MM-dd HH:mm:ss");
+        int entUserAddCountPerDay= (int) mongoTemplate.count(query(where("createTime").gt(dateStart).lt(dateEnd).and("phoneNm").nin(internalPhoneNo.split(","))), EntUser.class);
         homePageDto.setEntUserCount(entUserCount);
         homePageDto.setIsBrowseCount(isBrowseCount);
         homePageDto.setIsRoadShowBrowseCount(isRoadShowBrowseCount);
