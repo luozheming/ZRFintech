@@ -55,7 +55,7 @@ public class UserController {
             // 检验用户是否存在
             User user = userService.getById(userId);
             if (null == user) {
-//                return ErrorCode.EMPITYUSER.toJsonString();
+                return ErrorCode.EMPITYUSER.toJsonString();
             }
 
             // 获取首页展示相关信息
