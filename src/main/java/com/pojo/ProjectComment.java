@@ -97,7 +97,7 @@ public class ProjectComment {
      */
     private Date updateTime;
     /**
-     * 评论类型:1-线上问答，2-线上1V1交流，3-线下1V1交流
+     * 评论类型:1-线上问答，2-线上1V1交流，3-线下1V1交流，4-追问
      */
     private Integer commentType;
     /**
@@ -120,10 +120,6 @@ public class ProjectComment {
      * 评论附件路径
      */
     private String commentFilePath;
-    /**
-     * 评论类型：1-点评，2-追问
-     */
-    private Integer commentType;
     /**
      * 追问问题
      */

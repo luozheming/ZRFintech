@@ -193,13 +193,12 @@ public class InfoDisplayController {
         if (null != project) {
             BeanUtils.copyProperties(project, projectBpApply);
         }
-        }*/
 
         // 2,记录申请
         String id = commonUtils.getNumCode();// BP申请主键id
         projectBpApply.setId(id);
         projectBpApply.setCreateTime(new Date());
-        projectBpApply.setStatus(0);
+//        projectBpApply.setStatus(0);
         projectBpApply.setDealStatus(0);
         mongoTemplate.save(projectBpApply);
 

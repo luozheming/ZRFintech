@@ -97,8 +97,4 @@ public class EntUser {
      * 是否浏览路演上传项目页面
      */
     private Boolean isShowBrowse;
-    /**
-     * 创建时间
-     */
-    private Date createTime;
 }

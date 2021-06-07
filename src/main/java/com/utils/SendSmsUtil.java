@@ -19,7 +19,7 @@ import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class SendSmsUtil {
+public class  SendSmsUtil {
 
     //无需修改,用于格式化鉴权头域,给"X-WSSE"参数赋值
     private static final String WSSE_HEADER_FORMAT = "UsernameToken Username=\"%s\",PasswordDigest=\"%s\",Nonce=\"%s\",Created=\"%s\"";
