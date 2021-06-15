@@ -25,6 +25,22 @@ public class CommonUtils {
     }
 
     /**
+     * 获取指定位数的随便数字
+     * @param figure
+     * @return
+     */
+    public Integer getIntCode(int figure) {
+        int hashCode = UUID.randomUUID().toString().hashCode();
+        if(hashCode < 0) {//有可能是负数
+            hashCode = - hashCode;
+        }
+        if (String.valueOf(hashCode).length() > figure) {
+            hashCode = Integer.valueOf(String.valueOf(hashCode).substring(0, figure));
+        }
+        return hashCode;
+    }
+
+    /**
      * 获取图片信息
      * @param filePath
      * @return

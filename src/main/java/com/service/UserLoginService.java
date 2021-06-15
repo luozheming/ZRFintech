@@ -13,4 +13,5 @@ public interface UserLoginService {
     void edit(EntUser entUser) throws Exception;
     EntUser detail(String userId);
     Investor investorById(String userId);
+    void sendSms(Integer smsType, String phoneNm) throws Exception;
 }

@@ -114,7 +114,7 @@ public class InvestorController {
 
                     // 如果项目类型：1-融资项目，2-路演项目，3-路演转融资 为路演项目，有在线问答评论后更新项目类型为路演转融资
                     Project project = mongoTemplate.findOne(query(where("projectNo").is(projectComment.getProjectNo())), Project.class);
-                    if (2 == project.getProjectType()) {
+                    if (null != project.getProjectType() && 2 == project.getProjectType()) {
                         Update updateProject = new Update();
                         updateProject.set("projectType", 3);
                         mongoTemplate.updateFirst(query(where("projectNo").is(project.getProjectNo())), updateProject, Project.class);

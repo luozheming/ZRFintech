@@ -85,4 +85,9 @@ public class ProjectServiceImpl implements ProjectService {
         update.set("status", status);
         mongoTemplate.updateFirst(query(where("projectNo").is(projectNo)), update, Project.class);
     }
+
+    @Override
+    public List<Project> listByEntUserId(String entUserId) {
+        return mongoTemplate.find(query(where("entUserId").is(entUserId)), Project.class);
+    }
 }

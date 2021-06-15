@@ -48,7 +48,15 @@ public class EntUserServiceImpl implements EntUserService {
             EntUserDto entUserDto = null;
             for (EntUser entUser : entUsers) {
                 // 查找用户已上传项目
-                List<Project> projects = projectService.listByEnt(entUser.getOpenId());
+                List<Project> projects = new ArrayList<>();
+                if (!StringUtils.isEmpty(entUser.getOpenId())) {
+                    // 查询小程序用户上传的项目
+                    List<Project> projectList = projectService.listByEnt(entUser.getOpenId());
+                    if (!CollectionUtils.isEmpty(projectList)) {
+                        projects.addAll(projectList);
+                    }
+                } else {
+                }
                 if (!CollectionUtils.isEmpty(projects)) {
                     for (Project project : projects) {
                         entUserDto = new EntUserDto();

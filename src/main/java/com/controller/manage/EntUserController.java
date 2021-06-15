@@ -7,7 +7,9 @@ import com.dto.outdto.PageListDto;
 import com.service.manage.EntUserService;
 import com.utils.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/entUser")
@@ -34,5 +36,4 @@ public class EntUserController {
             return ErrorCode.OTHEREEEOR.toJsonString();
         }
     }
-
 }

@@ -16,4 +16,6 @@ public interface ProjectService {
     void delete(String projectNo);
 
     void status(String projectNo, Integer status);
+
+    List<Project> listByEntUserId(String entUserID);
 }

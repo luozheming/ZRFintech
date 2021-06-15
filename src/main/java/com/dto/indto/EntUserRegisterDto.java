@@ -16,4 +16,8 @@ public class EntUserRegisterDto {
      * 角色编码：ent-商户，investor-投资者
      */
     private String roleCode;
+    /**
+     * 短信验证码
+     */
+    private String captcha;
 }

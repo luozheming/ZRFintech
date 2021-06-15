@@ -26,21 +26,21 @@ public class  SendSmsUtil {
     //无需修改,用于格式化鉴权头域,给"Authorization"参数赋值
     private static final String AUTH_HEADER_VALUE = "WSSE realm=\"SDP\",profile=\"UsernameToken\",type=\"Appkey\"";
 
-    public static void sendSms() throws Exception {
+    public static String sendSms(String phoneNo, String templateId) throws Exception {
 
         //必填,请参考"开发准备"获取如下数据,替换为实际值
         String url = "https://rtcsms.cn-north-1.myhuaweicloud.com:10743/sms/batchSendSms/v1"; //APP接入地址+接口访问URI
         String appKey = "Bg3zfO1oXXmQF6EDoXE5F5n6ZUPr"; //APP_Key
         String appSecret = "F476atHI819k0WsdTCj118z3a84N"; //APP_Secret
         String sender = "8821050711523"; //国内短信签名通道号或国际/港澳台短信通道号
-        String templateId = "553ed74f719e41a1b15f5033aa5e4b43"; //模板ID
+//        String templateId = "553ed74f719e41a1b15f5033aa5e4b43"; //模板ID
 
         //条件必填,国内短信关注,当templateId指定的模板类型为通用模板时生效且必填,必须是已审核通过的,与模板类型一致的签名名称
         //国际/港澳台短信不用关注该参数
-        String signature = "企融星短信测试"; //签名名称
+        String signature = "企融星"; //签名名称
 
         //必填,全局号码格式(包含国家码),示例:+86151****6789,多个号码之间用英文逗号分隔
-        String receiver = "+8618923870661"; //短信接收人号码
+        String receiver = "+86" + phoneNo; //短信接收人号码
 
         //选填,短信状态报告接收地址,推荐使用域名,为空或者不填表示不接收状态报告
         String statusCallBack = "";
@@ -52,20 +52,21 @@ public class  SendSmsUtil {
          * 模板中的每个变量都必须赋值，且取值不能为空
          * 查看更多模板和变量规范:产品介绍>模板和变量规范
          */
-        String templateParas = "[\"225567\"]"; //模板变量，此处以单变量验证码短信为例，请客户自行生成6位验证码，并定义为字符串类型，以杜绝首位0丢失的问题（例如：002569变成了2569）。
+        String captcha = new CommonUtils().getIntCode(6).toString();
+        String templateParas = "[" + captcha + "]"; //模板变量，此处以单变量验证码短信为例，请客户自行生成6位验证码，并定义为字符串类型，以杜绝首位0丢失的问题（例如：002569变成了2569）。
 
         //请求Body,不携带签名名称时,signature请填null
         String body = buildRequestBody(sender, receiver, templateId, templateParas, statusCallBack, signature);
         if (null == body || body.isEmpty()) {
             System.out.println("body is null.");
-            return;
+            return null;
         }
 
         //请求Headers中的X-WSSE参数值
         String wsseHeader = buildWsseHeader(appKey, appSecret);
         if (null == wsseHeader || wsseHeader.isEmpty()) {
             System.out.println("wsse header is null.");
-            return;
+            return null;
         }
 
         CloseableHttpClient client = HttpClients.custom()
@@ -83,6 +84,8 @@ public class  SendSmsUtil {
 
         System.out.println(response.toString()); //打印响应头域信息
         System.out.println(EntityUtils.toString(response.getEntity())); //打印响应消息实体
+
+        return captcha;
     }
 
     /**
@@ -140,6 +143,10 @@ public class  SendSmsUtil {
         String passwordDigestBase64Str = Base64.getEncoder().encodeToString(hexDigest.getBytes()); //PasswordDigest
 
         return String.format(WSSE_HEADER_FORMAT, appKey, passwordDigestBase64Str, nonce, time);
+    }
+
+    public static void main(String[] args) throws Exception {
+        sendSms("18923870661", "553ed74f719e41a1b15f5033aa5e4b43");
     }
 }
 

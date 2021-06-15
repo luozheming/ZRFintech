@@ -166,7 +166,7 @@ public class UserLoginController {
             return ErrorCode.SUCCESS.toJsonString();
         } catch (Exception e) {
             OutputFormate outputFormate = new OutputFormate(null, ErrorCode.OTHEREEEOR.getCode(), e.getMessage());
-            return ErrorCode.OTHEREEEOR.toJsonString();
+            return JSONObject.toJSONString(outputFormate);
         }
     }
 
@@ -213,5 +213,21 @@ public class UserLoginController {
         Investor investor = userLoginService.investorById(userId);
         OutputFormate outputFormate = new OutputFormate(investor, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
         return JSONObject.toJSONString(outputFormate);
+    }
+
+    /**
+     * 发送短信验证码
+     * @param smsType
+     * @param phoneNm
+     * @return
+     */
+    @PostMapping("/entUser/sendSms")
+    public String sendSms(Integer smsType, String phoneNm) {
+        try {
+            userLoginService.sendSms(smsType, phoneNm);
+            return ErrorCode.SUCCESS.toJsonString();
+        } catch (Exception e) {
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
     }
 }
