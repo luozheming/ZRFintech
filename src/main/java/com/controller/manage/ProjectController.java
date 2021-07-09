@@ -82,4 +82,10 @@ public class ProjectController {
         return ErrorCode.SUCCESS.toJsonString();
     }
 
+    @PostMapping("/edit")
+    public String edit(@RequestBody Project project) {
+        projectService.edit(project);
+        return ErrorCode.SUCCESS.toJsonString();
+    }
+
 }

@@ -2,20 +2,23 @@ package com.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.dto.indto.OrderDto;
+import com.dto.outdto.OrderOutDto;
 import com.dto.outdto.OutputFormate;
+import com.dto.outdto.PageListDto;
 import com.dto.outdto.WxPayDto;
 import com.enums.OrderBizType;
+import com.pojo.ActivityRecord;
 import com.pojo.Order;
+import com.pojo.Project;
 import com.service.ActivityRecordService;
 import com.service.OrderService;
 import com.service.WxPayService;
 import com.service.manage.ProjectCommentService;
 import com.utils.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/order")
@@ -77,6 +80,38 @@ public class OrderController {
     @PostMapping("/statusByBizId")
     public String statusByBizId(String bizId, Integer payStatus) {
         orderService.statusByBizId(bizId, payStatus);
+        return ErrorCode.SUCCESS.toJsonString();
+    }
+
+    @GetMapping("/pageList")
+    public String pageList(Integer pageNum, Integer pageSize, String openId, String userId) {
+        if (pageNum < 0 || pageSize <= 0) {
+            return ErrorCode.PAGEBELLOWZERO.toJsonString();
+        }
+        try {
+            int count = orderService.count(openId);
+            int totalPage = count/pageSize;
+            PageListDto pageListDto = new PageListDto<Project>();
+            pageListDto.setTotal(count);
+            if(pageNum <= totalPage){
+                List<OrderOutDto> orderOutDtos = orderService.pageList(pageNum, pageSize, openId, userId);
+                pageListDto.setList(orderOutDtos);
+            }
+            OutputFormate outputFormate = new OutputFormate(pageListDto);
+            return JSONObject.toJSONString(outputFormate);
+        } catch (Exception e) {
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+    }
+
+    /**
+     * 提交评论
+     * @param order
+     * @return
+     */
+    @PostMapping("/commitReply")
+    public String commitReply(@RequestBody Order order) {
+        orderService.commitReply(order);
         return ErrorCode.SUCCESS.toJsonString();
     }
 }

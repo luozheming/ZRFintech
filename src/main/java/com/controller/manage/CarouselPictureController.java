@@ -28,8 +28,8 @@ public class CarouselPictureController {
     private String carouselPictureFilePath;
 
     @GetMapping("/list")
-    public String list(Integer photoType, Integer status) {
-        List<CarouselPicture> carouselPictures = carouselPictureService.list(photoType, status);
+    public String list(Integer photoType, Integer status, String pageLocation) {
+        List<CarouselPicture> carouselPictures = carouselPictureService.list(photoType, status, pageLocation);
         OutputFormate outputFormate = new OutputFormate(carouselPictures, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
         return JSONObject.toJSONString(outputFormate);
     }

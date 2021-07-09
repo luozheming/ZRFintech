@@ -1,15 +1,16 @@
 package com.service;
 
-import com.dto.indto.EntUserLoginDto;
-import com.dto.indto.EntUserRegisterDto;
-import com.dto.indto.EntUserUpdatePasswordDto;
+import com.dto.indto.UserRegisterDto;
+import com.dto.indto.UserUpdatePasswordDto;
+import com.dto.outdto.UserLoginDto;
 import com.pojo.EntUser;
 import com.pojo.Investor;
+import com.pojo.User;
 
 public interface UserLoginService {
-    void register(EntUserRegisterDto entUserRegisterDto) throws Exception;
-    EntUser login(EntUserLoginDto entUserLoginDto) throws Exception;
-    void updatePassword(EntUserUpdatePasswordDto entUserUpdatePasswordDto) throws Exception;
+    void register(UserRegisterDto userRegisterDto) throws Exception;
+    UserLoginDto loginByPassword(User User) throws Exception;
+    void updatePassword(UserUpdatePasswordDto userUpdatePasswordDto) throws Exception;
     void edit(EntUser entUser) throws Exception;
     EntUser detail(String userId);
     Investor investorById(String userId);

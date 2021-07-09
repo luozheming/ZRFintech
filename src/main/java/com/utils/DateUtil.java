@@ -1,5 +1,7 @@
 package com.utils;
 
+import org.springframework.data.mongodb.core.aggregation.ArrayOperators;
+
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -64,5 +66,17 @@ public class DateUtil {
                 break;
         }
         return cal.getTime();
+    }
+
+    /**
+     * 获取日期间隔
+     * @param starDate
+     * @param endDate
+     * @param dateType
+     * @return
+     */
+    public static Integer getDiffDate(Date starDate, Date endDate, int dateType) {
+
+        return 0;
     }
 }

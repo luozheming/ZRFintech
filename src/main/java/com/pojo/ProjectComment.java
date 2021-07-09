@@ -49,6 +49,10 @@ public class ProjectComment {
      */
     private String entCity;
     /**
+     * 项目描述
+     */
+    private String proDes;
+    /**
      * 上传用户
      */
     private String openId;

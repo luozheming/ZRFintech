@@ -4,8 +4,12 @@ package com.enums;
  * 订单业务类型
  */
 public enum OrderBizType {
-    PROJECTCOMMENT(1, "评论付费"),
-    ACTIVITYRECORD(2, "活动付费");
+    PROJECTCOMMENT(1, "对接机构投资人-在线问答"),
+    ONLINECONVERSATION(2, "对接机构投资人-线上1v1交流"),
+    OFFLINECONVERSATION(3, "对接机构投资人-线下1v1交流"),
+    BPAPPLAY(4, "定制商业计划书"),
+    WHOLECUSTOMIZATION(5, "精品投行签约对接"),
+    ROADSHOWCOACH(6, "路演辅导");
 
     private int code;
     private String message;

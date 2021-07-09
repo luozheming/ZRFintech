@@ -3,21 +3,21 @@ package com.dto.indto;
 import lombok.Data;
 
 @Data
-public class EntUserUpdatePasswordDto {
+public class UserRegisterDto {
     /**
      * 手机号码
      */
     private String phoneNm;
     /**
-     * 原密码
-     */
-    private String orgPassword;
-    /**
-     * 新密码
+     * 登录密码
      */
     private String password;
     /**
-     * 验证码
+     * 角色编码：ent-商户，investor-投资者
+     */
+    private String roleCode;
+    /**
+     * 短信验证码
      */
     private String captcha;
 }

@@ -1,20 +1,29 @@
 package com.service.impl;
 
 import com.dto.indto.OrderDto;
+import com.dto.outdto.OrderOutDto;
 import com.dto.outdto.WxPayDto;
+import com.enums.OrderBizType;
+import com.pojo.IntegralGoods;
 import com.pojo.Order;
+import com.pojo.ProjectComment;
 import com.service.OrderService;
 import com.service.WxPayService;
 import com.utils.CommonUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
@@ -36,20 +45,20 @@ public class OrderServiceImpl implements OrderService {
     public WxPayDto createOrder(OrderDto orderDto) throws Exception {
         // 生成订单号
         String orderNo = commonUtils.getNumCode().substring(0, 32);// 订单号
-        // 微信统一支付
+//        // 微信统一支付
         WxPayDto wxPayDto = null;
-        if (1 == orderDto.getPaymentType()) {
-            wxPayDto = wxPayService.wxPay(orderNo, orderDto.getOpenId(), orderDto.getPayAmount().multiply(new BigDecimal("100")));
-            wxPayDto.setOutTradeNo(orderNo);
-        }
+//        if (1 == orderDto.getPaymentType()) {
+//            wxPayDto = wxPayService.wxPay(orderNo, orderDto.getOpenId(), orderDto.getPayAmount().multiply(new BigDecimal("100")));
+//            wxPayDto.setOutTradeNo(orderNo);
+//        }
         // 初始化订单信息
         Order order = new Order();
         BeanUtils.copyProperties(orderDto, order);
         order.setOrderNo(orderNo);
         order.setPayStatus(0);// 支付状态：0-未支付，1-支付中，2-支付成功，3-支付失败，4-支付超时
-        if (1 == orderDto.getPaymentType() && null == wxPayDto) {
-            order.setPayStatus(3);
-        }
+//        if (1 == orderDto.getPaymentType() && null == wxPayDto) {
+//            order.setPayStatus(3);
+//        }
         mongoTemplate.insert(order, "order");
         return wxPayDto;
     }
@@ -90,6 +99,48 @@ public class OrderServiceImpl implements OrderService {
         update.set("payStatus", payStatus);
         update.set("updateTime", new Date());
         mongoTemplate.updateFirst(query(where("bizId").is(bizId)), update, Order.class);
+    }
+
+    @Override
+    public Integer count(String openId) {
+        return (int) mongoTemplate.count(new Query(where("openId").is(openId)),"order");
+    }
+
+    @Override
+    public List<OrderOutDto> pageList(Integer pageNum, Integer pageSize, String openId, String userId) {
+        Criteria criteria = new Criteria();
+        if (null != userId) {
+            criteria = where("userId").is(userId);
+        }
+        int startNum = pageNum * pageSize;
+        List<Order> orders = mongoTemplate.find(new Query(criteria).skip(startNum).limit(pageSize), Order.class);
+        List<OrderOutDto> orderOutDtos = new ArrayList<>();
+        OrderOutDto orderOutDto = null;
+        if (!CollectionUtils.isEmpty(orders)) {
+            for (Order order : orders) {
+                orderOutDto = new OrderOutDto();
+                BeanUtils.copyProperties(order, orderOutDto);
+                if (OrderBizType.PROJECTCOMMENT.getCode() == order.getBizType()) {
+                    ProjectComment projectComment = mongoTemplate.findOne(query(where("id").is(order.getBizId())), ProjectComment.class);
+                    if (null != projectComment && !StringUtils.isEmpty(projectComment.getInvesPhotoRoute())) {
+                        projectComment.setPhoto(commonUtils.getPhoto(projectComment.getInvesPhotoRoute()));
+                    }
+                    orderOutDto.setProjectComment(projectComment);
+                }
+                orderOutDtos.add(orderOutDto);
+            }
+        }
+        return orderOutDtos;
+    }
+
+    @Override
+    public void commitReply(Order order) {
+        Update update = new Update();
+        update.set("stars", order.getStars());
+        update.set("reply", order.getReply());
+        update.set("replyTm", new Date());
+        update.set("bizStatus", 11);
+        mongoTemplate.updateFirst(query(where("orderNo").is(order.getOrderNo())), update, Order.class);
     }
 
 }

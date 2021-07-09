@@ -13,7 +13,7 @@ import java.util.List;
 @Document(value = "investor")
 public class Investor {
     /**
-     * 投资人 Id
+     * 投资人 Id（同user表的userId）
      */
     private String investorId;
     /**

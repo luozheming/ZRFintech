@@ -8,7 +8,7 @@ import java.util.List;
 public interface ActivityService {
     void add(Activity activity);
     void edit(Activity activity);
-    List<Activity> pageList(Integer pageNum, Integer pageSize, Integer activityType);
+    List<Activity> pageList(Integer pageNum, Integer pageSize, Integer activityType, Integer status);
     Integer count(Integer activityType);
     Activity detail(String id);
     void delete(String id);

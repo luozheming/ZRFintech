@@ -24,7 +24,7 @@ public class Project {
     /**
      * 项目类型：1-融资项目，2-路演项目，3-路演转融资
      */
-    private Integer projectType;
+//    private Integer projectType;
     /**
      * 所属行业
      */
@@ -132,15 +132,15 @@ public class Project {
     /**
      * 状态（路演项目）：1-审核中，2-等待审核结果，3-审核通过，4-暂未通过
      */
-    private Integer status;
+//    private Integer status;
     /**
      * 活动id
      */
-    private String activityId;
+//    private String activityId;
     /**
      * 对接方式:1-线上问答，2-线上1V1交流，3-线下1V1交流
      */
-    private String commentTypeDesc;
+//    private String commentTypeDesc;
 
     @Tolerate
     public Project() {}

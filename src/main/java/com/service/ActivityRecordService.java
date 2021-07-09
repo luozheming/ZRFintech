@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface ActivityRecordService {
     void add(ActivityRecord activityRecord);
-    ActivityRecord detailByPhoneNm(String phoneNm);
+    ActivityRecord detailByPhoneNm(String phoneNm, String activityId);
     List<ActivityRecord> pageList(Integer pageNum, Integer pageSize, Integer activityType);
     Integer count(Integer activityType);
     void delete(String id);

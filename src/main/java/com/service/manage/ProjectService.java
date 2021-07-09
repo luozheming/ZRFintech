@@ -18,4 +18,6 @@ public interface ProjectService {
     void status(String projectNo, Integer status);
 
     List<Project> listByEntUserId(String entUserID);
+
+    void edit(Project project);
 }

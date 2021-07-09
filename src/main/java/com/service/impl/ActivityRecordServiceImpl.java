@@ -32,8 +32,8 @@ public class ActivityRecordServiceImpl implements ActivityRecordService {
     }
 
     @Override
-    public ActivityRecord detailByPhoneNm(String phoneNm) {
-        return mongoTemplate.findOne(query(where("participantPhoneNm").is(phoneNm)), ActivityRecord.class);
+    public ActivityRecord detailByPhoneNm(String phoneNm, String activityId) {
+        return mongoTemplate.findOne(query(where("participantPhoneNm").is(phoneNm).and("activityId").is(activityId)), ActivityRecord.class);
     }
 
     @Override
@@ -47,9 +47,9 @@ public class ActivityRecordServiceImpl implements ActivityRecordService {
         if (1 == activityType) {
             for (ActivityRecord activityRecord : activityRecords) {
                 Project project = mongoTemplate.findOne(query(where("projectNo").is(activityRecord.getProjectNo())), Project.class);
-                if (null != project) {
-                    activityRecord.setProjectStatus(project.getStatus());
-                }
+//                if (null != project) {
+//                    activityRecord.setActivityStatus(project.getStatus());
+//                }
             }
         }
         return activityRecords;

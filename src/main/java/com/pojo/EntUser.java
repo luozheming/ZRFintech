@@ -15,9 +15,9 @@ import java.util.List;
 @Document(collection = "entuser")
 public class EntUser {
     /**
-     * 用户id
+     * 客户id（同user表的userId）
      */
-    private String userId;
+    private String entUserId;
     /**
      * 用户名称
      */
@@ -25,7 +25,7 @@ public class EntUser {
     /**
      * 登录密码
      */
-    private String password;
+//    private String password;
     /**
      *用户唯一识别键
      */
@@ -33,11 +33,11 @@ public class EntUser {
     /**
      * 投资人 Id
      */
-    private String investorId;
+//    private String investorId;
     /**
      * 角色编码：ent-商户，investor-投资人
      */
-    private String roleCode;
+//    private String roleCode;
     /**
      *手机号码
      */

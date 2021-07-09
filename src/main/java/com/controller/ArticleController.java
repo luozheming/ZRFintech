@@ -3,9 +3,9 @@ package com.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.dto.outdto.OutputFormate;
 import com.dto.outdto.PageListDto;
-import com.pojo.Activity;
+import com.pojo.Article;
 import com.pojo.Project;
-import com.service.ActivityService;
+import com.service.ArticleService;
 import com.utils.CommonUtils;
 import com.utils.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,24 +16,24 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/activity")
-public class ActivityController {
+@RequestMapping("/article")
+public class ArticleController {
 
     @Autowired
-    private ActivityService activityService;
+    private ArticleService articleService;
     @Autowired
     private CommonUtils commonUtils;
     @Value("${activityPhotoSavedFilepath}")
     private String photoPath;
 
     @PostMapping("/add")
-    public String add(MultipartFile photoFile, Activity activity) {
+    public String add(MultipartFile photoFile, Article article) {
         try {
             if (null != photoFile) {
                 commonUtils.uploadData(photoFile, photoPath);
-                activity.setPhotoRoute(photoPath + "/" + photoFile.getOriginalFilename());
+                article.setPhotoRoute(photoPath + "/" + photoFile.getOriginalFilename());
             }
-            activityService.add(activity);
+            articleService.add(article);
             return ErrorCode.SUCCESS.toJsonString();
         } catch (Exception e) {
             return ErrorCode.OTHEREEEOR.toJsonString();
@@ -41,13 +41,13 @@ public class ActivityController {
     }
 
     @PostMapping("/edit")
-    public String edit(MultipartFile photoFile, Activity activity) {
+    public String edit(MultipartFile photoFile, Article article) {
         try {
             if (null != photoFile) {
                 commonUtils.uploadData(photoFile, photoPath);
-                activity.setPhotoRoute(photoPath + "/" + photoFile.getOriginalFilename());
+                article.setPhotoRoute(photoPath + "/" + photoFile.getOriginalFilename());
             }
-            activityService.edit(activity);
+            articleService.edit(article);
             return ErrorCode.SUCCESS.toJsonString();
         } catch (Exception e) {
             return ErrorCode.OTHEREEEOR.toJsonString();
@@ -55,17 +55,17 @@ public class ActivityController {
     }
 
     @GetMapping("/pageList")
-    public String pageList(Integer pageNum, Integer pageSize, Integer activityType, Integer status) {
+    public String pageList(Integer pageNum, Integer pageSize, Integer articleType) {
         if (pageNum < 0 || pageSize <= 0) {
             return ErrorCode.PAGEBELLOWZERO.toJsonString();
         }
         try {
-            int count = activityService.count(activityType);
+            int count = articleService.count(articleType);
             int totalPage = count/pageSize;
             PageListDto pageListDto = new PageListDto<Project>();
             pageListDto.setTotal(count);
             if(pageNum <= totalPage){
-                List<Activity> activities =  activityService.pageList(pageNum, pageSize, activityType, status);
+                List<Article> activities =  articleService.pageList(pageNum, pageSize, articleType);
                 pageListDto.setList(activities);
             }
             OutputFormate outputFormate = new OutputFormate(pageListDto);
@@ -77,8 +77,8 @@ public class ActivityController {
 
     @GetMapping("/detail")
     public String detail(String id) {
-        Activity activity = activityService.detail(id);
-        OutputFormate outputFormate = new OutputFormate(activity, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
+        Article article = articleService.detail(id);
+        OutputFormate outputFormate = new OutputFormate(article, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
         return JSONObject.toJSONString(outputFormate);
     }
 
@@ -97,14 +97,14 @@ public class ActivityController {
 
     @DeleteMapping("/delete")
     public String delete(String id) {
-        activityService.delete(id);
+        articleService.delete(id);
         return ErrorCode.SUCCESS.toJsonString();
     }
 
     @GetMapping("/draft")
     public String draft() {
-        Activity activity = activityService.draft();
-        OutputFormate outputFormate = new OutputFormate(activity, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
+        Article article = articleService.draft();
+        OutputFormate outputFormate = new OutputFormate(article, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
         return JSONObject.toJSONString(outputFormate);
     }
 

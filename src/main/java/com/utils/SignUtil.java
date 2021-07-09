@@ -60,9 +60,9 @@ public class SignUtil {
      * @throws NoSuchAlgorithmException
      */
     public static String getSha1Str(String data) throws NoSuchAlgorithmException {
-        MessageDigest messageDigest = MessageDigest.getInstance("SHA1");
+        MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
         messageDigest.update(data.getBytes(StandardCharsets.UTF_8));
-        return messageDigest.digest().toString();
+        return null;
     }
 
     /**

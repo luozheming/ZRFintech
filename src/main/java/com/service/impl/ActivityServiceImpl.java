@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -59,7 +60,8 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
-    public List<Activity> pageList(Integer pageNum, Integer pageSize, Integer activityType) {
+    public List<Activity> pageList(Integer pageNum, Integer pageSize, Integer activityType, Integer status) {
+        List<Activity> activityList = new ArrayList<>();
         int startNum = pageNum * pageSize;
         Query query = new Query();
         if (null != activityType) {
@@ -69,15 +71,23 @@ public class ActivityServiceImpl implements ActivityService {
         List<Activity> activities = mongoTemplate.find(query.skip(startNum).limit(pageSize), Activity.class);
         if (!CollectionUtils.isEmpty(activities)) {
             for (Activity activity : activities) {
-                if (!StringUtils.isEmpty(activity.getEndDate()) && DateUtil.dateToStr(new Date(), "yyyy-MM-dd HH:mm:ss").compareTo(activity.getEndDate()) > 0) {
-                    activity.setStatus(2);
-                }
                 if (!StringUtils.isEmpty(activity.getPhotoRoute())) {
                     activity.setPhoto(commonUtils.getPhoto(activity.getPhotoRoute()));
                 }
+                if (!StringUtils.isEmpty(activity.getEndDate()) && DateUtil.dateToStr(new Date(), "yyyy-MM-dd HH:mm:ss").compareTo(activity.getEndDate()) > 0) {
+                    activity.setStatus(2);
+                }
+
+                if (null != status && 1 == status && 1 == activity.getStatus()) {
+                    activityList.add(activity);
+                } else if (null != status && 2 == status && 2 == activity.getStatus()) {
+                    activityList.add(activity);
+                } else {
+                    activityList.add(activity);
+                }
             }
         }
-        return activities;
+        return activityList;
     }
 
     @Override

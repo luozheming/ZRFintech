@@ -61,9 +61,9 @@ public class UserServiceImpl implements UserService {
                         isPayCount ++;
                     }
 
-                    if (null != project.getProjectType() && (2 == project.getProjectType() || 3 == project.getProjectType())) {
-                        roadShowCount ++;
-                    }
+//                    if (null != project.getProjectType() && (2 == project.getProjectType() || 3 == project.getProjectType())) {
+//                        roadShowCount ++;
+//                    }
                 }
             }
         }

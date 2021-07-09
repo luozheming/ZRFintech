@@ -54,4 +54,8 @@ public class EntPaymentDto {
      * 对接方式:1-线上问答，2-线上1V1交流，3-线下1V1交流
      */
     private Integer commentType;
+    /**
+     * 支付类型；1-线上，2-线下
+     */
+    private Integer paymentType;
 }

@@ -37,6 +37,10 @@ public class CarouselPicture {
      * 状态：0-启用，1-禁用
      */
     private Integer status;
+    /**
+     * 页面位置
+     */
+    private String pageLocation;
     @Tolerate
     public CarouselPicture(){}
 }

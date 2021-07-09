@@ -48,7 +48,7 @@ public class ProjectServiceImpl implements ProjectService {
                 if (!StringUtils.isEmpty(commentTypeDesc)) {
                     commentTypeDesc = commentTypeDesc.substring(1);
                 }
-                project.setCommentTypeDesc(commentTypeDesc);
+//                project.setCommentTypeDesc(commentTypeDesc);
             }
         }
         return projects;
@@ -89,5 +89,12 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public List<Project> listByEntUserId(String entUserId) {
         return mongoTemplate.find(query(where("entUserId").is(entUserId)), Project.class);
+    }
+
+    @Override
+    public void edit(Project project) {
+        Update update = new Update();
+        update.set("proDes", project.getProDes());
+        mongoTemplate.updateFirst(query(where("projectNo").is(project.getProjectNo())), update, Project.class);
     }
 }

@@ -21,10 +21,10 @@ public class ActivityRecordController {
 
     @PostMapping("/add")
     public String add(@RequestBody ActivityRecord activityRecord) {
-//        ActivityRecord activityRecordResp = activityRecordService.detailByPhoneNm(activityRecord.getParticipantPhoneNm());
-//        if (null != activityRecordResp) {
-//            return ErrorCode.REPEATCOMMIT.toJsonString();
-//        }
+        ActivityRecord activityRecordResp = activityRecordService.detailByPhoneNm(activityRecord.getParticipantPhoneNm(), activityRecord.getActivityId());
+        if (null != activityRecordResp) {
+            return ErrorCode.REPEATCOMMIT.toJsonString();
+        }
         activityRecordService.add(activityRecord);
         return ErrorCode.SUCCESS.toJsonString();
     }

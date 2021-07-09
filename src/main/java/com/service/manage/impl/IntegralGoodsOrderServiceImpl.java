@@ -48,10 +48,8 @@ public class IntegralGoodsOrderServiceImpl implements IntegralGoodsOrderService 
         integralGoodsOrder.setCreateTime(new Date());
         mongoTemplate.save(integralGoodsOrder);
 
-        // 扣除投资人相应积分
-        EntUser entUser = mongoTemplate.findOne(query(where("userId").is(integralGoodsOrder.getUserId())), EntUser.class);
-        // 查询投资人剩余积分
-        Investor investor = mongoTemplate.findOne(query(where("investorId").is(entUser.getInvestorId())), Investor.class);
+        // 查询投资人剩余积分,扣除投资人相应积分
+        Investor investor = mongoTemplate.findOne(query(where("investorId").is(integralGoodsOrder.getUserId())), Investor.class);
         BigDecimal surplusAmount = investor.getSurplusAmount().subtract(integralGoodsOrder.getIntegral());
         // 更新投资人剩余积分
         Update update = new Update();
@@ -81,8 +79,7 @@ public class IntegralGoodsOrderServiceImpl implements IntegralGoodsOrderService 
 
     @Override
     public Investor investorById(String userId) {
-        EntUser entUser = mongoTemplate.findOne(query(where("userId").is(userId)), EntUser.class);
-        Investor investor = mongoTemplate.findOne(query(where("investorId").is(entUser.getInvestorId())), Investor.class);
+        Investor investor = mongoTemplate.findOne(query(where("investorId").is(userId)), Investor.class);
         return investor;
     }
 }

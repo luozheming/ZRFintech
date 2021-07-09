@@ -1,17 +1,13 @@
-package com.pojo;
+package com.dto.outdto;
 
-import lombok.Builder;
+import com.pojo.ProjectComment;
 import lombok.Data;
-import lombok.experimental.Tolerate;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
-@Builder
-@Document(value = "order")
-public class Order {
+public class OrderOutDto {
     /**
      * 订单号，主键
      */
@@ -25,7 +21,7 @@ public class Order {
      */
     private Integer bizType;
     /**
-     * 业务状态：1-预约，2-接单，3-拒单，4-签约，5-拒签，6-付款，7-问答，8-线上会议，9-线下会议，10-评论，11-完成
+     * 业务状态：1-预约，2-接单，3-拒单，4-签约，5-拒签，6-付款成功，7-问答完成，8-评论完成
      */
     private Integer bizStatus;
     /**
@@ -49,10 +45,6 @@ public class Order {
      */
     private Integer payStatus;
     /**
-     * 支付类型；1-线上，2-线下
-     */
-    private Integer paymentType;
-    /**
      * 创建时间
      */
     private Date createTime;
@@ -72,7 +64,8 @@ public class Order {
      * 回复时间
      */
     private Date replyTm;
-
-    @Tolerate
-    public Order() {}
+    /**
+     * 评论信息
+     */
+    ProjectComment projectComment;
 }

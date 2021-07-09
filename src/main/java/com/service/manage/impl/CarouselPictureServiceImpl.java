@@ -26,13 +26,16 @@ public class CarouselPictureServiceImpl implements CarouselPictureService {
     private CommonUtils commonUtils;
 
     @Override
-    public List<CarouselPicture> list(Integer photoType, Integer status) {
+    public List<CarouselPicture> list(Integer photoType, Integer status, String pageLocation) {
         Query query = new Query();
         if (null != status) {
             query = query(where("status").is(status));
         }
         if (null != photoType) {
             query = query.addCriteria(where("photoType").is(photoType));
+        }
+        if (!StringUtils.isEmpty(pageLocation)) {
+            query = query.addCriteria(where("pageLocation").is(pageLocation));
         }
         List<CarouselPicture> carouselPictures = mongoTemplate.find(query.with(Sort.by(Sort.Order.asc("orderNo"))), CarouselPicture.class);
         if (!CollectionUtils.isEmpty(carouselPictures)) {

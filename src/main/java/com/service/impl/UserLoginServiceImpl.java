@@ -1,11 +1,12 @@
 package com.service.impl;
 
-import com.dto.indto.EntUserLoginDto;
-import com.dto.indto.EntUserRegisterDto;
-import com.dto.indto.EntUserUpdatePasswordDto;
+import com.dto.indto.UserRegisterDto;
+import com.dto.indto.UserUpdatePasswordDto;
+import com.dto.outdto.UserLoginDto;
 import com.pojo.EntUser;
 import com.pojo.Investor;
 import com.pojo.SmsCaptcha;
+import com.pojo.User;
 import com.service.UserLoginService;
 import com.utils.CommonUtils;
 import com.utils.DateUtil;
@@ -14,8 +15,6 @@ import com.utils.SendSmsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -41,112 +40,119 @@ public class UserLoginServiceImpl implements UserLoginService {
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Override
-    public void register(EntUserRegisterDto entUserRegisterDto) throws Exception {
-        Map<String, Object> respMap = validateSms(entUserRegisterDto.getPhoneNm(), entUserRegisterDto.getCaptcha());
+    public void register(UserRegisterDto userRegisterDto) throws Exception {
+        Map<String, Object> respMap = validateSms(userRegisterDto.getPhoneNm(), userRegisterDto.getCaptcha());
         if (!(boolean)respMap.get("result")) {
             throw new Exception(String.valueOf(respMap.get("msg")));
         }
 
         // 通过手机号码查找用户是否存在
-        EntUser entUser = mongoTemplate.findOne(query(where("phoneNm").is(entUserRegisterDto.getPhoneNm())), EntUser.class);
-        if (null != entUser && !StringUtils.isEmpty(entUser.getPassword())) {
+        User user = mongoTemplate.findOne(query(where("phoneNm").is(userRegisterDto.getPhoneNm())), User.class);
+        if (null != user && !StringUtils.isEmpty(user.getPassword())) {
             throw new Exception(ErrorCode.EXISTSUSER.getMessage());
         }
+
+        String userId = commonUtils.getNumCode();// 新注册用户id
         Investor investor = null;
-        if ("investor".equals(entUserRegisterDto.getRoleCode())) {
-            investor = mongoTemplate.findOne(query(where("phoneNm").is(entUserRegisterDto.getPhoneNm())), Investor.class);
-            if (null == investor) {
+        if ("investor".equals(userRegisterDto.getRoleCode())) {
+            investor = mongoTemplate.findOne(query(where("phoneNm").is(userRegisterDto.getPhoneNm())), Investor.class);
+            if (null != investor) {
+                userId = investor.getInvestorId();
+            } else {
                 throw new Exception("需联系管理员申请注册为投资人");
             }
+        } else if ("ent".equals(userRegisterDto.getRoleCode())) {
+            EntUser entUser = mongoTemplate.findOne(query(where("phoneNm").is(userRegisterDto.getPhoneNm())), EntUser.class);
+            if (null != entUser) {
+                if (!StringUtils.isEmpty(entUser.getEntUserId())) {
+                    userId = entUser.getEntUserId();
+                } else {
+                    // 如果已入库的客户信息没有客户id则更新一个
+                    Update update = new Update();
+                    update.set("entUserId", userId);
+                    mongoTemplate.updateFirst(query(where("openId").is(entUser.getOpenId())), update, EntUser.class);
+                }
+            }
         }
-        String userId = commonUtils.getNumCode();
-        String password = bCryptPasswordEncoder.encode(entUserRegisterDto.getPassword());
-        if (null == entUser) {
+
+        String password = bCryptPasswordEncoder.encode(userRegisterDto.getPassword());
+        if (null == user) {
             // 新增
-            EntUser entUserAdd = new EntUser();
-            entUserAdd.setUserId(userId);
-            entUserAdd.setPhoneNm(entUserRegisterDto.getPhoneNm());
-            entUserAdd.setPassword(password);
-            entUserAdd.setCreateTime(new Date());
-            entUserAdd.setRoleCode(entUserRegisterDto.getRoleCode());
-            if ("investor".equals(entUserRegisterDto.getRoleCode())) {
-                entUserAdd.setInvestorId(investor.getInvestorId());
-            }
-            entUserAdd.setUserName("QR" + commonUtils.getIntCode(6));
-            mongoTemplate.save(entUserAdd);
-        } else {
-            // 如果小程序之前登录过，则更新这个用户的密码相关信息
-            Update update = new Update();
-            update.set("userId", userId);
-            update.set("password", password);
-            update.set("updateTime", new Date());
-            update.set("roleCode", entUserRegisterDto.getRoleCode());
-            if ("investor".equals(entUserRegisterDto.getRoleCode())) {
-                update.set("investorId", investor.getInvestorId());
-            }
-            update.set("userName", "QR" + commonUtils.getIntCode(6));
-            mongoTemplate.updateFirst(query(where("phoneNm").is(entUser.getPhoneNm())), update, EntUser.class);
+            User userAdd = new User();
+            userAdd.setUserId(userId);
+            userAdd.setPhoneNm(userRegisterDto.getPhoneNm());
+            userAdd.setPassword(password);
+            userAdd.setCreateTime(new Date());
+            userAdd.setRoleCode(userRegisterDto.getRoleCode());
+            userAdd.setUserName("QR" + commonUtils.getIntCode(6));
+            mongoTemplate.save(userAdd);
         }
 
         // 更新验证码失效
-        updateSmsStatus(entUserRegisterDto.getPhoneNm());
+        updateSmsStatus(userRegisterDto.getPhoneNm());
     }
 
     @Override
-    public EntUser login(EntUserLoginDto entUserLoginDto) throws Exception {
+    public UserLoginDto loginByPassword(User User) throws Exception {
+        UserLoginDto userLoginDto = new UserLoginDto();
         // 通过手机号码查找用户是否存在
-        EntUser entUser = mongoTemplate.findOne(query(where("phoneNm").is(entUserLoginDto.getPhoneNm())), EntUser.class);
-        if (null == entUser) {
+        User user = mongoTemplate.findOne(query(where("phoneNm").is(User.getPhoneNm())), User.class);
+        if (null == user) {
             throw new Exception(ErrorCode.EMPITYUSER.getMessage());
         }
 
         // 判断密码是否正确
-        boolean pass = bCryptPasswordEncoder.matches(entUserLoginDto.getPassword(), entUser.getPassword());
+        boolean pass = bCryptPasswordEncoder.matches(User.getPassword(), user.getPassword());
         if (!pass) {
             throw new Exception(ErrorCode.ERRORPASSWORD.getMessage());
         }
-        String phoneNm = entUser.getPhoneNm();
-        Investor investor = mongoTemplate.findOne(query(where("phoneNm").is(phoneNm)), Investor.class);
-        if (null != investor) {
-            entUser.setInvestorId(investor.getInvestorId());
-            if (StringUtils.isEmpty(entUser.getPhotoRoute())) {
 
+        // 根据不同角色返回对应信息
+        if ("ent".equals(user.getRoleCode())) {
+            EntUser entUser = mongoTemplate.findOne(query(where("entUserId").is(user.getUserId())), EntUser.class);
+            if (StringUtils.isEmpty(entUser.getPhotoRoute())) {
+                userLoginDto.setPhoto(commonUtils.getPhoto(entUser.getPhotoRoute()));
             }
+        } else if ("investor".equals(user.getRoleCode())) {
+            Investor investor = mongoTemplate.findOne(query(where("investorId").is(user.getUserId())), Investor.class);
+            if (StringUtils.isEmpty(investor.getInvesPhotoRoute())) {
+                userLoginDto.setPhoto(commonUtils.getPhoto(investor.getInvesPhotoRoute()));
+            }
+        } else if ("admin".equals(user.getRoleCode())) {
+
         }
-        if (!StringUtils.isEmpty(entUser.getPhotoRoute())) {
-            entUser.setPhoto(commonUtils.getPhoto(entUser.getPhotoRoute()));
-        }
-        return entUser;
+
+        return userLoginDto;
     }
 
     @Override
-    public void updatePassword(EntUserUpdatePasswordDto entUserUpdatePasswordDto) throws Exception {
-        Map<String, Object> respMap = validateSms(entUserUpdatePasswordDto.getPhoneNm(), entUserUpdatePasswordDto.getCaptcha());
+    public void updatePassword(UserUpdatePasswordDto userUpdatePasswordDto) throws Exception {
+        Map<String, Object> respMap = validateSms(userUpdatePasswordDto.getPhoneNm(), userUpdatePasswordDto.getCaptcha());
         if (!(boolean)respMap.get("result")) {
             throw new Exception(String.valueOf(respMap.get("msg")));
         }
 
         // 通过手机号码查找用户是否存在
-        EntUser entUser = mongoTemplate.findOne(query(where("phoneNm").is(entUserUpdatePasswordDto.getPhoneNm())), EntUser.class);
-        if (null == entUser) {
+        User user = mongoTemplate.findOne(query(where("phoneNm").is(userUpdatePasswordDto.getPhoneNm()).and("status").is(0)), User.class);
+        if (null == user) {
             throw new Exception(ErrorCode.EMPITYUSER.getMessage());
         }
 
         // 判断原密码是否正确
-        boolean pass = bCryptPasswordEncoder.matches(entUserUpdatePasswordDto.getOrgPassword(), entUser.getPassword());
+        boolean pass = bCryptPasswordEncoder.matches(userUpdatePasswordDto.getOrgPassword(), user.getPassword());
         if (!pass) {
             throw new Exception(ErrorCode.ERRORPASSWORD.getMessage());
         }
 
         // 更新密码
-        String password = bCryptPasswordEncoder.encode(entUserUpdatePasswordDto.getPassword());
+        String password = bCryptPasswordEncoder.encode(userUpdatePasswordDto.getPassword());
         Update update = new Update();
         update.set("password", password);
         update.set("updateTime", new Date());
-        mongoTemplate.updateFirst(query(where("phoneNm").is(entUser.getPhoneNm())), update, EntUser.class);
+        mongoTemplate.updateFirst(query(where("phoneNm").is(user.getPhoneNm())), update, User.class);
 
         // 更新验证码失效
-        updateSmsStatus(entUserUpdatePasswordDto.getPhoneNm());
+        updateSmsStatus(userUpdatePasswordDto.getPhoneNm());
     }
 
     @Override
@@ -158,7 +164,7 @@ public class UserLoginServiceImpl implements UserLoginService {
         update.set("phoneNm", entUser.getPhoneNm());
         update.set("userName", entUser.getUserName());
         update.set("weChatNm", entUser.getWeChatNm());
-        mongoTemplate.updateFirst(query(where("userId").is(entUser.getUserId())), update, EntUser.class);
+        mongoTemplate.updateFirst(query(where("entUserId").is(entUser.getEntUserId())), update, EntUser.class);
     }
 
     @Override
@@ -172,8 +178,7 @@ public class UserLoginServiceImpl implements UserLoginService {
 
     @Override
     public Investor investorById(String userId) {
-        EntUser entUser = mongoTemplate.findOne(query(where("userId").is(userId)), EntUser.class);
-        Investor investor = mongoTemplate.findOne(query(where("investorId").is(entUser.getInvestorId())), Investor.class);
+        Investor investor = mongoTemplate.findOne(query(where("investorId").is(userId)), Investor.class);
         return investor;
     }
 

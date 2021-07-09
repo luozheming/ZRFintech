@@ -88,12 +88,12 @@ public class EntUserServiceImpl implements EntUserService {
                     for (ProjectBpApply projectBpApply : projectBpApplyList) {
                         Boolean isAdd = false;// 是否已添加
                         for (EntUserDto userDto: entUserDtoList) {
-                            if (!StringUtils.isEmpty(projectBpApply.getProjectNo()) && userDto.getProjectNo().equals(projectBpApply.getProjectNo())) {
-                                userDto.setIsBpApply(true);
-                                userDto.setBpApplyId(projectBpApply.getId());
-                                isAdd = true;
-                                break;
-                            }
+//                            if (!StringUtils.isEmpty(projectBpApply.getProjectNo()) && userDto.getProjectNo().equals(projectBpApply.getProjectNo())) {
+//                                userDto.setIsBpApply(true);
+//                                userDto.setBpApplyId(projectBpApply.getId());
+//                                isAdd = true;
+//                                break;
+//                            }
                         }
 
                         if (!isAdd) {

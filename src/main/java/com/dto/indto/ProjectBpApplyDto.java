@@ -1,21 +1,9 @@
-package com.pojo;
+package com.dto.indto;
 
-import lombok.Builder;
 import lombok.Data;
-import lombok.experimental.Tolerate;
-import org.springframework.data.mongodb.core.mapping.Document;
-
-import java.math.BigDecimal;
-import java.util.Date;
 
 @Data
-@Builder
-@Document(value = "projectBpApply")
-public class ProjectBpApply {
-    /**
-     * 主键ID
-     */
-    private String id;
+public class ProjectBpApplyDto {
     /**
      * 项目名称
      */
@@ -49,22 +37,7 @@ public class ProjectBpApply {
      */
     private String weChatNo;
     /**
-     * 申请时间
-     */
-    private Date createTime;
-    /**
-     * 完成时间
-     */
-    private Date updateTime;
-    /**
-     * 处理状态:0-未处理，1-已处理，2-不予处理
-     */
-    private Integer dealStatus;
-    /**
      * 项目申请类型：3-bp定制申请，4-FA全流程定制
      */
     private Integer applyType;
-
-    @Tolerate
-    public ProjectBpApply() {}
 }

@@ -54,14 +54,15 @@ public class ActivityRecord {
     private String projectNm;
     /**
      * 状态（路演项目）：1-审核中，2-等待审核结果，3-审核通过，4-暂未通过
+     * 由projectStatus改为activityStatus
      */
-    private Integer projectStatus;
+    private Integer activityStatus;
     /**
      * 参与者微信号
      */
     private String weChatNo;
     /**
-     * 活动类型：0-其他，1-路演活动，2-沙龙
+     * 活动类型：1-路演活动，2-沙龙
      */
     private Integer activityType;
 

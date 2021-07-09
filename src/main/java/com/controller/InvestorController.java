@@ -57,19 +57,13 @@ public class InvestorController {
     public String entPayment(@RequestBody List<EntPaymentDto> entPaymentDtoList){
         try{
             List<ProjectComment> projectCommentList = new ArrayList<>();// 项目评论信息list
+            List<Order> orderList = new ArrayList<>();// 订单信息list
             if (!CollectionUtils.isEmpty(entPaymentDtoList)) {
-                String openId = entPaymentDtoList.get(0).getOpenId();
-
-//                Integer commentCount = 0;// 评论服务次数
                 ProjectComment projectComment = null;
+                Order order = null;
                 // 在项目编号下已有投资人id的list中累加
                 List<String> expList = new ArrayList<>();
                 for (EntPaymentDto entPaymentDto: entPaymentDtoList) {
-//                    // 非平台投资人需要累积扣除服务次数
-//                    if (!StringUtils.isEmpty(entPaymentDto.getIsPlatform()) && !entPaymentDto.getIsPlatform()) {
-//                        commentCount++;
-//                    }
-
                     expList.add(entPaymentDto.getInvestorId());
                     projectComment = new ProjectComment();
                     BeanUtils.copyProperties(entPaymentDto, projectComment);
@@ -80,26 +74,18 @@ public class InvestorController {
                     projectComment.setCreateTime(new Date());
                     projectComment.setUpdateTime(new Date());
                     projectComment.setStatus(0);
-                    projectCommentList.add(projectComment);
-                }
+                    projectCommentList.add(projectComment);// 评论信息
 
-                /*
-                // 暂时删除vip卡逻辑代码
-                // 先扣除用户的vip卡的服务使用次数
-                Integer commentTimes = 0;
-                VIPCardUsage vipCardUsage = mongoTemplate.findOne(query(where("openId").is(openId)), VIPCardUsage.class);
-                if (null != vipCardUsage && commentCount > 0) {
-                    if (commentCount > vipCardUsage.getCommentTimes()) {
-                        return ErrorCode.VIPNOTENOUGH.toJsonString();
-                    } else {
-                        commentTimes = vipCardUsage.getCommentTimes() - commentCount;
-                    }
-                    Update usageUpdate = new Update();
-                    usageUpdate.set("commentTimes", commentTimes);
-                    mongoTemplate.updateFirst(query(where("openId").is(openId)), usageUpdate, VIPCardUsage.class);
-                } else if (null == vipCardUsage && commentCount > 0) {
-                    return ErrorCode.VIPNOTPAYMENT.toJsonString();
-                }*/
+                    order = new Order();
+                    order.setOrderNo(commonUtils.getNumCode().substring(0, 32));
+                    order.setBizId(projectComment.getId());
+                    order.setPayAmount(projectComment.getCommentAmount());
+                    order.setPaymentType(entPaymentDto.getPaymentType());
+                    order.setCreateTime(new Date());
+                    order.setPayStatus(0);
+                    order.setBizStatus(1);
+                    orderList.add(order);// 订单信息
+                }
 
                 // 更新项目expList
                 Update update = new Update();
@@ -111,14 +97,11 @@ public class InvestorController {
                 // 批量初始化评论信息
                 if (!CollectionUtils.isEmpty(projectCommentList)) {
                     mongoTemplate.insert(projectCommentList, ProjectComment.class);
+                }
 
-                    // 如果项目类型：1-融资项目，2-路演项目，3-路演转融资 为路演项目，有在线问答评论后更新项目类型为路演转融资
-                    Project project = mongoTemplate.findOne(query(where("projectNo").is(projectComment.getProjectNo())), Project.class);
-                    if (null != project.getProjectType() && 2 == project.getProjectType()) {
-                        Update updateProject = new Update();
-                        updateProject.set("projectType", 3);
-                        mongoTemplate.updateFirst(query(where("projectNo").is(project.getProjectNo())), updateProject, Project.class);
-                    }
+                // 批量初始化订单信息
+                if (!CollectionUtils.isEmpty(orderList)) {
+                    mongoTemplate.insert(orderList, Order.class);
                 }
             }
             OutputFormate outputFormate = new OutputFormate(projectCommentList, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
@@ -295,7 +278,7 @@ public class InvestorController {
             String userId = "";
             if (null != investor) {
                 EntUser entUser = mongoTemplate.findOne(query(where("phoneNm").is(investor.getPhoneNm())), EntUser.class);
-                userId = entUser.getUserId();
+                userId = entUser.getEntUserId();
             }
 
             // 生成消息推送数据
