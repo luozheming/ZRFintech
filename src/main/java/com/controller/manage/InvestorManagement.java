@@ -33,6 +33,8 @@ public class InvestorManagement {
     StringBuilder cardSavedFilepath;
     @Value("${orgphotoSavedFilepath}")
     StringBuilder orgphotoSavedFilepath;
+    @Value("${s3BucketName}")
+    private String s3BucketName;
 
     @GetMapping("/investor/pageList")
     public String getInvestorPageList(int pageNum,int pageSize) {
@@ -47,7 +49,7 @@ public class InvestorManagement {
             if (!CollectionUtils.isEmpty(investors)) {
                 for (Investor investor : investors) {
                     if (!StringUtils.isEmpty(investor.getInvesPhotoRoute())) {
-                        investor.setPhoto(commonUtils.getPhoto(investor.getInvesPhotoRoute()));
+                        investor.setInvesPhotoRoute(commonUtils.getFullFilePath(investor.getInvesPhotoRoute()));
                     }
                 }
             }
@@ -75,16 +77,18 @@ public class InvestorManagement {
         String destPhotoPath  = photoSavedFilepath.toString();
         String destCardPath  = cardSavedFilepath.toString();
         try{
-            commonUtils.uploadData(photoFile,destPhotoPath);
-            commonUtils.uploadData(cardFile,destCardPath);
+            // AWS S3存储文件
+            commonUtils.uploadFile(s3BucketName,destPhotoPath + photoFile.getOriginalFilename(), photoFile.getBytes());
+            commonUtils.uploadFile(s3BucketName,destPhotoPath + cardFile.getOriginalFilename(), cardFile.getBytes());
         } catch (IllegalStateException | IOException e) {
             return ErrorCode.OTHEREEEOR.toJsonString();
         }
         if(null!=orgphotoFile){
             try{
                 String destOrgPath = orgphotoSavedFilepath.toString();
-                commonUtils.uploadData(orgphotoFile,destOrgPath);
-                investor.setInvesOrgPhotoRoute(destOrgPath + "/" + orgphotoFile.getOriginalFilename());
+                // AWS S3存储文件
+                commonUtils.uploadFile(s3BucketName,destOrgPath + orgphotoFile.getOriginalFilename(), orgphotoFile.getBytes());
+                investor.setInvesOrgPhotoRoute(destOrgPath + orgphotoFile.getOriginalFilename());
             }catch (IllegalStateException | IOException e) {
                 return ErrorCode.OTHEREEEOR.toJsonString();
             }
@@ -92,9 +96,9 @@ public class InvestorManagement {
         investor.setInvestorId(investId);
         investor.setStatus(0);
         if (null != cardFile) {
-            investor.setInvesCardRoute(destCardPath + "/" + cardFile.getOriginalFilename());
+            investor.setInvesCardRoute(destCardPath + cardFile.getOriginalFilename());
         }
-        investor.setInvesPhotoRoute(destPhotoPath + "/" + photoFile.getOriginalFilename());
+        investor.setInvesPhotoRoute(destPhotoPath + photoFile.getOriginalFilename());
         investorService.addInvestor(investor);
         OutputFormate outputFormate = new OutputFormate(investId);
         return JSONObject.toJSONString(outputFormate);
@@ -111,16 +115,19 @@ public class InvestorManagement {
         String destOrgPath = orgphotoSavedFilepath.toString();
         try{
             if (null != photoFile) {
-                commonUtils.uploadData(photoFile,destPhotoPath);
-                investor.setInvesPhotoRoute(destPhotoPath + "/" + photoFile.getOriginalFilename());
+                // AWS S3存储文件
+                commonUtils.uploadFile(s3BucketName,destPhotoPath + photoFile.getOriginalFilename(), photoFile.getBytes());
+                investor.setInvesPhotoRoute(destPhotoPath + photoFile.getOriginalFilename());
             }
             if (null != cardFile) {
-                commonUtils.uploadData(cardFile,destCardPath);
-                investor.setInvesCardRoute(destCardPath + "/" + cardFile.getOriginalFilename());
+                // AWS S3存储文件
+                commonUtils.uploadFile(s3BucketName,destCardPath + cardFile.getOriginalFilename(), cardFile.getBytes());
+                investor.setInvesCardRoute(destCardPath + cardFile.getOriginalFilename());
             }
             if (null != orgphotoFile) {
-                commonUtils.uploadData(orgphotoFile,destOrgPath);
-                investor.setInvesOrgPhotoRoute(destOrgPath + "/" + orgphotoFile.getOriginalFilename());
+                // AWS S3存储文件
+                commonUtils.uploadFile(s3BucketName,destOrgPath + orgphotoFile.getOriginalFilename(), orgphotoFile.getBytes());
+                investor.setInvesOrgPhotoRoute(destOrgPath + orgphotoFile.getOriginalFilename());
             }
             investorService.editInvestor(investor);
             return ErrorCode.SUCCESS.toJsonString();

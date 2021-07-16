@@ -16,13 +16,13 @@ public class Article {
      */
     private String id;
     /**
-     * 主题
+     * 文章标题
      */
     private String theme;
     /**
      * 文章类型:1-创业干货
      */
-    private String articleType;
+    private Integer articleType;
     /**
      * 图片路径
      */

@@ -72,7 +72,7 @@ public class ActivityServiceImpl implements ActivityService {
         if (!CollectionUtils.isEmpty(activities)) {
             for (Activity activity : activities) {
                 if (!StringUtils.isEmpty(activity.getPhotoRoute())) {
-                    activity.setPhoto(commonUtils.getPhoto(activity.getPhotoRoute()));
+                    activity.setPhotoRoute(commonUtils.getFullFilePath(activity.getPhotoRoute()));
                 }
                 if (!StringUtils.isEmpty(activity.getEndDate()) && DateUtil.dateToStr(new Date(), "yyyy-MM-dd HH:mm:ss").compareTo(activity.getEndDate()) > 0) {
                     activity.setStatus(2);
@@ -104,7 +104,7 @@ public class ActivityServiceImpl implements ActivityService {
     public Activity detail(String id) {
         Activity activity = mongoTemplate.findOne(query(where("id").is(id)), Activity.class);
         if (!StringUtils.isEmpty(activity.getPhotoRoute())) {
-            activity.setPhoto(commonUtils.getPhoto(activity.getPhotoRoute()));
+            activity.setPhotoRoute(commonUtils.getFullFilePath(activity.getPhotoRoute()));
         }
         return activity;
     }
@@ -118,7 +118,7 @@ public class ActivityServiceImpl implements ActivityService {
     public Activity draft() {
         Activity activity = mongoTemplate.findOne(query(where("isDone").is(false)), Activity.class);
         if (null != activity && !StringUtils.isEmpty(activity.getPhotoRoute())) {
-            activity.setPhoto(commonUtils.getPhoto(activity.getPhotoRoute()));
+            activity.setPhotoRoute(commonUtils.getFullFilePath(activity.getPhotoRoute()));
         }
         return activity;
     }

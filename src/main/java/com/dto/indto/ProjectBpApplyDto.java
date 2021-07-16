@@ -40,4 +40,8 @@ public class ProjectBpApplyDto {
      * 项目申请类型：3-bp定制申请，4-FA全流程定制
      */
     private Integer applyType;
+    /**
+     * 客户编号
+     */
+    private String entUserId;
 }

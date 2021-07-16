@@ -38,7 +38,7 @@ public class Activity {
      */
     private String endDate;
     /**
-     * 活动类型：0-其他，1-路演活动，2-沙龙
+     * 活动类型：1-路演活动，2-沙龙
      */
     private Integer activityType;
     /**

@@ -4,6 +4,7 @@ import com.pojo.Investor;
 import com.pojo.ProjectComment;
 import com.utils.CommonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -39,13 +40,13 @@ public class InvestorService {
     public Investor getInvesById(String investorId){
         Investor investor = mongoTemplate.findOne(query(where("investorId").is(investorId)),Investor.class);
         if (!StringUtils.isEmpty(investor.getInvesPhotoRoute())) {
-            investor.setPhoto(commonUtils.getPhoto(investor.getInvesPhotoRoute()));
+            investor.setInvesPhotoRoute(commonUtils.getFullFilePath(investor.getInvesPhotoRoute()));
         }
         if (!StringUtils.isEmpty(investor.getInvesOrgPhotoRoute())) {
-            investor.setOrgPhoto(commonUtils.getPhoto(investor.getInvesOrgPhotoRoute()));
+            investor.setInvesOrgPhotoRoute(commonUtils.getFullFilePath(investor.getInvesOrgPhotoRoute()));
         }
         if (!StringUtils.isEmpty(investor.getInvesCardRoute())) {
-            investor.setCardPhoto(commonUtils.getPhoto(investor.getInvesCardRoute()));
+            investor.setInvesCardRoute(commonUtils.getFullFilePath(investor.getInvesCardRoute()));
         }
         // 通过investorId查询所有的评论信息
         List<ProjectComment> projectComments = mongoTemplate.find(query(where("investorId").is(investor).and("favor").ne(4)), ProjectComment.class);

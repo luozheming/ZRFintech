@@ -63,7 +63,7 @@ public class ArticleServiceImpl implements ArticleService {
         if (!CollectionUtils.isEmpty(activities)) {
             for (Article article : activities) {
                 if (!StringUtils.isEmpty(article.getPhotoRoute())) {
-                    article.setPhoto(commonUtils.getPhoto(article.getPhotoRoute()));
+                    article.setPhotoRoute(commonUtils.getFullFilePath(article.getPhotoRoute()));
                 }
             }
         }
@@ -84,7 +84,7 @@ public class ArticleServiceImpl implements ArticleService {
     public Article detail(String id) {
         Article article = mongoTemplate.findOne(query(where("id").is(id)), Article.class);
         if (!StringUtils.isEmpty(article.getPhotoRoute())) {
-            article.setPhoto(commonUtils.getPhoto(article.getPhotoRoute()));
+            article.setPhotoRoute(commonUtils.getFullFilePath(article.getPhotoRoute()));
         }
         return article;
     }
@@ -98,7 +98,7 @@ public class ArticleServiceImpl implements ArticleService {
     public Article draft() {
         Article article = mongoTemplate.findOne(query(where("isDone").is(false)), Article.class);
         if (null != article && !StringUtils.isEmpty(article.getPhotoRoute())) {
-            article.setPhoto(commonUtils.getPhoto(article.getPhotoRoute()));
+            article.setPhotoRoute(commonUtils.getFullFilePath(article.getPhotoRoute()));
         }
         return article;
     }

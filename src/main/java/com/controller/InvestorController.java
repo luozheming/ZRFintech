@@ -47,6 +47,8 @@ public class InvestorController {
     private String commentFilePath;
     @Autowired
     private MessageService messageService;
+    @Value("${s3BucketName}")
+    private String s3BucketName;
 
     /**
      * 红包支付
@@ -156,14 +158,11 @@ public class InvestorController {
                 if (!StringUtils.isEmpty(getCommentsDto.getProjectNo())) {
                     criteria = criteria.and("projectNo").is(getCommentsDto.getProjectNo());
                 }
-//                Query query = new Query(criteria).with(Sort.by(Sort.Order.desc("isDone")))
-//                        .with(Sort.by(Sort.Order.asc("favor")))
-//                        .with(Sort.by(Sort.Order.asc("updateTm")));
                 Query query = new Query(criteria).with(Sort.by(Sort.Order.desc("updateTime")));
                 List<ProjectComment> projectComments = mongoTemplate.find(query.skip(startNum).limit(pageSize), ProjectComment.class);
                 if (!CollectionUtils.isEmpty(projectComments)) {
                     for (ProjectComment projectComment : projectComments) {
-                        projectComment.setPhoto(commonUtils.getPhoto(projectComment.getInvesPhotoRoute()));
+                        projectComment.setInvesPhotoRoute(commonUtils.getFullFilePath(projectComment.getInvesPhotoRoute()));
                     }
                 }
                 OutputFormate outputFormate = new OutputFormate(projectComments, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
@@ -447,8 +446,8 @@ public class InvestorController {
         Investor findInvestor = mongoTemplate.findOne(query(where("phoneNm").is(phoneNm)),Investor.class);
         if(!StringUtils.isEmpty(findInvestor)){
             // 获取投资人及机构图片信息
-            findInvestor.setPhoto(commonUtils.getPhoto(findInvestor.getInvesPhotoRoute()));
-            findInvestor.setOrgPhoto(commonUtils.getPhoto(findInvestor.getInvesOrgPhotoRoute()));
+            findInvestor.setInvesPhotoRoute(commonUtils.getFullFilePath(findInvestor.getInvesPhotoRoute()));
+            findInvestor.setInvesOrgPhotoRoute(commonUtils.getFullFilePath(findInvestor.getInvesOrgPhotoRoute()));
 
             // 获取投资人评论的金额总计信息
             InvestorCommentAmountDto investorCommentAmountDto = getCommentAmount(findInvestor.getInvestorId());
@@ -490,7 +489,7 @@ public class InvestorController {
                 List<ProjectComment> projectComments = mongoTemplate.find(query.skip(startNum).limit(pageSize), ProjectComment.class);
                 if (!CollectionUtils.isEmpty(projectComments)) {
                     for (ProjectComment projectComment : projectComments) {
-                        projectComment.setPhoto(commonUtils.getPhoto(projectComment.getInvesPhotoRoute()));
+                        projectComment.setInvesPhotoRoute(commonUtils.getFullFilePath(projectComment.getInvesPhotoRoute()));
                     }
                 }
                 OutputFormate outputFormate = new OutputFormate(projectComments, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
@@ -524,7 +523,7 @@ public class InvestorController {
             if (!CollectionUtils.isEmpty(projects)) {
                 project = projects.get(0);
                 if (!StringUtils.isEmpty(project.getRoadshowRoute())) {
-                    project.setRoadshow(commonUtils.getPhoto(project.getRoadshowRoute()));
+                    project.setRoadshowRoute(commonUtils.getFullFilePath(project.getRoadshowRoute()));
                 }
             }
             projectCommentDetailDto.setProject(project);
@@ -556,8 +555,9 @@ public class InvestorController {
             // 上传项目
             String filePath = commentFilePath;
             if (null != file) {
-                commonUtils.uploadData(file, filePath);
-                projectComment.setCommentFilePath(filePath + "/" + file.getOriginalFilename());
+                // AWS S3存储文件
+                commonUtils.uploadFile(s3BucketName,filePath + file.getOriginalFilename(), file.getBytes());
+                projectComment.setCommentFilePath(filePath + file.getOriginalFilename());
             }
 
             // 提交评论内容

@@ -21,7 +21,7 @@ public class UserLoginDto {
      */
     private String roleCode;
     /**
-     * 用户头像信息
+     * 用户头像路径
      */
-    private String photo;
+    private String photoRoute;
 }

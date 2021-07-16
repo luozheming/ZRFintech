@@ -3,19 +3,15 @@ package com.controller.manage;
 import com.alibaba.fastjson.JSONObject;
 import com.dto.outdto.OutputFormate;
 import com.dto.outdto.PageListDto;
-import com.pojo.Investor;
-import com.pojo.Project;
 import com.pojo.ProjectComment;
 import com.service.manage.ProjectCommentService;
 import com.utils.CommonUtils;
 import com.utils.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.mongodb.core.aggregation.ArrayOperators;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -28,6 +24,8 @@ public class ProjectCommentController {
     private CommonUtils commonUtils;
     @Value("${questionFilePath}")
     private String questionFilePath;
+    @Value("${s3BucketName}")
+    private String s3BucketName;
 
     /**
      * 分页获取项目评论列表
@@ -83,8 +81,9 @@ public class ProjectCommentController {
         try {
             String filePath = questionFilePath;
             if (null != file) {
-                commonUtils.uploadData(file, filePath);
-                projectComment.setQuestionFilePath(filePath + "/" + file.getOriginalFilename());
+                // AWS S3存储文件
+                commonUtils.uploadFile(s3BucketName,filePath + file.getOriginalFilename(), file.getBytes());
+                projectComment.setQuestionFilePath(filePath + file.getOriginalFilename());
             }
             projectCommentService.add(projectComment);
         } catch (Exception e) {

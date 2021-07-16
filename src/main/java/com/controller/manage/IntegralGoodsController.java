@@ -26,6 +26,8 @@ public class IntegralGoodsController {
     private CommonUtils commonUtils;
     @Value("${integralGoodsFilePath}")
     private String integralGoodsFilePath;
+    @Value("${s3BucketName}")
+    private String s3BucketName;
 
     /**
      * 分页获取积分商品列表
@@ -64,7 +66,7 @@ public class IntegralGoodsController {
     public String detail(@RequestParam String id) {
         IntegralGoods integralGoods = integralGoodsService.detail(id);
         if (null != integralGoods && !StringUtils.isEmpty(integralGoods.getPhotoRoute())) {
-            integralGoods.setPhoto(commonUtils.getPhoto(integralGoods.getPhotoRoute()));
+            integralGoods.setPhotoRoute(commonUtils.getFullFilePath(integralGoods.getPhotoRoute()));
         }
         OutputFormate outputFormate = new OutputFormate(integralGoods, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
         return JSONObject.toJSONString(outputFormate);
@@ -81,8 +83,9 @@ public class IntegralGoodsController {
         try {
             String filePath = integralGoodsFilePath;
             if (null != photoFile) {
-                commonUtils.uploadData(photoFile, filePath);
-                integralGoods.setPhotoRoute(filePath + "/" + photoFile.getOriginalFilename());
+                // AWS S3存储文件
+                commonUtils.uploadFile(s3BucketName,filePath + photoFile.getOriginalFilename(), photoFile.getBytes());
+                integralGoods.setPhotoRoute(filePath + photoFile.getOriginalFilename());
             }
             integralGoodsService.add(integralGoods);
         } catch (Exception e) {
@@ -96,8 +99,9 @@ public class IntegralGoodsController {
         try {
             String filePath = integralGoodsFilePath;
             if (null != photoFile) {
-                commonUtils.uploadData(photoFile, filePath);
-                integralGoods.setPhotoRoute(filePath + "/" + photoFile.getOriginalFilename());
+                // AWS S3存储文件
+                commonUtils.uploadFile(s3BucketName,filePath + photoFile.getOriginalFilename(), photoFile.getBytes());
+                integralGoods.setPhotoRoute(filePath + photoFile.getOriginalFilename());
             }
             integralGoodsService.edit(integralGoods);
         } catch (Exception e) {

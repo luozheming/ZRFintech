@@ -38,7 +38,7 @@ public class IntegralGoodsServiceImpl implements IntegralGoodsService {
             for (IntegralGoods goods: integralGoods) {
                 String photoRoute = goods.getPhotoRoute();
                 // 获取商品图片信息
-                goods.setPhoto(commonUtils.getPhoto(photoRoute));
+                goods.setPhotoRoute(commonUtils.getFullFilePath(photoRoute));
             }
         }
         return integralGoods;
@@ -53,7 +53,7 @@ public class IntegralGoodsServiceImpl implements IntegralGoodsService {
     public IntegralGoods detail(String id) {
         IntegralGoods integralGoods = mongoTemplate.findOne(query(where("id").is(id)), IntegralGoods.class);
         if (null != integralGoods && StringUtils.isEmpty(integralGoods.getPhotoRoute())) {
-            integralGoods.setPhoto(commonUtils.getPhoto(integralGoods.getPhotoRoute()));
+            integralGoods.setPhotoRoute(commonUtils.getFullFilePath(integralGoods.getPhotoRoute()));
         }
         return integralGoods;
     }

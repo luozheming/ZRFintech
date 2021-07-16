@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
@@ -37,11 +38,13 @@ public class CarouselPictureServiceImpl implements CarouselPictureService {
         if (!StringUtils.isEmpty(pageLocation)) {
             query = query.addCriteria(where("pageLocation").is(pageLocation));
         }
+        List<Sort.Order> orderList = new ArrayList<Sort.Order>();
+//        Sort sort = Sort.by(Sort.Order.desc(""));
         List<CarouselPicture> carouselPictures = mongoTemplate.find(query.with(Sort.by(Sort.Order.asc("orderNo"))), CarouselPicture.class);
         if (!CollectionUtils.isEmpty(carouselPictures)) {
             for (CarouselPicture carouselPicture : carouselPictures) {
                 if (!StringUtils.isEmpty(carouselPicture.getPhotoRoute())) {
-                    carouselPicture.setPhoto(commonUtils.getPhoto(carouselPicture.getPhotoRoute()));
+                    carouselPicture.setPhotoRoute(commonUtils.getFullFilePath(carouselPicture.getPhotoRoute()));
                 }
             }
         }
@@ -73,13 +76,20 @@ public class CarouselPictureServiceImpl implements CarouselPictureService {
         update.set("linkUrl", carouselPicture.getLinkUrl());
         update.set("photoType", carouselPicture.getPhotoType());
         update.set("orderNo", carouselPicture.getOrderNo());
+        update.set("pageLocation", carouselPicture.getPageLocation());
         mongoTemplate.updateFirst(query(where("id").is(carouselPicture.getId())), update, CarouselPicture.class);
     }
 
     @Override
     public CarouselPicture detail(String id) {
         CarouselPicture carouselPicture = mongoTemplate.findOne(query(where("id").is(id)), CarouselPicture.class);
-        carouselPicture.setPhoto(commonUtils.getPhoto(carouselPicture.getPhotoRoute()));
+        carouselPicture.setPhotoRoute(commonUtils.getFullFilePath(carouselPicture.getPhotoRoute()));
         return carouselPicture;
+    }
+
+    @Override
+    public List<String> pageLocationList(Integer photoType) {
+        List<String> distinct = mongoTemplate.findDistinct(query(where("photoType").is(photoType)), "pageLocation", "carouselPicture", CarouselPicture.class, String.class);
+        return distinct;
     }
 }

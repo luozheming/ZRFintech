@@ -1,18 +1,27 @@
 package com.controller;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.dto.indto.PdfDto;
 import com.dto.outdto.OutputFormate;
 import com.dto.outdto.PageListDto;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.pojo.Activity;
 import com.pojo.Project;
 import com.service.ActivityService;
 import com.utils.CommonUtils;
 import com.utils.ErrorCode;
+import com.utils.PdfUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URLEncoder;
 import java.util.List;
 
 @RestController
@@ -25,13 +34,16 @@ public class ActivityController {
     private CommonUtils commonUtils;
     @Value("${activityPhotoSavedFilepath}")
     private String photoPath;
+    @Value("${s3BucketName}")
+    private String s3BucketName;
 
     @PostMapping("/add")
     public String add(MultipartFile photoFile, Activity activity) {
         try {
             if (null != photoFile) {
-                commonUtils.uploadData(photoFile, photoPath);
-                activity.setPhotoRoute(photoPath + "/" + photoFile.getOriginalFilename());
+                // AWS S3存储文件
+                commonUtils.uploadFile(s3BucketName,photoPath + photoFile.getOriginalFilename(), photoFile.getBytes());
+                activity.setPhotoRoute(photoPath + photoFile.getOriginalFilename());
             }
             activityService.add(activity);
             return ErrorCode.SUCCESS.toJsonString();
@@ -44,8 +56,9 @@ public class ActivityController {
     public String edit(MultipartFile photoFile, Activity activity) {
         try {
             if (null != photoFile) {
-                commonUtils.uploadData(photoFile, photoPath);
-                activity.setPhotoRoute(photoPath + "/" + photoFile.getOriginalFilename());
+                // AWS S3存储文件
+                commonUtils.uploadFile(s3BucketName,photoPath + photoFile.getOriginalFilename(), photoFile.getBytes());
+                activity.setPhotoRoute(photoPath + photoFile.getOriginalFilename());
             }
             activityService.edit(activity);
             return ErrorCode.SUCCESS.toJsonString();
@@ -86,6 +99,9 @@ public class ActivityController {
     public String uploadFile(MultipartFile file) {
         try {
             if (null != file) {
+//                // AWS S3存储文件
+//                commonUtils.uploadFile(s3BucketName,photoPath + file.getOriginalFilename(), file.getBytes());
+//                article.setPhotoRoute(cdnDomainName + "/" + photoPath + file.getOriginalFilename());
                 commonUtils.uploadData(file, photoPath);
             }
             String fileData = commonUtils.getPhoto(photoPath + "/" + file.getOriginalFilename());
@@ -108,4 +124,30 @@ public class ActivityController {
         return JSONObject.toJSONString(outputFormate);
     }
 
+    /**
+     * 下载模拟路演演讲稿
+     * @param response
+     * @param pdfDtoListJson
+     * @return
+     */
+    @GetMapping("/downloadRoadShowFile")
+    public String downloadRoadShowFile(HttpServletResponse response, @RequestParam String pdfDtoListJson) {
+        OutputStream out = null;
+        try {
+            List<PdfDto> pdfDtoList = JSONObject.parseArray(pdfDtoListJson, PdfDto.class);
+            ByteArrayOutputStream baos = PdfUtil.createPdf(pdfDtoList);
+            // 将文件名称进行编码
+            response.setContentType("application/vnd.ms-excel;charset=UTF-8");
+            response.setCharacterEncoding("UTF-8");
+            response.setHeader("content-disposition", "attachment;filename=" + URLEncoder.encode(new StringBuilder(pdfDtoList.get(0).getTitle()).append(".pdf").toString(), "UTF-8"));
+            response.setContentLength(baos.size());
+            out = response.getOutputStream();
+            baos.writeTo(out);
+            out.flush();
+            out.close();
+        } catch (Exception e) {
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+        return ErrorCode.SUCCESS.toJsonString();
+    }
 }

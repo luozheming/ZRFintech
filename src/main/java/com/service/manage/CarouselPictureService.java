@@ -10,4 +10,5 @@ public interface CarouselPictureService {
     void status(String id, Integer status);
     void edit(CarouselPicture carouselPicture);
     CarouselPicture detail(String id);
+    List<String> pageLocationList(Integer photoType);
 }

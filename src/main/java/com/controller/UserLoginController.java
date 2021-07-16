@@ -3,6 +3,7 @@ package com.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.dto.indto.EntUserEditDto;
 import com.dto.indto.UserRegisterDto;
 import com.dto.indto.UserUpdatePasswordDto;
 import com.dto.outdto.OutputFormate;
@@ -47,6 +48,8 @@ public class UserLoginController {
     private UserLoginService userLoginService;
     @Autowired
     private CommonUtils commonUtils;
+    @Value("${s3BucketName}")
+    private String s3BucketName;
 
     @PostMapping(value = "/investor/investorLogin")
     public String investorLogin(@RequestBody Investor investor){
@@ -98,6 +101,7 @@ public class UserLoginController {
                     entUserId = user.getUserId();
                 }
                 entUser.setEntUserId(entUserId);// 客户id同用户基础表userId
+                entUser.setIsVerify(false);
                 entUser.setCreateTime(new Date());
                 mongoTemplate.insert(entUser);
                 OutputFormate outputFormate = new OutputFormate(entUser, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
@@ -142,6 +146,55 @@ public class UserLoginController {
         }
 
         return ErrorCode.SUCCESS.toJsonString();
+    }
+
+    /**
+     * 修改客户信息
+     * @param entUser
+     * @return
+     */
+    @PostMapping("/entuser/edit")
+    public String edit(EntUser entUser) {
+        Update update = new Update();
+        update.set("companyName", entUser.getCompanyName());
+        update.set("positionName", entUser.getPositionName());
+        mongoTemplate.updateFirst(query(where("entUserId").is(entUser.getEntUserId())), update, EntUser.class);
+        return ErrorCode.SUCCESS.toJsonString();
+    }
+
+    /**
+     * 企业客户认证
+     * @param cardFile
+     * @param entUser
+     * @return
+     */
+    @PostMapping("/entuser/verify")
+    public String verify(MultipartFile cardFile, EntUser entUser, String captcha) {
+        Map<String, Object> respMap = userLoginService.validateSms(entUser.getPhoneNm(), captcha);
+        if (!(boolean)respMap.get("result")) {
+            OutputFormate outputFormate = new OutputFormate("", ErrorCode.OTHEREEEOR.getCode(), String.valueOf(respMap.get("msg")));
+            return JSONObject.toJSONString(outputFormate);
+        }
+        try {
+            Update update = new Update();
+            if (null != cardFile) {
+                String filePath = entUserSavedFilepath + entUser.getEntUserId() + "/" + cardFile.getOriginalFilename();
+                // AWS S3存储文件
+                commonUtils.uploadFile(s3BucketName, filePath, cardFile.getBytes());
+                //文件保存后更新数据库信息
+                update.set("cardRoute", filePath);
+            }
+            update.set("userName", entUser.getUserName());
+            update.set("companyName", entUser.getCompanyName());
+            update.set("positionName", entUser.getPositionName());
+            update.set("phoneNm", entUser.getPhoneNm());
+            update.set("email", entUser.getEmail());
+            update.set("isVerify", true);
+            mongoTemplate.updateFirst(query(where("entUserId").is(entUser.getEntUserId())), update, EntUser.class);
+            return ErrorCode.SUCCESS.toJsonString();
+        } catch (Exception e) {
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
     }
 
 
@@ -210,8 +263,9 @@ public class UserLoginController {
         try {
             String destPhotoPath = entUserSavedFilepath.toString();
             if (null != photoFile) {
-                commonUtils.uploadData(photoFile, destPhotoPath);
-                entUser.setPhotoRoute(destPhotoPath + "/" + photoFile.getOriginalFilename());
+                // AWS S3存储文件
+                commonUtils.uploadFile(s3BucketName,destPhotoPath + photoFile.getOriginalFilename(), photoFile.getBytes());
+                entUser.setPhotoRoute(destPhotoPath + photoFile.getOriginalFilename());
             }
             userLoginService.edit(entUser);
             return ErrorCode.SUCCESS.toJsonString();
@@ -269,7 +323,6 @@ public class UserLoginController {
     public String getUrl(String bucketName, String objectKey) {
         try {
             String url = GeneratePresignedURLUtil.GeneratePresignedURL(bucketName, objectKey);
-            System.out.println("url = " +  url);
             OutputFormate outputFormate = new OutputFormate(url, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
             return JSONObject.toJSONString(outputFormate);
         } catch (Exception e) {
@@ -292,8 +345,8 @@ public class UserLoginController {
             return JSONObject.toJSONString(str);
         } catch (Exception e) {
             e.getMessage();
+            return e.getMessage();
         }
-        return "null";
     }
 
 

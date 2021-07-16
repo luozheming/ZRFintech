@@ -123,7 +123,7 @@ public class OrderServiceImpl implements OrderService {
                 if (OrderBizType.PROJECTCOMMENT.getCode() == order.getBizType()) {
                     ProjectComment projectComment = mongoTemplate.findOne(query(where("id").is(order.getBizId())), ProjectComment.class);
                     if (null != projectComment && !StringUtils.isEmpty(projectComment.getInvesPhotoRoute())) {
-                        projectComment.setPhoto(commonUtils.getPhoto(projectComment.getInvesPhotoRoute()));
+                        projectComment.setInvesPhotoRoute(commonUtils.getFullFilePath(projectComment.getInvesPhotoRoute()));
                     }
                     orderOutDto.setProjectComment(projectComment);
                 }

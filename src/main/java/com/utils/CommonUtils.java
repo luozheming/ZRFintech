@@ -1,15 +1,24 @@
 package com.utils;
 
 import com.alibaba.fastjson.JSONObject;
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.SdkClientException;
 import com.dto.outdto.OutputFormate;
 import org.bson.internal.Base64;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -18,6 +27,8 @@ import java.util.UUID;
 @Component
 public class CommonUtils {
 
+    @Value("${cdnDomainName}")
+    private String cdnDomainName;
 
     public String getNumCode() {
         UUID uuid = UUID.randomUUID();
@@ -151,4 +162,46 @@ public class CommonUtils {
         }
     }
 
+    /**
+     * 上传文件至S3桶
+     * @param bucketName
+     * @param objectKey
+     * @param fileData
+     * @return
+     */
+    public String uploadFile(String bucketName, String objectKey, byte[] fileData) {
+        Region region = Region.CN_NORTHWEST_1;
+        try {
+            if (objectKey.indexOf("/") == 0) {
+                objectKey = objectKey.substring(1, objectKey.length());
+            }
+            S3Client s3Client = S3Client.builder().region(region).build();
+            Map<String, String> metadata = new HashMap<>();
+            metadata.put("x-amz-meta-myVal", "test");
+            PutObjectRequest putOb = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(objectKey)
+                    .metadata(metadata)
+                    .build();
+            PutObjectResponse response = s3Client.putObject(putOb, RequestBody.fromBytes(fileData));
+            System.out.println(response.toString());
+            return response.eTag();
+        } catch (Exception e) {
+            // The call was transmitted successfully, but Amazon S3 couldn't process
+            // it, so it returned an error response.
+            System.out.println("系统异常：" + e);
+            return "upload Exception";
+        }
+    }
+
+    /**
+     * 拼接文件全路径
+     * @param filePath
+     * @return
+     */
+    public String getFullFilePath(String filePath) {
+//        return "http://" + cdnDomainName + filePath;
+        // "http://" + cdnDomainName 由前端拼接
+        return filePath;
+    }
 }

@@ -56,7 +56,7 @@ public class IntegralGoodsOrderController {
                 if (!CollectionUtils.isEmpty(integralGoodsOrders)) {
                     for (IntegralGoodsOrder integralGoodsOrder : integralGoodsOrders) {
                         if (!StringUtils.isEmpty(integralGoodsOrder.getPhotoRoute())) {
-                            integralGoodsOrder.setPhoto(commonUtils.getPhoto(integralGoodsOrder.getPhotoRoute()));
+                            integralGoodsOrder.setPhotoRoute(commonUtils.getFullFilePath(integralGoodsOrder.getPhotoRoute()));
                         }
                     }
                 }

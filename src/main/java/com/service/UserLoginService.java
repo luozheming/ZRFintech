@@ -7,6 +7,8 @@ import com.pojo.EntUser;
 import com.pojo.Investor;
 import com.pojo.User;
 
+import java.util.Map;
+
 public interface UserLoginService {
     void register(UserRegisterDto userRegisterDto) throws Exception;
     UserLoginDto loginByPassword(User User) throws Exception;
@@ -15,4 +17,5 @@ public interface UserLoginService {
     EntUser detail(String userId);
     Investor investorById(String userId);
     void sendSms(Integer smsType, String phoneNm) throws Exception;
+    Map<String, Object> validateSms(String phoneNm, String captcha);
 }

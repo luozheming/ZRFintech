@@ -9,4 +9,6 @@ public interface UserService {
     User getById(String userId);
 
     HomePageDto homePage();
+
+    void synchroHistData();
 }

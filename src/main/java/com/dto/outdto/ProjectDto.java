@@ -1,5 +1,6 @@
-package com.pojo;
+package com.dto.outdto;
 
+import com.pojo.ProjectComment;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
@@ -10,9 +11,7 @@ import java.util.Date;
 import java.util.List;
 
 @Data
-@Builder
-@Document(value = "project")
-public class Project {
+public class ProjectDto {
     /**
      * 项目编号
      */
@@ -152,7 +151,24 @@ public class Project {
      * 不展示的字段
      */
     private List<String> hideFieldList;
-
-    @Tolerate
-    public Project() {}
+    /**
+     * 用户名称
+     */
+    private String userName;
+    /**
+     * 公司
+     */
+    private String companyName;
+    /**
+     * 职称
+     */
+    private String positionName;
+    /**
+     * 头像路径
+     */
+    private String photoRoute;
+    /**
+     * 是否已认证
+     */
+    private Boolean isVerify;
 }

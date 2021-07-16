@@ -27,7 +27,7 @@ public class  SendSmsUtil {
     private static final String AUTH_HEADER_VALUE = "WSSE realm=\"SDP\",profile=\"UsernameToken\",type=\"Appkey\"";
 
     public static String sendSms(String phoneNo, String templateId) throws Exception {
-
+        System.out.println("time1:  " + new Date());
         //必填,请参考"开发准备"获取如下数据,替换为实际值
         String url = "https://rtcsms.cn-north-1.myhuaweicloud.com:10743/sms/batchSendSms/v1"; //APP接入地址+接口访问URI
         String appKey = "Bg3zfO1oXXmQF6EDoXE5F5n6ZUPr"; //APP_Key
@@ -55,6 +55,7 @@ public class  SendSmsUtil {
         String captcha = new CommonUtils().getIntCode(6).toString();
         String templateParas = "[" + captcha + "]"; //模板变量，此处以单变量验证码短信为例，请客户自行生成6位验证码，并定义为字符串类型，以杜绝首位0丢失的问题（例如：002569变成了2569）。
 
+        System.out.println("time2:  " + new Date());
         //请求Body,不携带签名名称时,signature请填null
         String body = buildRequestBody(sender, receiver, templateId, templateParas, statusCallBack, signature);
         if (null == body || body.isEmpty()) {
@@ -69,12 +70,14 @@ public class  SendSmsUtil {
             return null;
         }
 
+        System.out.println("time3:  " + new Date());
         CloseableHttpClient client = HttpClients.custom()
                 .setSSLContext(new SSLContextBuilder().loadTrustMaterial(null,
                         (x509CertChain, authType) -> true).build())
                 .setSSLHostnameVerifier(new DefaultHostnameVerifier())
                 .build();
 
+        System.out.println("time4:  " + new Date());
         HttpResponse response = client.execute(RequestBuilder.create("POST")//请求方法POST
                 .setUri(url)
                 .addHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded")
@@ -82,9 +85,10 @@ public class  SendSmsUtil {
                 .addHeader("X-WSSE", wsseHeader)
                 .setEntity(new StringEntity(body)).build());
 
+        System.out.println("time5:  " + new Date());
         System.out.println(response.toString()); //打印响应头域信息
         System.out.println(EntityUtils.toString(response.getEntity())); //打印响应消息实体
-
+        System.out.println("endTime:  " + new Date());
         return captcha;
     }
 

@@ -70,13 +70,39 @@ public class DateUtil {
 
     /**
      * 获取日期间隔
-     * @param starDate
+     * @param startDate
      * @param endDate
-     * @param dateType
+     * @param dateType 日期类型：1-秒，2-分，3-时，4-天，5-月，6-年
      * @return
      */
-    public static Integer getDiffDate(Date starDate, Date endDate, int dateType) {
-
-        return 0;
+    public static Integer getDiffDate(Date startDate, Date endDate, int dateType) {
+        int diffDate = 0;
+        Calendar startCal = Calendar.getInstance();
+        Calendar endCal = Calendar.getInstance();
+        startCal.setTime(startDate);//设置起始时间
+        endCal.setTime(endDate);//设置截止时间
+        switch (dateType) {
+            case 1:
+                diffDate = endCal.get(Calendar.SECOND) - startCal.get(Calendar.SECOND);
+                break;
+            case 2:
+                diffDate = endCal.get(Calendar.MINUTE) - startCal.get(Calendar.MINUTE);
+                break;
+            case 3:
+                diffDate = endCal.get(Calendar.HOUR) - startCal.get(Calendar.HOUR);
+                break;
+            case 4:
+                diffDate = endCal.get(Calendar.DAY_OF_YEAR) - startCal.get(Calendar.DAY_OF_YEAR);
+                break;
+            case 5:
+                diffDate = endCal.get(Calendar.MONTH) - startCal.get(Calendar.MONTH);
+                break;
+            case 6:
+                diffDate = endCal.get(Calendar.YEAR) - startCal.get(Calendar.YEAR);
+                break;
+            default:
+                break;
+        }
+        return diffDate;
     }
 }

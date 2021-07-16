@@ -30,4 +30,8 @@ public class OrderDto {
      * 支付类型；1-线上，2-线下
      */
     private Integer paymentType;
+    /**
+     * 用户id
+     */
+    private String userId;
 }

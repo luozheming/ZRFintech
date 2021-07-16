@@ -43,6 +43,10 @@ public class EntUser {
      */
     private String phoneNm;
     /**
+     * 电子邮箱
+     */
+    private String email;
+    /**
      *用户微信昵称
      */
     private String nickName;
@@ -97,4 +101,20 @@ public class EntUser {
      * 是否浏览路演上传项目页面
      */
     private Boolean isShowBrowse;
+    /**
+     * 公司
+     */
+    private String companyName;
+    /**
+     * 职称
+     */
+    private String positionName;
+    /**
+     *  名片路径
+     */
+    private String cardRoute;
+    /**
+     * 是否已认证
+     */
+    private Boolean isVerify;
 }

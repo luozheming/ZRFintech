@@ -23,15 +23,18 @@ public class ArticleController {
     private ArticleService articleService;
     @Autowired
     private CommonUtils commonUtils;
-    @Value("${activityPhotoSavedFilepath}")
+    @Value("${articlePhotoSavedFilepath}")
     private String photoPath;
+    @Value("${s3BucketName}")
+    private String s3BucketName;
 
     @PostMapping("/add")
     public String add(MultipartFile photoFile, Article article) {
         try {
             if (null != photoFile) {
-                commonUtils.uploadData(photoFile, photoPath);
-                article.setPhotoRoute(photoPath + "/" + photoFile.getOriginalFilename());
+                // AWS S3存储文件
+                commonUtils.uploadFile(s3BucketName,photoPath + photoFile.getOriginalFilename(), photoFile.getBytes());
+                article.setPhotoRoute(photoPath + photoFile.getOriginalFilename());
             }
             articleService.add(article);
             return ErrorCode.SUCCESS.toJsonString();
@@ -44,8 +47,9 @@ public class ArticleController {
     public String edit(MultipartFile photoFile, Article article) {
         try {
             if (null != photoFile) {
-                commonUtils.uploadData(photoFile, photoPath);
-                article.setPhotoRoute(photoPath + "/" + photoFile.getOriginalFilename());
+                // AWS S3存储文件
+                commonUtils.uploadFile(s3BucketName,photoPath + photoFile.getOriginalFilename(), photoFile.getBytes());
+                article.setPhotoRoute(photoPath + photoFile.getOriginalFilename());
             }
             articleService.edit(article);
             return ErrorCode.SUCCESS.toJsonString();
@@ -86,6 +90,9 @@ public class ArticleController {
     public String uploadFile(MultipartFile file) {
         try {
             if (null != file) {
+//                // AWS S3存储文件
+//                commonUtils.uploadFile(s3BucketName,photoPath + photoFile.getOriginalFilename(), photoFile.getBytes());
+//                article.setPhotoRoute(cdnDomainName + "/" + photoPath + photoFile.getOriginalFilename());
                 commonUtils.uploadData(file, photoPath);
             }
             String fileData = commonUtils.getPhoto(photoPath + "/" + file.getOriginalFilename());

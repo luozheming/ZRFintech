@@ -26,6 +26,8 @@ public class CarouselPictureController {
     private CommonUtils commonUtils;
     @Value("${carouselPictureFilePath}")
     private String carouselPictureFilePath;
+    @Value("${s3BucketName}")
+    private String s3BucketName;
 
     @GetMapping("/list")
     public String list(Integer photoType, Integer status, String pageLocation) {
@@ -45,8 +47,9 @@ public class CarouselPictureController {
         try {
             String filePath = carouselPictureFilePath;
             if (null != photoFile) {
-                commonUtils.uploadData(photoFile, filePath);
-                carouselPicture.setPhotoRoute(filePath + "/" + photoFile.getOriginalFilename());
+                // AWS S3存储文件
+                commonUtils.uploadFile(s3BucketName,filePath+ photoFile.getOriginalFilename(), photoFile.getBytes());
+                carouselPicture.setPhotoRoute(filePath + photoFile.getOriginalFilename());
             }
             carouselPictureService.add(carouselPicture);
         } catch (Exception e) {
@@ -60,8 +63,9 @@ public class CarouselPictureController {
         try {
             String filePath = carouselPictureFilePath;
             if (null != photoFile) {
-                commonUtils.uploadData(photoFile, filePath);
-                carouselPicture.setPhotoRoute(filePath + "/" + photoFile.getOriginalFilename());
+                // AWS S3存储文件
+                commonUtils.uploadFile(s3BucketName,filePath + photoFile.getOriginalFilename(), photoFile.getBytes());
+                carouselPicture.setPhotoRoute(filePath + photoFile.getOriginalFilename());
             }
             carouselPictureService.edit(carouselPicture);
         } catch (Exception e) {
@@ -74,6 +78,18 @@ public class CarouselPictureController {
     public String detail(String id) {
         CarouselPicture carouselPicture = carouselPictureService.detail(id);
         OutputFormate outputFormate = new OutputFormate(carouselPicture, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
+        return JSONObject.toJSONString(outputFormate);
+    }
+
+    /**
+     * 获取页面位置枚举值
+     * @param photoType
+     * @return
+     */
+    @GetMapping("/pageLocationList")
+    public String pageLocationList(Integer photoType) {
+        List<String> pageLocations = carouselPictureService.pageLocationList(photoType);
+        OutputFormate outputFormate = new OutputFormate(pageLocations, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
         return JSONObject.toJSONString(outputFormate);
     }
 

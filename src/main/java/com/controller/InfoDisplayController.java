@@ -6,6 +6,7 @@ import com.dto.indto.PageDto;
 import com.dto.indto.ProjectBpApplyDto;
 import com.dto.indto.ProjectFormUploadDto;
 import com.dto.outdto.OutputFormate;
+import com.dto.outdto.ProjectDto;
 import com.enums.OrderBizType;
 import com.enums.PaymentType;
 import com.pojo.EntUser;
@@ -56,6 +57,9 @@ public class InfoDisplayController {
     @Value("${roadshowFilePath}")
     private String roadshowFilePath;
 
+    @Value("${s3BucketName}")
+    private String s3BucketName;
+
     /**
      * 项目展示（分页）
      * @param pageDto
@@ -95,9 +99,8 @@ public class InfoDisplayController {
             if (!CollectionUtils.isEmpty(investors)) {
                 List<String> indusLabList = null;
                 for (Investor investor : investors) {
-                    indusLabList = new ArrayList<>();
-                    investor.setPhoto(commonUtils.getPhoto(investor.getInvesPhotoRoute()));// 投资人头像
-                    investor.setOrgPhoto(commonUtils.getPhoto(investor.getInvesOrgPhotoRoute()));// 投资人机构图片
+                    investor.setInvesPhotoRoute(commonUtils.getFullFilePath(investor.getInvesPhotoRoute()));
+                    investor.setInvesOrgPhotoRoute(commonUtils.getFullFilePath(investor.getInvesOrgPhotoRoute()));
                 }
             }
             OutputFormate outputFormate = new OutputFormate(investors);
@@ -124,29 +127,38 @@ public class InfoDisplayController {
      * 项目上传（文件）
      */
     @PostMapping(value = "/project/uploadproject")
-    public String upLoadProject(@RequestPart(value = "file", required = false) MultipartFile file, Project project) {
+    public String upLoadProject(@RequestPart(value = "file", required = false) MultipartFile file, MultipartFile logoFile, Project project) {
         String projectNo = (project.getIsDone() != null && project.getIsDone()) ? commonUtils.getNumCode() : null;// 生成主键ID
         //文件上传可能会出问题
         if (null != file) {
             // 获取文件名
             String fileName = file.getOriginalFilename();
-            // 获取文件的后缀名
-            //String suffixName = fileName.substring(fileName.lastIndexOf("."));
             // 文件上传后的路径
             StringBuilder filePathBuffer = new StringBuilder();
             String filePath = filePathBuffer.append(savedfilepath).append(project.getOpenId()).append("/").append(null == projectNo ? "temp" : projectNo).append("/").toString();
-            File dest = new File(filePath + fileName);
-            // 检测是否存在目录
-            if (!dest.getParentFile().exists()) {
-                dest.getParentFile().mkdirs();
-            }
             try {
-                file.transferTo(dest);
+                // AWS S3存储文件
+                commonUtils.uploadFile(s3BucketName,filePath + file.getOriginalFilename(), file.getBytes());
                 //文件保存后更新数据库信息
                 project.setBpRoute(filePath + fileName);
-            } catch (IllegalStateException e) {
+            } catch (Exception e) {
                 return ErrorCode.FILEUPLOADFAILED.toJsonString();
-            } catch (IOException e) {
+            }
+        }
+
+        //文件上传可能会出问题
+        if (null != logoFile) {
+            // 获取文件名
+            String fileName = logoFile.getOriginalFilename();
+            // 文件上传后的路径
+            StringBuilder filePathBuffer = new StringBuilder();
+            String filePath = filePathBuffer.append(savedfilepath).append(project.getOpenId()).append("/").append(null == projectNo ? "temp" : projectNo).append("/").toString();
+            try {
+                // AWS S3存储文件
+                commonUtils.uploadFile(s3BucketName,filePath + logoFile.getOriginalFilename(), logoFile.getBytes());
+                //文件保存后更新数据库信息
+                project.setLogoRoute(filePath + fileName);
+            } catch (Exception e) {
                 return ErrorCode.FILEUPLOADFAILED.toJsonString();
             }
         }
@@ -206,6 +218,7 @@ public class InfoDisplayController {
             orderDto.setBizId(projectBpApply.getId());
             orderDto.setBizType(projectBpApply.getApplyType());
             orderDto.setOpenId(projectBpApply.getOpenId());
+            orderDto.setUserId(projectBpApplyDto.getEntUserId());
             orderService.createOrder(orderDto);
         } catch (Exception e) {
             return JSONObject.toJSONString(ErrorCode.OTHEREEEOR);
@@ -219,14 +232,27 @@ public class InfoDisplayController {
      */
     @GetMapping("/project/getMyProjects")
     public String getMyProjects(String openId, String entUserId){
-
+        ProjectDto projectDto = new ProjectDto();
         Criteria criteria = new Criteria();
         criteria.orOperator(Criteria.where("entUserId").is(entUserId), Criteria.where("openId").is(openId));
         criteria.and("isDone").is(true);
         Query query = new Query(criteria);
         query.with(Sort.by(Sort.Order.asc("createTime")));
         List<Project> projectList = mongoTemplate.find(query, Project.class);
-        OutputFormate outputFormate = new OutputFormate(projectList);
+
+        if (!CollectionUtils.isEmpty(projectList)) {
+            Project project = projectList.get(0);
+            BeanUtils.copyProperties(project, projectDto);
+
+            // 获取用户信息
+            EntUser entUser = mongoTemplate.findOne(query(where("entUserId").is(entUserId)), EntUser.class);
+            projectDto.setUserName(entUser.getUserName());
+            projectDto.setPositionName(entUser.getPositionName());
+            projectDto.setCompanyName(entUser.getCompanyName());
+            projectDto.setPhotoRoute(entUser.getPhotoRoute());
+            projectDto.setIsVerify(entUser.getIsVerify());
+        }
+        OutputFormate outputFormate = new OutputFormate(projectDto);
         return JSONObject.toJSONString(outputFormate);
     }
 

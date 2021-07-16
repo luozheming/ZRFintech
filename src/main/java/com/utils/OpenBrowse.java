@@ -30,7 +30,7 @@ public class OpenBrowse extends Thread {
 
     public void run() {
         while(true) {
-            String[] urls = {"https://console.amazonaws.cn/console/home?region=cn-north-1#"};
+            String[] urls = {"http://cloudbility.cmbchina.io/fintech-szh/hosts/cloud/142"};
             openBrowse(urls);
         }
     }

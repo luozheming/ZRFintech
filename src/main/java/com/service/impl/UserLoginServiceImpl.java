@@ -111,12 +111,12 @@ public class UserLoginServiceImpl implements UserLoginService {
         if ("ent".equals(user.getRoleCode())) {
             EntUser entUser = mongoTemplate.findOne(query(where("entUserId").is(user.getUserId())), EntUser.class);
             if (StringUtils.isEmpty(entUser.getPhotoRoute())) {
-                userLoginDto.setPhoto(commonUtils.getPhoto(entUser.getPhotoRoute()));
+                userLoginDto.setPhotoRoute(commonUtils.getFullFilePath(entUser.getPhotoRoute()));
             }
         } else if ("investor".equals(user.getRoleCode())) {
             Investor investor = mongoTemplate.findOne(query(where("investorId").is(user.getUserId())), Investor.class);
             if (StringUtils.isEmpty(investor.getInvesPhotoRoute())) {
-                userLoginDto.setPhoto(commonUtils.getPhoto(investor.getInvesPhotoRoute()));
+                userLoginDto.setPhotoRoute(commonUtils.getFullFilePath(investor.getInvesPhotoRoute()));
             }
         } else if ("admin".equals(user.getRoleCode())) {
 
@@ -171,7 +171,7 @@ public class UserLoginServiceImpl implements UserLoginService {
     public EntUser detail(String userId) {
         EntUser entUser = mongoTemplate.findOne(query(where("userId").is(userId)), EntUser.class);
         if (null != entUser & !StringUtils.isEmpty(entUser.getPhotoRoute())) {
-            entUser.setPhoto(commonUtils.getPhoto(entUser.getPhotoRoute()));
+            entUser.setPhotoRoute(commonUtils.getFullFilePath(entUser.getPhotoRoute()));
         }
         return entUser;
     }
@@ -185,10 +185,14 @@ public class UserLoginServiceImpl implements UserLoginService {
     @Override
     public void sendSms(Integer smsType, String phoneNm) throws Exception {
         String templateId = "";
-        if (1 == smsType) {
+        if (0 == smsType) {
+            templateId ="97c4b97d58ff4414be0929f2db408b96";// 通用验证码
+        } else if (1 == smsType) {
             templateId = "33180c3884554cb094a4985b31943388";// 修改密码短信模板
         } else if (2 == smsType) {
             templateId ="553ed74f719e41a1b15f5033aa5e4b43";// 用户注册短信模板
+        } else if (3 == smsType) {
+            templateId ="e2f2ad522e774b92885889a4d8dfa45a";// 客户认证
         }
         String captcha = SendSmsUtil.sendSms(phoneNm, templateId);
         if (!StringUtils.isEmpty(captcha)) {
@@ -215,7 +219,7 @@ public class UserLoginServiceImpl implements UserLoginService {
      * @param captcha
      * @return
      */
-    private Map<String, Object> validateSms(String phoneNm, String captcha) {
+    public Map<String, Object> validateSms(String phoneNm, String captcha) {
         Map<String, Object> respMap = new HashMap<>();
         respMap.put("result", true);
         // 短信验证码核对
