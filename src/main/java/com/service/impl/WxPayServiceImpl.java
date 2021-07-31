@@ -83,7 +83,7 @@ public class WxPayServiceImpl implements WxPayService {
                 .put("out_trade_no", orderNo)
                 .put("notify_url", "https://zrfintech-dev.oa.cmbchina.biz/wxPay/notify");
         rootNode.putObject("amount")
-                .put("total", payAmount);
+                .put("total", payAmount.intValue());
         rootNode.putObject("payer")
                 .put("openid", openId);
         objectMapper.writeValue(bos, rootNode);

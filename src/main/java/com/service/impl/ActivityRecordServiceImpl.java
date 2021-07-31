@@ -4,10 +4,12 @@ import com.pojo.ActivityRecord;
 import com.pojo.Project;
 import com.service.ActivityRecordService;
 import com.utils.CommonUtils;
+import com.utils.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.Date;
 import java.util.List;
@@ -37,29 +39,39 @@ public class ActivityRecordServiceImpl implements ActivityRecordService {
     }
 
     @Override
-    public List<ActivityRecord> pageList(Integer pageNum, Integer pageSize, Integer activityType) {
+    public ActivityRecord detailByUserId(String userId, String activityId) {
+        return mongoTemplate.findOne(query(where("userId").is(userId).and("activityId").is(activityId)), ActivityRecord.class);
+    }
+
+    @Override
+    public List<ActivityRecord> pageList(Integer pageNum, Integer pageSize, Integer activityType, String userId) {
         int startNum = pageNum * pageSize;
         Query query = new Query();
         if (null != activityType) {
             query.addCriteria(where("activityType").is(activityType));
         }
+        if (null != userId) {
+            query.addCriteria(where("userId").is(userId));
+        }
         List<ActivityRecord> activityRecords = mongoTemplate.find(query.skip(startNum).limit(pageSize), ActivityRecord.class);
-        if (1 == activityType) {
-            for (ActivityRecord activityRecord : activityRecords) {
-                Project project = mongoTemplate.findOne(query(where("projectNo").is(activityRecord.getProjectNo())), Project.class);
-//                if (null != project) {
-//                    activityRecord.setActivityStatus(project.getStatus());
-//                }
+        for (ActivityRecord activityRecord : activityRecords) {
+            if (!StringUtils.isEmpty(activityRecord.getEndDate()) && DateUtil.dateToStr(new Date(), "yyyy-MM-dd HH:mm:ss").compareTo(activityRecord.getEndDate()) > 0) {
+                activityRecord.setActivityStatus(2);
+            } else {
+                activityRecord.setActivityStatus(1);
             }
         }
         return activityRecords;
     }
 
     @Override
-    public Integer count(Integer activityType) {
+    public Integer count(Integer activityType, String userId) {
         Query query = new Query();
         if (null != activityType) {
             query.addCriteria(where("activityType").is(activityType));
+        }
+        if (null != userId) {
+            query.addCriteria(where("userId").is(userId));
         }
         return (int) mongoTemplate.count(query,"activityRecord");
     }

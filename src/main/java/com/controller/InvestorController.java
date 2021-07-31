@@ -51,7 +51,7 @@ public class InvestorController {
     private String s3BucketName;
 
     /**
-     * 红包支付
+     * 投资人对接
      * @param entPaymentDtoList
      * @return
      */
@@ -81,8 +81,10 @@ public class InvestorController {
                     order = new Order();
                     order.setOrderNo(commonUtils.getNumCode().substring(0, 32));
                     order.setBizId(projectComment.getId());
+                    order.setUserId(projectComment.getEntUserId());
                     order.setPayAmount(projectComment.getCommentAmount());
                     order.setPaymentType(entPaymentDto.getPaymentType());
+                    order.setBizType(entPaymentDto.getCommentType());
                     order.setCreateTime(new Date());
                     order.setPayStatus(0);
                     order.setBizStatus(1);

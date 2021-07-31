@@ -8,10 +8,13 @@ import com.dto.indto.UserRegisterDto;
 import com.dto.indto.UserUpdatePasswordDto;
 import com.dto.outdto.OutputFormate;
 import com.dto.outdto.UserLoginDto;
+import com.dto.outdto.UserRespDto;
+import com.enums.RoleCode;
 import com.pojo.*;
 import com.service.UserLoginService;
 import com.service.VIPCardUsageService;
 import com.utils.*;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -67,6 +70,79 @@ public class UserLoginController {
         }
     }
 
+    @PostMapping(value = "/user/loginByWechat")
+    public String loginByWechat(@RequestBody User user){
+        UserRespDto userRespDto = new UserRespDto();
+        try{
+            //如果用户已存在数据库，返回成功信息。否则将用户数据保存至数据库
+            User userResp = mongoTemplate.findOne(query(where("openId").is(user.getOpenId()).and("isDelete").is(0)), User.class);
+            if(!StringUtils.isEmpty(userResp)){
+                BeanUtils.copyProperties(userResp, userRespDto);
+                if (RoleCode.INVESTOR.getCode().equals(userResp.getRoleCode())) {
+                    // 获取投资人用户额外信息
+                    Investor investor = mongoTemplate.findOne(query(where("investorId").is(userResp.getUserId())), Investor.class);
+                    userRespDto.setExtendData(investor);
+                } else if (RoleCode.ENTUSER.getCode().equals(userResp.getRoleCode())) {
+                    // 获取企业客户用户额外信息
+                    EntUser entUser = mongoTemplate.findOne(query(where("entUserId").is(userResp.getUserId())), EntUser.class);
+                    userRespDto.setExtendData(entUser);
+                } else if (RoleCode.FINANCIALADVISOR.getCode().equals(userResp.getRoleCode())) {
+                    // 获取FA用户额外信息
+                    FinancialAdvisor financialAdvisor = mongoTemplate.findOne(query(where("faId").is(userResp.getUserId())), FinancialAdvisor.class);
+                    userRespDto.setExtendData(financialAdvisor);
+                }
+            } else {
+                String userId = commonUtils.getNumCode();
+                user.setUserId(userId);
+                user.setIsVerify(false);
+                user.setCreateTime(new Date());
+                user.setIsDelete(0);// 是否注销：0-否，1-是
+                user.setRoleCode(RoleCode.VISITOR.getCode());// 默认角色：visitor-游客
+                mongoTemplate.insert(user);
+                BeanUtils.copyProperties(user, userRespDto);
+            }
+            OutputFormate outputFormate = new OutputFormate(userRespDto, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
+            return JSONObject.toJSONString(outputFormate);
+        }catch (Exception e){
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+    }
+
+    /**
+     * 查看用户详情
+     * @param userId
+     * @return
+     */
+    @GetMapping("/user/userDetail")
+    public String userDetail(@RequestParam String userId) {
+        UserRespDto userRespDto = new UserRespDto();
+        //如果用户已存在数据库，返回成功信息。否则将用户数据保存至数据库
+        User userResp = mongoTemplate.findOne(query(where("userId").is(userId).and("isDelete").is(0)), User.class);
+        if (!StringUtils.isEmpty(userResp)) {
+            BeanUtils.copyProperties(userResp, userRespDto);
+            if (RoleCode.INVESTOR.getCode().equals(userResp.getRoleCode())) {
+                // 获取投资人用户额外信息
+                Investor investor = mongoTemplate.findOne(query(where("investorId").is(userResp.getUserId())), Investor.class);
+                userRespDto.setExtendData(investor);
+            } else if (RoleCode.ENTUSER.getCode().equals(userResp.getRoleCode())) {
+                // 获取企业客户用户额外信息
+                EntUser entUser = mongoTemplate.findOne(query(where("entUserId").is(userResp.getUserId())), EntUser.class);
+                userRespDto.setExtendData(entUser);
+            } else if (RoleCode.FINANCIALADVISOR.getCode().equals(userResp.getRoleCode())) {
+                // 获取FA用户额外信息
+                FinancialAdvisor financialAdvisor = mongoTemplate.findOne(query(where("faId").is(userResp.getUserId())), FinancialAdvisor.class);
+                userRespDto.setExtendData(financialAdvisor);
+            }
+        }
+        OutputFormate outputFormate = new OutputFormate(userRespDto, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
+        return JSONObject.toJSONString(outputFormate);
+    }
+
+    /**
+     * 企业客户登录接口（暂时不用）
+     * @param entUser
+     * @return
+     */
     @PostMapping(value = "/entuser/entUserLogin")
     public String entUserLogin(@RequestBody EntUser entUser){
         try{
@@ -101,7 +177,7 @@ public class UserLoginController {
                     entUserId = user.getUserId();
                 }
                 entUser.setEntUserId(entUserId);// 客户id同用户基础表userId
-                entUser.setIsVerify(false);
+//                entUser.setIsVerify(false);
                 entUser.setCreateTime(new Date());
                 mongoTemplate.insert(entUser);
                 OutputFormate outputFormate = new OutputFormate(entUser, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
@@ -149,15 +225,29 @@ public class UserLoginController {
     }
 
     /**
-     * 修改客户信息
+     * 修改用户信息
+     * @param user
+     * @return
+     */
+    @PostMapping("/user/editUser")
+    public String edit(@RequestBody User user) {
+        Update update = new Update();
+        update.set("companyName", user.getCompanyName());
+        update.set("positionName", user.getPositionName());
+        mongoTemplate.updateFirst(query(where("userId").is(user.getUserId())), update, User.class);
+        return ErrorCode.SUCCESS.toJsonString();
+    }
+
+    /**
+     * 修改客户信息(暂时不用)
      * @param entUser
      * @return
      */
     @PostMapping("/entuser/edit")
     public String edit(EntUser entUser) {
         Update update = new Update();
-        update.set("companyName", entUser.getCompanyName());
-        update.set("positionName", entUser.getPositionName());
+//        update.set("companyName", entUser.getCompanyName());
+//        update.set("positionName", entUser.getPositionName());
         mongoTemplate.updateFirst(query(where("entUserId").is(entUser.getEntUserId())), update, EntUser.class);
         return ErrorCode.SUCCESS.toJsonString();
     }
@@ -165,37 +255,86 @@ public class UserLoginController {
     /**
      * 企业客户认证
      * @param cardFile
-     * @param entUser
+     * @param user
      * @return
      */
-    @PostMapping("/entuser/verify")
-    public String verify(MultipartFile cardFile, EntUser entUser, String captcha) {
-        Map<String, Object> respMap = userLoginService.validateSms(entUser.getPhoneNm(), captcha);
+    @PostMapping("/user/verify")
+    public String verify(MultipartFile cardFile, User user, String captcha, String targetRoleCode) {
+        Map<String, Object> respMap = userLoginService.validateSms(user.getPhoneNm(), captcha);
         if (!(boolean)respMap.get("result")) {
             OutputFormate outputFormate = new OutputFormate("", ErrorCode.OTHEREEEOR.getCode(), String.valueOf(respMap.get("msg")));
             return JSONObject.toJSONString(outputFormate);
         }
         try {
+            User userResp = mongoTemplate.findOne(query(where("userId").is(user.getUserId())), User.class);
+            if (null != userResp && userResp.getIsVerify()) {
+                OutputFormate outputFormate = new OutputFormate("", ErrorCode.OTHEREEEOR.getCode(), "该用户已认证");
+                return JSONObject.toJSONString(outputFormate);
+            }
             Update update = new Update();
             if (null != cardFile) {
-                String filePath = entUserSavedFilepath + entUser.getEntUserId() + "/" + cardFile.getOriginalFilename();
+                String filePath = entUserSavedFilepath + user.getUserId() + "/" + cardFile.getOriginalFilename();
                 // AWS S3存储文件
                 commonUtils.uploadFile(s3BucketName, filePath, cardFile.getBytes());
                 //文件保存后更新数据库信息
                 update.set("cardRoute", filePath);
             }
-            update.set("userName", entUser.getUserName());
-            update.set("companyName", entUser.getCompanyName());
-            update.set("positionName", entUser.getPositionName());
-            update.set("phoneNm", entUser.getPhoneNm());
-            update.set("email", entUser.getEmail());
+            if (RoleCode.ENTUSER.getCode().equals(targetRoleCode)) {
+                update.set("userName", user.getUserName());
+                update.set("companyName", user.getCompanyName());
+                update.set("positionName", user.getPositionName());
+                update.set("email", user.getEmail());
+
+                EntUser entUser = mongoTemplate.findOne(query(where("entUserId").is(user.getUserId())), EntUser.class);
+                if (null == entUser) {
+                    entUser = new EntUser();
+                    BeanUtils.copyProperties(user, entUser);
+                    entUser.setEntUserId(user.getUserId());
+                    mongoTemplate.save(entUser);
+                }
+            } else if (RoleCode.INVESTOR.getCode().equals(targetRoleCode)) {
+                // 验证该投资人是否已维护
+                Investor investor = mongoTemplate.findOne(query(where("phoneNm").is(user.getPhoneNm())), Investor.class);
+                if (null == investor) {
+                    OutputFormate outputFormate = new OutputFormate("", ErrorCode.OTHEREEEOR.getCode(), "请联系管理员注册投资人信息");
+                    return JSONObject.toJSONString(outputFormate);
+                }
+            }
+            update.set("roleCode", targetRoleCode);
             update.set("isVerify", true);
-            mongoTemplate.updateFirst(query(where("entUserId").is(entUser.getEntUserId())), update, EntUser.class);
+            mongoTemplate.updateFirst(query(where("userId").is(user.getUserId())), update, User.class);
             return ErrorCode.SUCCESS.toJsonString();
         } catch (Exception e) {
             return ErrorCode.OTHEREEEOR.toJsonString();
         }
     }
+
+    /**
+     * 手机验证码校验及手机号码授权
+     * @param entUser
+     * @param captcha
+     * @return
+     */
+    @PostMapping("/entuser/phoneNmVerify")
+    public String verify(EntUser entUser, String captcha, Boolean isPhoneNmChange) {
+        try {
+            Map<String, Object> respMap = userLoginService.validateSms(entUser.getPhoneNm(), captcha);
+            if (!(boolean)respMap.get("result")) {
+                OutputFormate outputFormate = new OutputFormate("", ErrorCode.OTHEREEEOR.getCode(), String.valueOf(respMap.get("msg")));
+                return JSONObject.toJSONString(outputFormate);
+            }
+            if (null != isPhoneNmChange && isPhoneNmChange) {
+                Update update = new Update();
+                update.set("phoneNm", entUser.getPhoneNm());
+                mongoTemplate.updateFirst(query(where("entUserId").is(entUser.getEntUserId())), update, EntUser.class);
+            }
+            return ErrorCode.SUCCESS.toJsonString();
+        } catch (Exception e) {
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+    }
+
+
 
 
 //    ---------------------------------项目一期PC版部分接口调整----------------------------------------------------
@@ -253,36 +392,14 @@ public class UserLoginController {
     }
 
     /**
-     * 修改用户
-     * @param photoFile
-     * @param entUser
-     * @return
-     */
-    @PostMapping("/user/edit")
-    public String edit(MultipartFile photoFile, EntUser entUser) {
-        try {
-            String destPhotoPath = entUserSavedFilepath.toString();
-            if (null != photoFile) {
-                // AWS S3存储文件
-                commonUtils.uploadFile(s3BucketName,destPhotoPath + photoFile.getOriginalFilename(), photoFile.getBytes());
-                entUser.setPhotoRoute(destPhotoPath + photoFile.getOriginalFilename());
-            }
-            userLoginService.edit(entUser);
-            return ErrorCode.SUCCESS.toJsonString();
-        } catch (Exception e) {
-            return ErrorCode.OTHEREEEOR.toJsonString();
-        }
-    }
-
-    /**
      * 查询用户详情
      * @param userId
      * @return
      */
     @GetMapping("/user/detail")
     public String detail(@RequestParam String userId) {
-        EntUser entUser = userLoginService.detail(userId);
-        OutputFormate outputFormate = new OutputFormate(entUser, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
+        User user = userLoginService.detail(userId);
+        OutputFormate outputFormate = new OutputFormate(user, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
         return JSONObject.toJSONString(outputFormate);
     }
 
@@ -310,6 +427,8 @@ public class UserLoginController {
             userLoginService.sendSms(smsType, phoneNm);
             return ErrorCode.SUCCESS.toJsonString();
         } catch (Exception e) {
+            System.out.println(e.getMessage());
+            System.out.println(e);
             return ErrorCode.OTHEREEEOR.toJsonString();
         }
     }

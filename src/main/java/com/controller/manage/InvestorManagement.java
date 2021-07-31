@@ -1,6 +1,7 @@
 package com.controller.manage;
 
 import com.alibaba.fastjson.JSONObject;
+import com.dto.indto.InvestorPageListDto;
 import com.dto.outdto.OutputFormate;
 import com.dto.outdto.PageListDto;
 import com.pojo.Investor;
@@ -37,15 +38,15 @@ public class InvestorManagement {
     private String s3BucketName;
 
     @GetMapping("/investor/pageList")
-    public String getInvestorPageList(int pageNum,int pageSize) {
-        if (pageNum < 0 || pageSize <= 0) {
+    public String getInvestorPageList(InvestorPageListDto investorPageListDto) {
+        if (investorPageListDto.getPageNum() < 0 || investorPageListDto.getPageSize() <= 0) {
             return ErrorCode.PAGEBELLOWZERO.toJsonString();
         }
         int count = investorService.getDataCount();
-        int totalPage = count/pageSize;
-        if(pageNum <= totalPage){
+        int totalPage = count/investorPageListDto.getPageSize();
+        if(investorPageListDto.getPageNum() <= totalPage){
             PageListDto pageListDto = new PageListDto<Investor>();
-            List<Investor> investors = investorService.getInvestor(pageNum,pageSize);
+            List<Investor> investors = investorService.getInvestor(investorPageListDto.getPageNum(), investorPageListDto.getPageSize());
             if (!CollectionUtils.isEmpty(investors)) {
                 for (Investor investor : investors) {
                     if (!StringUtils.isEmpty(investor.getInvesPhotoRoute())) {

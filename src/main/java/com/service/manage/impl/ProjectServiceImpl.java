@@ -1,11 +1,14 @@
 package com.service.manage.impl;
 
+import com.dto.outdto.ProjectDto;
 import com.enums.CommentType;
 import com.pojo.Project;
 import com.pojo.ProjectBpApply;
 import com.pojo.ProjectComment;
+import com.pojo.User;
 import com.service.manage.ProjectCommentService;
 import com.service.manage.ProjectService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
@@ -14,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.util.Date;
 import java.util.List;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
@@ -32,36 +36,45 @@ public class ProjectServiceImpl implements ProjectService {
     public List<Project> pageList(Integer pageNum, Integer pageSize) {
         int startNum = pageNum * pageSize;
         List<Project> projects = mongoTemplate.find(new Query(where("isDone").is(true)).skip(startNum).limit(pageSize), Project.class);
-        if (!CollectionUtils.isEmpty(projects)) {
-            for (Project project : projects) {
-                List<Integer> commentTypes = mongoTemplate.findDistinct(query(where("projectNo").is(project.getProjectNo())), "commentType", "projectComment", Integer.class);
-                String commentTypeDesc = "";
-                if (!CollectionUtils.isEmpty(commentTypes)) {
-                    for (Integer commentType : commentTypes)
-                    commentTypeDesc = commentTypeDesc + "," + CommentType.getMessage(commentType);
-                }
-                ProjectBpApply projectBpApply = mongoTemplate.findOne(query(where("projectNo").is(project.getProjectNo())), ProjectBpApply.class);
-                if (null != projectBpApply) {
-                    commentTypeDesc = commentTypeDesc + "," + "定制商业计划书";
-                }
-
-                if (!StringUtils.isEmpty(commentTypeDesc)) {
-                    commentTypeDesc = commentTypeDesc.substring(1);
-                }
-//                project.setCommentTypeDesc(commentTypeDesc);
-            }
-        }
+//        if (!CollectionUtils.isEmpty(projects)) {
+//            for (Project project : projects) {
+//                List<Integer> commentTypes = mongoTemplate.findDistinct(query(where("projectNo").is(project.getProjectNo())), "commentType", "projectComment", Integer.class);
+//                String commentTypeDesc = "";
+//                if (!CollectionUtils.isEmpty(commentTypes)) {
+//                    for (Integer commentType : commentTypes)
+//                    commentTypeDesc = commentTypeDesc + "," + CommentType.getMessage(commentType);
+//                }
+//                ProjectBpApply projectBpApply = mongoTemplate.findOne(query(where("projectNo").is(project.getProjectNo())), ProjectBpApply.class);
+//                if (null != projectBpApply) {
+//                    commentTypeDesc = commentTypeDesc + "," + "定制商业计划书";
+//                }
+//
+//                if (!StringUtils.isEmpty(commentTypeDesc)) {
+//                    commentTypeDesc = commentTypeDesc.substring(1);
+//                }
+////                project.setCommentTypeDesc(commentTypeDesc);
+//            }
+//        }
         return projects;
     }
 
     @Override
-    public Project detail(String projectNo) {
+    public ProjectDto detail(String projectNo) {
+        ProjectDto projectDto = new ProjectDto();
         Project project = mongoTemplate.findOne(query(where("projectNo").is(projectNo)), Project.class);
         if (null != project) {
-            List<ProjectComment> projectComments = projectCommentService.listByProjectNo(projectNo);
-            project.setProjectCommentList(projectComments);
+            BeanUtils.copyProperties(project, projectDto);
+            // 获取用户信息
+            User user = mongoTemplate.findOne(query(where("userId").is(project.getEntUserId())), User.class);
+            if (null != user) {
+                projectDto.setUserName(user.getUserName());
+                projectDto.setPositionName(user.getPositionName());
+                projectDto.setCompanyName(user.getCompanyName());
+                projectDto.setPhotoRoute(user.getPhotoRoute());
+                projectDto.setIsVerify(user.getIsVerify());
+            }
         }
-        return project;
+        return projectDto;
     }
 
     @Override
@@ -93,8 +106,19 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public void edit(Project project) {
-        Update update = new Update();
-        update.set("proDes", project.getProDes());
-        mongoTemplate.updateFirst(query(where("projectNo").is(project.getProjectNo())), update, Project.class);
+        // 获取待更新的项目信息
+        Project orgProject = mongoTemplate.findOne(query(where("projectNo").is(project.getProjectNo())), Project.class);
+        if (StringUtils.isEmpty(project.getBpRoute())) {
+            project.setBpRoute(orgProject.getBpRoute());
+        }
+        if (StringUtils.isEmpty(project.getLogoRoute())) {
+            project.setLogoRoute(orgProject.getLogoRoute());
+        }
+        project.setCreateTime(orgProject.getCreateTime());
+        project.setUpdateTime(new Date());
+
+        // 先删除原项目,再重新插入一笔同projectNo的项目
+        mongoTemplate.remove(query(where("projectNo").is(project.getProjectNo())), Project.class);
+        mongoTemplate.save(project);
     }
 }

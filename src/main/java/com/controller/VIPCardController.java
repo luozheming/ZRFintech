@@ -23,14 +23,11 @@ public class VIPCardController {
     @Autowired
     private VIPCardService vipCardService;
 
-    @GetMapping("/detail")
-    public String detail() {
+    @GetMapping("/list")
+    public String list() {
         try {
             List<VIPCard> vipCards = vipCardService.list();// 暂时只有一种卡
-            if (CollectionUtils.isEmpty(vipCards)) {
-                return ErrorCode.NULLOBJECT.toJsonString();
-            }
-            OutputFormate outputFormate = new OutputFormate(vipCards.get(0));
+            OutputFormate outputFormate = new OutputFormate(vipCards);
             return JSONObject.toJSONString(outputFormate);
         } catch (Exception e) {
             return ErrorCode.OTHEREEEOR.toJsonString();

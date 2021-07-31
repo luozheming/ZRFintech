@@ -110,9 +110,6 @@ public class UserLoginServiceImpl implements UserLoginService {
         // 根据不同角色返回对应信息
         if ("ent".equals(user.getRoleCode())) {
             EntUser entUser = mongoTemplate.findOne(query(where("entUserId").is(user.getUserId())), EntUser.class);
-            if (StringUtils.isEmpty(entUser.getPhotoRoute())) {
-                userLoginDto.setPhotoRoute(commonUtils.getFullFilePath(entUser.getPhotoRoute()));
-            }
         } else if ("investor".equals(user.getRoleCode())) {
             Investor investor = mongoTemplate.findOne(query(where("investorId").is(user.getUserId())), Investor.class);
             if (StringUtils.isEmpty(investor.getInvesPhotoRoute())) {
@@ -155,25 +152,14 @@ public class UserLoginServiceImpl implements UserLoginService {
         updateSmsStatus(userUpdatePasswordDto.getPhoneNm());
     }
 
-    @Override
-    public void edit(EntUser entUser) throws Exception {
-        Update update = new Update();
-        if (!StringUtils.isEmpty(entUser.getPhotoRoute())) {
-            update.set("photoRoute", entUser.getPhotoRoute());
-        }
-        update.set("phoneNm", entUser.getPhoneNm());
-        update.set("userName", entUser.getUserName());
-        update.set("weChatNm", entUser.getWeChatNm());
-        mongoTemplate.updateFirst(query(where("entUserId").is(entUser.getEntUserId())), update, EntUser.class);
-    }
 
     @Override
-    public EntUser detail(String userId) {
-        EntUser entUser = mongoTemplate.findOne(query(where("userId").is(userId)), EntUser.class);
-        if (null != entUser & !StringUtils.isEmpty(entUser.getPhotoRoute())) {
-            entUser.setPhotoRoute(commonUtils.getFullFilePath(entUser.getPhotoRoute()));
+    public User detail(String userId) {
+        User user = mongoTemplate.findOne(query(where("userId").is(userId)), User.class);
+        if (null != user & !StringUtils.isEmpty(user.getPhotoRoute())) {
+            user.setPhotoRoute(commonUtils.getFullFilePath(user.getPhotoRoute()));
         }
-        return entUser;
+        return user;
     }
 
     @Override

@@ -1,168 +1,73 @@
 package com.service.manage.impl;
 
 import com.dto.outdto.EntUserDto;
-import com.dto.outdto.PageListDto;
-import com.pojo.EntUser;
-import com.pojo.Project;
-import com.pojo.ProjectBpApply;
-import com.pojo.ProjectComment;
 import com.service.manage.EntUserService;
-import com.service.manage.ProjectBpApplyService;
-import com.service.manage.ProjectCommentService;
-import com.service.manage.ProjectService;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.aggregation.LookupOperation;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
-import static org.springframework.data.mongodb.core.query.Criteria.where;
+import java.util.Map;
 
 @Service
 public class EntUserServiceImpl implements EntUserService {
 
     @Autowired
     private MongoTemplate mongoTemplate;
-    @Autowired
-    private ProjectService projectService;
-    @Autowired
-    private ProjectBpApplyService projectBpApplyService;
-    @Autowired
-    private ProjectCommentService projectCommentService;
 
     @Override
-    public PageListDto<EntUserDto> pageList(Integer pageNum, Integer pageSize) throws Exception {
-        PageListDto pageListDto = new PageListDto<EntUserDto>();
-        List<EntUserDto> entUserDtoList = new ArrayList<>();
-
-        List<EntUser> entUsers = mongoTemplate.find(new Query(where("roleCode").is("ent")), EntUser.class);
-        if (!CollectionUtils.isEmpty(entUsers)) {
-            EntUserDto entUserDto = null;
-            for (EntUser entUser : entUsers) {
-                // 查找用户已上传项目
-                List<Project> projects = new ArrayList<>();
-                if (!StringUtils.isEmpty(entUser.getOpenId())) {
-                    // 查询小程序用户上传的项目
-                    List<Project> projectList = projectService.listByEnt(entUser.getOpenId());
-                    if (!CollectionUtils.isEmpty(projectList)) {
-                        projects.addAll(projectList);
-                    }
-                } else {
-                }
-                if (!CollectionUtils.isEmpty(projects)) {
-                    for (Project project : projects) {
-                        entUserDto = new EntUserDto();
-                        BeanUtils.copyProperties(entUser, entUserDto);
-                        entUserDto.setProjectNm(project.getProjectNm());
-                        entUserDto.setProjectNo(project.getProjectNo());
-                        if (null != project.getCreateTime()) {
-                            entUserDto.setProjectCreateTime(project.getCreateTime());
-                        }
-                        // 查找订单数
-                        List<ProjectComment> projectComments = projectCommentService.listByProjectNo(project.getProjectNo());
-                        if (!CollectionUtils.isEmpty(projectComments)) {
-                            entUserDto.setOrderCount(projectComments.size());
-                            BigDecimal orderAmount = new BigDecimal("0.00");
-                            for (ProjectComment projectComment : projectComments) {
-                                orderAmount = orderAmount.add(projectComment.getCommentAmount() == null ? new BigDecimal("0.00") : projectComment.getCommentAmount());
-                            }
-                            entUserDto.setOrderAmount(orderAmount);
-                            entUserDto.setCommentCreateTime(projectComments.get(projectComments.size()-1).getCreateTime());
-                        }
-                        entUserDto.setIsBpApply(false);
-                        entUserDtoList.add(entUserDto);
-                    }
-                }
-
-                // 查找用户申请的BP项目
-                List<ProjectBpApply> projectBpApplyList = projectBpApplyService.ListByEnt(entUser.getOpenId());
-                if (!CollectionUtils.isEmpty(projectBpApplyList)) {
-                    for (ProjectBpApply projectBpApply : projectBpApplyList) {
-                        Boolean isAdd = false;// 是否已添加
-                        for (EntUserDto userDto: entUserDtoList) {
-//                            if (!StringUtils.isEmpty(projectBpApply.getProjectNo()) && userDto.getProjectNo().equals(projectBpApply.getProjectNo())) {
-//                                userDto.setIsBpApply(true);
-//                                userDto.setBpApplyId(projectBpApply.getId());
-//                                isAdd = true;
-//                                break;
-//                            }
-                        }
-
-                        if (!isAdd) {
-                            entUserDto = new EntUserDto();
-                            BeanUtils.copyProperties(entUser, entUserDto);
-                            entUserDto.setProjectNm(projectBpApply.getProjectNm());
-                            entUserDto.setIsBpApply(true);
-                            if (null != projectBpApply.getCreateTime()) {
-                                entUserDto.setBpApplyTime(projectBpApply.getCreateTime());
-                            }
-                            entUserDto.setBpApplyId(projectBpApply.getId());
-                            entUserDtoList.add(entUserDto);
-                        }
-                        /*for (EntUserDto userDto: entUserDtoList) {
-                            if (userDto.getProjectNo().equals(projectBpApply.getProjectNo())) {
-                                userDto.setIsBpApply(true);
-                                userDto.setBpApplyId(projectBpApply.getId());
-                                break;
-                            }
-                        }*/
-
-                        if (null == entUserDto) {
-                            entUserDto = new EntUserDto();
-                            BeanUtils.copyProperties(entUser, entUserDto);
-                            entUserDto.setProjectNm(projectBpApply.getProjectNm());
-                            entUserDto.setIsBpApply(true);
-                            entUserDto.setBpApplyId(projectBpApply.getId());
-                            entUserDtoList.add(entUserDto);
-                        }
-                    }
-                }
-
-                // 项目及项目BP申请均为空时，只展示用户信息
-                if (CollectionUtils.isEmpty(projects) && CollectionUtils.isEmpty(projectBpApplyList)) {
-                    entUserDto = new EntUserDto();
-                    BeanUtils.copyProperties(entUser, entUserDto);
-                    entUserDtoList.add(entUserDto);
-                }
-            }
+    public List<EntUserDto> pageList(Integer pageNum, Integer pageSize, String searchField) throws Exception {
+        int startNum = pageNum * pageSize;
+        Criteria criteria = new Criteria();
+        criteria.and("entUserId").ne(null);
+        if (!StringUtils.isEmpty(searchField)) {
+            criteria.orOperator(Criteria.where("phoneNm").is(searchField), Criteria.where("project.projectNm").regex(".*?\\" + searchField + ".*"));
         }
+        LookupOperation lookup = LookupOperation.newLookup()
+                //从表（关联的表）
+                .from("project")
+                //主表中与从表相关联的字段
+                .localField("entUserId")
+                //从表与主表相关联的字段
+                .foreignField("entUserId")
+                //查询出的从表集合 命名
+                .as("project");
+        AggregationOperation operation = Aggregation.match(criteria);
 
-        // 对list进行物理分页
-        int count = entUserDtoList.size();
-        int pageEndRow = 0;
-        int pageStartRow = 0;
-        int totalPages = 0;
-        if ((count % pageSize) == 0) {
-            totalPages = count / pageSize;
-        } else {
-            totalPages = count / pageSize + 1;
-        }
-        if ((pageNum + 1) * pageSize < count) {// 判断是否为最后一页
-            pageStartRow = pageNum * pageSize;
-            pageEndRow = (pageNum + 1) * pageSize;
-        } else {
-            pageEndRow = count;
-            pageStartRow = pageSize * (totalPages - 1);
-        }
-        if (count > 0) {
-            entUserDtoList = entUserDtoList.subList(pageStartRow, pageEndRow);
-        }
-
-        pageListDto.setTotal(count);
-        pageListDto.setList(entUserDtoList);
-        return pageListDto;
+        Aggregation agg = Aggregation.newAggregation(lookup, operation,
+                Aggregation.skip((long) startNum),
+                Aggregation.limit(pageSize));
+        AggregationResults<EntUserDto> result = mongoTemplate.aggregate(agg,"entuser", EntUserDto.class);
+        List<EntUserDto> entUserDtos = result.getMappedResults();
+        return entUserDtos;
     }
-
+    
     @Override
-    public Integer count() {
-        return (int) mongoTemplate.count(new Query(),"entuser");
+    public Integer count(String searchField) {
+        Criteria criteria = new Criteria();
+        criteria.and("entUserId").ne(null);
+        if (!StringUtils.isEmpty(searchField)) {
+            criteria.orOperator(Criteria.where("phoneNm").is(searchField), Criteria.where("project.projectNm").regex(".*?\\" + searchField + ".*"));
+        }
+        LookupOperation lookup = LookupOperation.newLookup()
+                //从表（关联的表）
+                .from("project")
+                //主表中与从表相关联的字段
+                .localField("entUserId")
+                //从表与主表相关联的字段
+                .foreignField("entUserId")
+                //查询出的从表集合 命名
+                .as("project");
+        AggregationOperation operation = Aggregation.match(criteria);
+        Aggregation agg = Aggregation.newAggregation(lookup, operation);
+        AggregationResults<Map> studentAggregation = mongoTemplate.aggregate(agg, "entuser", Map.class);
+        int count = studentAggregation.getMappedResults().size();
+        return count;
     }
 }

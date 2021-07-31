@@ -4,12 +4,14 @@ package com.enums;
  * 订单业务类型
  */
 public enum OrderBizType {
+    PURCHASEVIP(0, "购买会员"),
     PROJECTCOMMENT(1, "对接机构投资人-在线问答"),
     ONLINECONVERSATION(2, "对接机构投资人-线上1v1交流"),
     OFFLINECONVERSATION(3, "对接机构投资人-线下1v1交流"),
-    BPAPPLAY(4, "定制商业计划书"),
-    WHOLECUSTOMIZATION(5, "精品投行签约对接"),
-    ROADSHOWCOACH(6, "路演辅导");
+    BPOPTIMIZE(4, "商业计划书优化"),
+    BPDELIVER(5, "商业计划书代投"),
+    STANDARDROADSHOWCOACH(6, "标准版路演辅导"),
+    DELUXEROADSHOWCOACH(7, "高级版路演辅导");
 
     private int code;
     private String message;

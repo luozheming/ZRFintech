@@ -3,6 +3,7 @@ package com.service.impl;
 import com.pojo.VIPCard;
 import com.service.VIPCardService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,9 @@ public class VIPCardServiceImpl implements VIPCardService {
 
     @Override
     public List<VIPCard> list() {
-        return mongoTemplate.find(new Query(), VIPCard.class);
+        Query query = new Query();
+        query.with(Sort.by(Sort.Order.asc("orderNo")));
+        return mongoTemplate.find(query, VIPCard.class);
     }
 
 }

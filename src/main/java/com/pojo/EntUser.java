@@ -82,39 +82,39 @@ public class EntUser {
      * 更新日期
      */
     private Date updateTime;
-    /**
-     * 头像数据
-     */
-    private String photo;
-    /**
-     * 头像路径
-     */
-    private String photoRoute;
+//    /**
+//     * 头像数据
+//     */
+//    private String photo;
+//    /**
+//     * 头像路径
+//     */
+//    private String photoRoute;
 
     @Tolerate
     public EntUser() {}
-    /**
-     * 是否浏览上传项目页面
-     */
-    private Boolean isBrowse;
-    /**
-     * 是否浏览路演上传项目页面
-     */
-    private Boolean isShowBrowse;
-    /**
-     * 公司
-     */
-    private String companyName;
-    /**
-     * 职称
-     */
-    private String positionName;
-    /**
-     *  名片路径
-     */
-    private String cardRoute;
-    /**
-     * 是否已认证
-     */
-    private Boolean isVerify;
+//    /**
+//     * 是否浏览上传项目页面
+//     */
+//    private Boolean isBrowse;
+//    /**
+//     * 是否浏览路演上传项目页面
+//     */
+//    private Boolean isShowBrowse;
+//    /**
+//     * 公司
+//     */
+//    private String companyName;
+//    /**
+//     * 职称
+//     */
+//    private String positionName;
+//    /**
+//     *  名片路径
+//     */
+//    private String cardRoute;
+//    /**
+//     * 是否已认证
+//     */
+//    private Boolean isVerify;
 }

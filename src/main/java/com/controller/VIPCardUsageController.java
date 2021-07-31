@@ -2,6 +2,7 @@ package com.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.dto.outdto.OutputFormate;
+import com.dto.outdto.VIPCardUsageRespDto;
 import com.pojo.VIPCardUsage;
 import com.service.VIPCardUsageService;
 import com.utils.ErrorCode;
@@ -17,20 +18,25 @@ public class VIPCardUsageController {
 
     /**
      * 查询用户VIP卡的使用情况
-     * @param openId
+     * @param userId
      * @return
      */
-    @GetMapping("/detailByEnt")
-    public String detailByEnt(@RequestParam String openId) {
+    @GetMapping("/detailByUserId")
+    public String detailByUserId(@RequestParam String userId) {
         try {
-            VIPCardUsage vipCardUsage = vipCardUsageService.detailByEnt(openId);
-            OutputFormate outputFormate = new OutputFormate(vipCardUsage);
+            VIPCardUsageRespDto vipCardUsageRespDto = vipCardUsageService.detailByUserId(userId);
+            OutputFormate outputFormate = new OutputFormate(vipCardUsageRespDto);
             return JSONObject.toJSONString(outputFormate);
         } catch (Exception e) {
             return ErrorCode.OTHEREEEOR.toJsonString();
         }
     }
 
+    /**
+     * 购买会员卡
+     * @param vipCardUsage
+     * @return
+     */
     @PostMapping("/add")
     public String add(@RequestBody VIPCardUsage vipCardUsage) {
         try {
@@ -51,13 +57,4 @@ public class VIPCardUsageController {
         }
     }
 
-    @PostMapping("/clearTimes")
-    public String clearTimes(String openId) {
-        try {
-            vipCardUsageService.clearTimes(openId);
-            return ErrorCode.SUCCESS.toJsonString();
-        } catch (Exception e) {
-            return ErrorCode.OTHEREEEOR.toJsonString();
-        }
-    }
 }

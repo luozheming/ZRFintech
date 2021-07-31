@@ -17,26 +17,6 @@ public class ProjectBpApply {
      */
     private String id;
     /**
-     * 项目名称
-     */
-    private String projectNm;
-    /**
-     * 所属行业
-     */
-    private String proIndus;
-    /**
-     * 企业地址
-     */
-    private String address;
-    /**
-     * 项目描述
-     */
-    private String proDes;
-    /**
-     * 项目联系人
-     */
-    private String proUser;
-    /**
      * 项目联系人电话
      */
     private String proPhonum;
@@ -44,10 +24,6 @@ public class ProjectBpApply {
      * 上传用户
      */
     private String openId;
-    /**
-     * 微信号
-     */
-    private String weChatNo;
     /**
      * 申请时间
      */
@@ -61,7 +37,7 @@ public class ProjectBpApply {
      */
     private Integer dealStatus;
     /**
-     * 项目申请类型：3-bp定制申请，4-FA全流程定制
+     * 项目申请类型：4-bp优化，5-bp代投，6-路演辅导
      */
     private Integer applyType;
 

@@ -28,13 +28,13 @@ public class User {
      */
     private String password;
     /**
-     * 角色编码：entuser-商户，investor-投资人
+     * 角色编码：entuser-商户，investor-投资人，FA-融资顾问，visitor-游客，management-管理员
      */
     private String roleCode;
     /**
-     * 状态：0-有效，1-失效
+     * 是否注销：0-否，1-是
      */
-    private Integer status;
+    private Integer isDelete;
     /**
      * 创建日期
      */
@@ -43,6 +43,35 @@ public class User {
      * 更新日期
      */
     private Date updateTime;
+
+    /**
+     * 是否认证
+     */
+    private Boolean isVerify;
+    /**
+     * 头像数据
+     */
+    private String photo;
+    /**
+     * 头像路径
+     */
+    private String photoRoute;
+    /**
+     * 公司
+     */
+    private String companyName;
+    /**
+     * 职称
+     */
+    private String positionName;
+    /**
+     * 微信登录唯一标识
+     */
+    private String openId;
+    /**
+     * 电子邮箱
+     */
+    private String email;
 
     @Tolerate
     public User() {}

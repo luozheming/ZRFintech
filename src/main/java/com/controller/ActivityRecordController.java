@@ -21,7 +21,7 @@ public class ActivityRecordController {
 
     @PostMapping("/add")
     public String add(@RequestBody ActivityRecord activityRecord) {
-        ActivityRecord activityRecordResp = activityRecordService.detailByPhoneNm(activityRecord.getParticipantPhoneNm(), activityRecord.getActivityId());
+        ActivityRecord activityRecordResp = activityRecordService.detailByUserId(activityRecord.getUserId(), activityRecord.getActivityId());
         if (null != activityRecordResp) {
             return ErrorCode.REPEATCOMMIT.toJsonString();
         }
@@ -30,17 +30,17 @@ public class ActivityRecordController {
     }
 
     @GetMapping("/pageList")
-    public String pageList(Integer pageNum, Integer pageSize, Integer activityType) {
+    public String pageList(Integer pageNum, Integer pageSize, Integer activityType, String userId) {
         if (pageNum < 0 || pageSize <= 0) {
             return ErrorCode.PAGEBELLOWZERO.toJsonString();
         }
         try {
-            int count = activityRecordService.count(activityType);
+            int count = activityRecordService.count(activityType, userId);
             int totalPage = count/pageSize;
             PageListDto pageListDto = new PageListDto<Project>();
             pageListDto.setTotal(count);
             if(pageNum <= totalPage){
-                List<ActivityRecord> activityRecords =  activityRecordService.pageList(pageNum, pageSize, activityType);
+                List<ActivityRecord> activityRecords =  activityRecordService.pageList(pageNum, pageSize, activityType, userId);
                 pageListDto.setList(activityRecords);
             }
             OutputFormate outputFormate = new OutputFormate(pageListDto);
@@ -48,6 +48,30 @@ public class ActivityRecordController {
         } catch (Exception e) {
             return ErrorCode.OTHEREEEOR.toJsonString();
         }
+    }
+
+    /**
+     * 查看活动报名详情
+     * @param participantPhoneNm
+     * @param activityId
+     * @return
+     */
+    @GetMapping("/detailByPhoneNm")
+    public String detailByPhoneNm(String participantPhoneNm, String activityId) {
+        ActivityRecord activityRecordResp = activityRecordService.detailByPhoneNm(participantPhoneNm, activityId);
+        OutputFormate outputFormate = new OutputFormate(activityRecordResp, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
+        return JSONObject.toJSONString(outputFormate);
+    }
+
+    /**
+     * 删除活动记录
+     * @param id
+     * @return
+     */
+    @GetMapping("/deleteById")
+    public String deleteById(String id) {
+        activityRecordService.delete(id);
+        return ErrorCode.SUCCESS.toJsonString();
     }
 
 }

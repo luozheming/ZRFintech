@@ -26,13 +26,8 @@ public class OrderController {
 
     @Autowired
     private OrderService orderService;
-
-    @Autowired
-    private WxPayService wxPayService;
     @Autowired
     private ProjectCommentService projectCommentService;
-    @Autowired
-    private ActivityRecordService activityRecordService;
 
     @PostMapping("/createOrder")
     public String createOrder(@RequestBody OrderDto orderDto ) {
@@ -57,11 +52,7 @@ public class OrderController {
                 case PROJECTCOMMENT:
                     projectCommentService.delete(order.getBizId());
                     break;
-//                case ACTIVITYRECORD:
-//                    activityRecordService.delete(order.getBizId());
-//                    break;
                 default:
-                    System.out.println("系统类型不满足");
                     break;
             }
             // 删除订单
@@ -89,9 +80,9 @@ public class OrderController {
             return ErrorCode.PAGEBELLOWZERO.toJsonString();
         }
         try {
-            int count = orderService.count(openId);
+            int count = orderService.count(userId);
             int totalPage = count/pageSize;
-            PageListDto pageListDto = new PageListDto<Project>();
+            PageListDto pageListDto = new PageListDto<OrderOutDto>();
             pageListDto.setTotal(count);
             if(pageNum <= totalPage){
                 List<OrderOutDto> orderOutDtos = orderService.pageList(pageNum, pageSize, openId, userId);
@@ -114,4 +105,41 @@ public class OrderController {
         orderService.commitReply(order);
         return ErrorCode.SUCCESS.toJsonString();
     }
+
+
+    /**
+     * 查看订单
+     * @param pageNum
+     * @param pageSize
+     * @param openId
+     * @param userId
+     * @return
+     */
+    @GetMapping("/pageOrderList")
+    public String pageOrderList(Integer pageNum, Integer pageSize, String openId, String userId) {
+        if (pageNum < 0 || pageSize <= 0) {
+            return ErrorCode.PAGEBELLOWZERO.toJsonString();
+        }
+        try {
+            int count = orderService.count(userId);
+            int totalPage = count/pageSize;
+            PageListDto pageListDto = new PageListDto<Project>();
+            pageListDto.setTotal(count);
+            if(pageNum <= totalPage){
+                List<OrderOutDto> orderOutDtos = orderService.pageList(pageNum, pageSize, openId, userId);
+                pageListDto.setList(orderOutDtos);
+            }
+            OutputFormate outputFormate = new OutputFormate(pageListDto);
+            return JSONObject.toJSONString(outputFormate);
+        } catch (Exception e) {
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+    }
+
+    @PostMapping("/edit")
+    public String edit(@RequestBody Order order) {
+        orderService.update(order);
+        return ErrorCode.SUCCESS.toJsonString();
+    }
+
 }

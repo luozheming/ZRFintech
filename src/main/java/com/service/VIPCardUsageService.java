@@ -1,10 +1,10 @@
 package com.service;
 
+import com.dto.outdto.VIPCardUsageRespDto;
 import com.pojo.VIPCardUsage;
 
 public interface VIPCardUsageService {
-    VIPCardUsage detailByEnt(String openId);
+    VIPCardUsageRespDto detailByUserId(String userId);
     void add(VIPCardUsage vipCardUsage) throws Exception;
     void edit(VIPCardUsage vipCardUsage);
-    void clearTimes(String openId);
 }

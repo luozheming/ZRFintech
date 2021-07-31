@@ -47,18 +47,19 @@ public class OrderServiceImpl implements OrderService {
         String orderNo = commonUtils.getNumCode().substring(0, 32);// 订单号
 //        // 微信统一支付
         WxPayDto wxPayDto = null;
-//        if (1 == orderDto.getPaymentType()) {
-//            wxPayDto = wxPayService.wxPay(orderNo, orderDto.getOpenId(), orderDto.getPayAmount().multiply(new BigDecimal("100")));
-//            wxPayDto.setOutTradeNo(orderNo);
-//        }
+        if (1 == orderDto.getPaymentType()) {
+            wxPayDto = wxPayService.wxPay(orderNo, orderDto.getOpenId(), orderDto.getPayAmount().multiply(new BigDecimal("100")));
+            wxPayDto.setOutTradeNo(orderNo);
+        }
         // 初始化订单信息
         Order order = new Order();
         BeanUtils.copyProperties(orderDto, order);
         order.setOrderNo(orderNo);
-        order.setPayStatus(0);// 支付状态：0-未支付，1-支付中，2-支付成功，3-支付失败，4-支付超时
-//        if (1 == orderDto.getPaymentType() && null == wxPayDto) {
-//            order.setPayStatus(3);
-//        }
+        order.setPayStatus(1);// 支付状态：1-支付中，2-支付成功，3-支付失败，4-支付异常,5-支付取消
+        order.setCreateTime(new Date());
+        if (1 == orderDto.getPaymentType() && null == wxPayDto) {
+            order.setPayStatus(3);
+        }
         mongoTemplate.insert(order, "order");
         return wxPayDto;
     }
@@ -76,6 +77,15 @@ public class OrderServiceImpl implements OrderService {
         }
         if (null != order.getPayStatus()) {
             update.set("payStatus", order.getPayStatus());
+        }
+        if (null != order.getBizStatus()) {
+            update.set("bizStatus", order.getBizStatus());
+        }
+        if (null != order.getPhoneNm()) {
+            update.set("phoneNm", order.getPhoneNm());
+        }
+        if (null != order.getUserName()) {
+            update.set("userName", order.getUserName());
         }
         mongoTemplate.updateFirst(query(where("orderNo").is(order.getOrderNo())), update, Order.class);
     }
@@ -102,15 +112,25 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Integer count(String openId) {
-        return (int) mongoTemplate.count(new Query(where("openId").is(openId)),"order");
+    public Integer count(String userId) {
+        Criteria criteria = new Criteria();
+        if (null != userId) {
+            List<Integer> payStatusList = new ArrayList<>();
+            payStatusList.add(1);
+            payStatusList.add(5);
+            criteria = where("userId").is(userId).and("payStatus").nin(payStatusList);
+        }
+        return (int) mongoTemplate.count(new Query(criteria),"order");
     }
 
     @Override
     public List<OrderOutDto> pageList(Integer pageNum, Integer pageSize, String openId, String userId) {
         Criteria criteria = new Criteria();
         if (null != userId) {
-            criteria = where("userId").is(userId);
+            List<Integer> payStatusList = new ArrayList<>();
+            payStatusList.add(1);
+            payStatusList.add(5);
+            criteria = where("userId").is(userId).and("payStatus").nin(payStatusList);
         }
         int startNum = pageNum * pageSize;
         List<Order> orders = mongoTemplate.find(new Query(criteria).skip(startNum).limit(pageSize), Order.class);
@@ -120,13 +140,15 @@ public class OrderServiceImpl implements OrderService {
             for (Order order : orders) {
                 orderOutDto = new OrderOutDto();
                 BeanUtils.copyProperties(order, orderOutDto);
-                if (OrderBizType.PROJECTCOMMENT.getCode() == order.getBizType()) {
-                    ProjectComment projectComment = mongoTemplate.findOne(query(where("id").is(order.getBizId())), ProjectComment.class);
-                    if (null != projectComment && !StringUtils.isEmpty(projectComment.getInvesPhotoRoute())) {
-                        projectComment.setInvesPhotoRoute(commonUtils.getFullFilePath(projectComment.getInvesPhotoRoute()));
-                    }
-                    orderOutDto.setProjectComment(projectComment);
-                }
+//                if (OrderBizType.PROJECTCOMMENT.getCode() == order.getBizType() ||
+//                        OrderBizType.ONLINECONVERSATION.getCode() == order.getBizType() ||
+//                        OrderBizType.OFFLINECONVERSATION.getCode() == order.getBizType()) {
+//                    ProjectComment projectComment = mongoTemplate.findOne(query(where("id").is(order.getBizId())), ProjectComment.class);
+//                    if (null != projectComment && !StringUtils.isEmpty(projectComment.getInvesPhotoRoute())) {
+//                        projectComment.setInvesPhotoRoute(commonUtils.getFullFilePath(projectComment.getInvesPhotoRoute()));
+//                    }
+//                    orderOutDto.setProjectComment(projectComment);
+//                }
                 orderOutDtos.add(orderOutDto);
             }
         }

@@ -151,7 +151,7 @@ public class UserServiceImpl implements UserService {
                 order = new Order();
                 order.setOrderNo(commonUtils.getNumCode().substring(0, 32));
                 order.setBizId(projectBpApply.getId());
-                order.setBizType(OrderBizType.BPAPPLAY.getCode());// 详情见OrderBizType.
+                order.setBizType(OrderBizType.BPOPTIMIZE.getCode());// 详情见OrderBizType.
                 Integer commentStatus = projectBpApply.getDealStatus();
                 if (!StringUtils.isEmpty(commentStatus) && 1 == commentStatus ) {
                     order.setBizStatus(11);

@@ -3,11 +3,15 @@ package com.controller.manage;
 import com.alibaba.fastjson.JSONObject;
 import com.dto.outdto.OutputFormate;
 import com.dto.outdto.PageListDto;
+import com.dto.outdto.ProjectDto;
 import com.pojo.Project;
 import com.service.manage.ProjectService;
+import com.utils.CommonUtils;
 import com.utils.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -17,6 +21,12 @@ public class ProjectController {
 
     @Autowired
     private ProjectService projectService;
+    @Autowired
+    private CommonUtils commonUtils;
+    @Value("${savedfilepath}")
+    private String savedfilepath;
+    @Value("${s3BucketName}")
+    private String s3BucketName;
 
     /**
      * 分页获取项目列表
@@ -54,13 +64,13 @@ public class ProjectController {
      */
     @GetMapping("/detail")
     public String detail(String projectNo) {
-        Project project = null;
+        ProjectDto projectDto = null;
         try {
-            project = projectService.detail(projectNo);
+            projectDto = projectService.detail(projectNo);
         } catch (Exception e) {
             return ErrorCode.OTHEREEEOR.toJsonString();
         }
-        OutputFormate outputFormate = new OutputFormate(project, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
+        OutputFormate outputFormate = new OutputFormate(projectDto, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
         return JSONObject.toJSONString(outputFormate);
     }
 
@@ -83,8 +93,45 @@ public class ProjectController {
     }
 
     @PostMapping("/edit")
-    public String edit(@RequestBody Project project) {
-        projectService.edit(project);
+    public String edit(MultipartFile file, MultipartFile logoFile, Project project) {
+        try {
+            //文件上传可能会出问题
+            if (null != file) {
+                // 获取文件名
+                String fileName = file.getOriginalFilename();
+                // 文件上传后的路径
+                StringBuilder filePathBuffer = new StringBuilder();
+                String filePath = filePathBuffer.append(savedfilepath).append(project.getEntUserId()).append("/").append(project.getProjectNo()).append("/").toString();
+                try {
+                    // AWS S3存储文件
+                    commonUtils.uploadFile(s3BucketName,filePath + file.getOriginalFilename(), file.getBytes());
+                    //文件保存后更新数据库信息
+                    project.setBpRoute(filePath + fileName);
+                } catch (Exception e) {
+                    return ErrorCode.FILEUPLOADFAILED.toJsonString();
+                }
+            }
+
+            //文件上传可能会出问题
+            if (null != logoFile) {
+                // 获取文件名
+                String fileName = logoFile.getOriginalFilename();
+                // 文件上传后的路径
+                StringBuilder filePathBuffer = new StringBuilder();
+                String filePath = filePathBuffer.append(savedfilepath).append(project.getEntUserId()).append("/").append(project.getProjectNo()).append("/").toString();
+                try {
+                    // AWS S3存储文件
+                    commonUtils.uploadFile(s3BucketName,filePath + logoFile.getOriginalFilename(), logoFile.getBytes());
+                    //文件保存后更新数据库信息
+                    project.setLogoRoute(filePath + fileName);
+                } catch (Exception e) {
+                    return ErrorCode.FILEUPLOADFAILED.toJsonString();
+                }
+            }
+            projectService.edit(project);
+        } catch (Exception e) {
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
         return ErrorCode.SUCCESS.toJsonString();
     }
 

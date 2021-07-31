@@ -9,10 +9,7 @@ import com.dto.outdto.OutputFormate;
 import com.dto.outdto.ProjectDto;
 import com.enums.OrderBizType;
 import com.enums.PaymentType;
-import com.pojo.EntUser;
-import com.pojo.Investor;
-import com.pojo.Project;
-import com.pojo.ProjectBpApply;
+import com.pojo.*;
 import com.service.OrderService;
 import com.utils.CommonUtils;
 import com.utils.ErrorCode;
@@ -127,7 +124,7 @@ public class InfoDisplayController {
      * 项目上传（文件）
      */
     @PostMapping(value = "/project/uploadproject")
-    public String upLoadProject(@RequestPart(value = "file", required = false) MultipartFile file, MultipartFile logoFile, Project project) {
+    public String upLoadProject(MultipartFile file, MultipartFile logoFile, Project project) {
         String projectNo = (project.getIsDone() != null && project.getIsDone()) ? commonUtils.getNumCode() : null;// 生成主键ID
         //文件上传可能会出问题
         if (null != file) {
@@ -234,7 +231,8 @@ public class InfoDisplayController {
     public String getMyProjects(String openId, String entUserId){
         ProjectDto projectDto = new ProjectDto();
         Criteria criteria = new Criteria();
-        criteria.orOperator(Criteria.where("entUserId").is(entUserId), Criteria.where("openId").is(openId));
+//        criteria.orOperator(Criteria.where("entUserId").is(entUserId), Criteria.where("openId").is(openId));
+        criteria.and("entUserId").is(entUserId);
         criteria.and("isDone").is(true);
         Query query = new Query(criteria);
         query.with(Sort.by(Sort.Order.asc("createTime")));
@@ -245,12 +243,14 @@ public class InfoDisplayController {
             BeanUtils.copyProperties(project, projectDto);
 
             // 获取用户信息
-            EntUser entUser = mongoTemplate.findOne(query(where("entUserId").is(entUserId)), EntUser.class);
-            projectDto.setUserName(entUser.getUserName());
-            projectDto.setPositionName(entUser.getPositionName());
-            projectDto.setCompanyName(entUser.getCompanyName());
-            projectDto.setPhotoRoute(entUser.getPhotoRoute());
-            projectDto.setIsVerify(entUser.getIsVerify());
+            User user = mongoTemplate.findOne(query(where("userId").is(entUserId)), User.class);
+            if (null != user) {
+                projectDto.setUserName(user.getUserName());
+                projectDto.setPositionName(user.getPositionName());
+                projectDto.setCompanyName(user.getCompanyName());
+                projectDto.setPhotoRoute(user.getPhotoRoute());
+                projectDto.setIsVerify(user.getIsVerify());
+            }
         }
         OutputFormate outputFormate = new OutputFormate(projectDto);
         return JSONObject.toJSONString(outputFormate);
@@ -265,7 +265,6 @@ public class InfoDisplayController {
         mongoTemplate.findAndRemove(query(where("projectNo").is(projectNo)),Project.class);
         return ErrorCode.SUCCESS.toJsonString();
     }
-
 
 
     //    ---------------------------------项目一期PC版部分接口调整----------------------------------------------------
@@ -351,11 +350,12 @@ public class InfoDisplayController {
     @PostMapping("/entuser/browseProjectPage")
     public String browseProjectPage(String openId, Integer projectType) {
         Update update = new Update();
-        if (1 == projectType) {
-            update.set("isBrowse", true);
-        } else if (2 == projectType) {
-            update.set("isRoadShowBrowse", true);
-        }
+//        if (1 == projectType) {
+//            update.set("isBrowse", true);
+//        } else if (2 == projectType) {
+//            update.set("isRoadShowBrowse", true);
+//        }
+        update.set("isBrowse", true);
         mongoTemplate.updateFirst(query(where("openId").is(openId)), update, EntUser.class);
         return ErrorCode.SUCCESS.toJsonString();
     }

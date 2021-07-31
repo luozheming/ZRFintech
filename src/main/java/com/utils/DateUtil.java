@@ -83,19 +83,19 @@ public class DateUtil {
         endCal.setTime(endDate);//设置截止时间
         switch (dateType) {
             case 1:
-                diffDate = endCal.get(Calendar.SECOND) - startCal.get(Calendar.SECOND);
+                diffDate = (int) ((endCal.getTimeInMillis() - startCal.getTimeInMillis())  /  1000);
                 break;
             case 2:
-                diffDate = endCal.get(Calendar.MINUTE) - startCal.get(Calendar.MINUTE);
+                diffDate = (int) ((endCal.getTimeInMillis() - startCal.getTimeInMillis())  /  (60  *  1000));
                 break;
             case 3:
-                diffDate = endCal.get(Calendar.HOUR) - startCal.get(Calendar.HOUR);
+                diffDate = (int) ((endCal.getTimeInMillis() - startCal.getTimeInMillis())  /  (3600  *  1000));
                 break;
             case 4:
-                diffDate = endCal.get(Calendar.DAY_OF_YEAR) - startCal.get(Calendar.DAY_OF_YEAR);
+                diffDate = (int) ((endCal.getTimeInMillis() - startCal.getTimeInMillis())  /  (24  *  3600  *  1000));
                 break;
             case 5:
-                diffDate = endCal.get(Calendar.MONTH) - startCal.get(Calendar.MONTH);
+                diffDate = (endCal.get(Calendar.YEAR) * 12 + endCal.get(Calendar.MONTH)) - (startCal.get(Calendar.YEAR) * 12 + startCal.get(Calendar.MONTH));
                 break;
             case 6:
                 diffDate = endCal.get(Calendar.YEAR) - startCal.get(Calendar.YEAR);

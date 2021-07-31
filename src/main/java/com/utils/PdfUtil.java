@@ -87,8 +87,8 @@ public class PdfUtil {
             document.add(paragraph);// 正文添加小标题
 
             String text = StringUtils.isEmpty(pdfDto.getText()) ? "无" : pdfDto.getText();
-            textFont = StringUtils.isEmpty(pdfDto.getText()) ? nullTextFont : textFont;
-            paragraph = new Paragraph(text, textFont);
+            Font textFonts = StringUtils.isEmpty(pdfDto.getText()) ? nullTextFont : textFont;
+            paragraph = new Paragraph(text, textFonts);
             paragraph.setAlignment(Element.ALIGN_LEFT);// 设置文字居中 0靠左 1，居中 2，靠右
             paragraph.setIndentationLeft(30); //设置左缩进
             paragraph.setLeading(20f); //行间距

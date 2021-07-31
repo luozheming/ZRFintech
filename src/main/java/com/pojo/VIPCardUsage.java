@@ -5,6 +5,10 @@ import lombok.Data;
 import lombok.experimental.Tolerate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
 @Data
 @Builder
 @Document(value = "vipCardUsage")
@@ -14,25 +18,25 @@ public class VIPCardUsage {
      */
     private String id;
     /**
+     * 用户id
+     */
+    private String userId;
+    /**
      * 用户的openId
      */
     private String openId;
     /**
-     * vip卡片id
+     * 金卡卡种id
      */
     private String cardId;
     /**
-     * 商业计划书定制服务剩余次数
+     * 会员卡开始时间
      */
-    private Integer bpApplyTimes;
+    private Date startTime;
     /**
-     * 商业计划书专业评审服务剩余次数
+     * 会员卡结束时间
      */
-    private Integer commentTimes;
-    /**
-     * 购买的卡张数
-     */
-    private Integer cardCount;
+    private Date endTime;
 
     @Tolerate
     public VIPCardUsage() {}

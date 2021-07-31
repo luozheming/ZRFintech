@@ -19,7 +19,7 @@ public class OrderDto {
      */
     private BigDecimal payAmount;
     /**
-     * 业务id(如：评论id,活动id)
+     * 业务id，有则传值(如：评论id,活动id)
      */
     private String bizId;
     /**
@@ -34,4 +34,12 @@ public class OrderDto {
      * 用户id
      */
     private String userId;
+    /**
+     * 电话号码
+     */
+    private String phoneNm;
+    /**
+     * 姓名
+     */
+    private String userName;
 }

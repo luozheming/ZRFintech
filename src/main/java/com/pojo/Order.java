@@ -25,7 +25,7 @@ public class Order {
      */
     private Integer bizType;
     /**
-     * 业务状态：1-预约，2-接单，3-拒单，4-签约，5-拒签，6-付款，7-问答，8-线上会议，9-线下会议，10-评论，11-完成
+     * 业务状态：1-已付款，2-服务中，3-取消中，4-已完成，5-已取消
      */
     private Integer bizStatus;
     /**
@@ -45,7 +45,7 @@ public class Order {
      */
     private BigDecimal payAmount;
     /**
-     * 支付状态：0-未支付，1-支付中，2-支付成功，3-支付失败，4-支付超时，5-支付异常
+     * 支付状态：1-支付中，2-支付成功，3-支付失败，4-支付异常,5-支付取消
      */
     private Integer payStatus;
     /**
@@ -72,6 +72,14 @@ public class Order {
      * 回复时间
      */
     private Date replyTm;
+    /**
+     * 电话号码
+     */
+    private String phoneNm;
+    /**
+     * 联系人姓名
+     */
+    private String userName;
 
     @Tolerate
     public Order() {}

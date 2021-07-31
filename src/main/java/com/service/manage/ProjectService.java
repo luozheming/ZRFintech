@@ -1,5 +1,6 @@
 package com.service.manage;
 
+import com.dto.outdto.ProjectDto;
 import com.pojo.Project;
 
 import java.util.List;
@@ -7,7 +8,7 @@ import java.util.List;
 public interface ProjectService {
     List<Project> pageList(Integer pageNm, Integer pageSize);
 
-    Project detail(String projectNo);
+    ProjectDto detail(String projectNo);
 
     Integer count();
 

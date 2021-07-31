@@ -48,11 +48,13 @@ public class WxPayController {
                 String transactionId = jsonObject.getString("transaction_id");
                 Order order = orderService.detailByOrderNo(outTradeNo);
                 if ("SUCCESS".equals(jsonObject.getString("trade_state"))) {
-                    payStatus = 1;
+                    payStatus = 2;
                     JSONObject amount = jsonObject.getJSONObject("amount");
                     BigDecimal total = new BigDecimal(amount.getString("total"));
                     if (total.divide(new BigDecimal("100")).compareTo(order.getPayAmount()) != 0) {
-                        payStatus = 5;
+                        payStatus = 4;
+                    } else {
+                        order.setBizStatus(1);
                     }
                 } else {
                     payStatus = 3;

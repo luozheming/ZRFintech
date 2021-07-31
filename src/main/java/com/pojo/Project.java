@@ -78,7 +78,8 @@ public class Project {
      */
     private String phoneNm;
     /**
-  bn     */
+     * bp文件路径
+     */
     private String bpRoute;
     /**
      *  logo图片路径路径

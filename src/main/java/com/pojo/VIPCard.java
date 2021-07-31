@@ -6,7 +6,9 @@ import lombok.experimental.Tolerate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
@@ -17,6 +19,10 @@ public class VIPCard {
      */
     private String id;
     /**
+     * 卡种为金卡的卡片id
+     */
+    private String cardId;
+    /**
      * 原价
      */
     private BigDecimal price;
@@ -25,17 +31,26 @@ public class VIPCard {
      */
     private BigDecimal discountPrice;
     /**
-     * 商业计划书定制服务次数
+     * vip卡类型：1-月卡，2-季卡，3-年卡
      */
-    private Integer bpApplyTimes;
+    private Integer vipCardType;
     /**
-     * 商业计划书专业评审服务
+     * 创建时间
      */
-    private Integer commentTimes;
+    private Date createTime;
     /**
-     * 其他不限次数的增值服务
+     * 更新时间
      */
-    private List<String> additionalService;
+    private Date updateTime;
+    /**
+     * 排列顺序
+     */
+    private Integer orderNo;
+
+    /**
+     *  卡片服务内容
+     */
+    private List<Map<String, Object>> vipService;
 
     @Tolerate
     public VIPCard() {}

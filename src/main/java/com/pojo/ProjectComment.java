@@ -125,7 +125,7 @@ public class ProjectComment {
      */
     private String commentFilePath;
     /**
-     * 追问问题
+     * 提问问题
      */
     private String question;
 
