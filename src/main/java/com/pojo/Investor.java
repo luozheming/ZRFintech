@@ -121,13 +121,13 @@ public class Investor {
      */
     private Integer status;
     /**
-     * 关注领域
+     * 关注行业
      */
-    private List<String> focusFiled;
+    private String focusFiled;
     /**
-     * 投资阶段
+     * 投资轮次
      */
-    private List<String> finRound;
+    private String finRound;
     /**
      * 自我简介
      */
@@ -152,6 +152,18 @@ public class Investor {
      * 内部星级加权值
      */
     private BigDecimal internalWeightingStars;
+    /**
+     * 所在城市
+     */
+    private String city;
+    /**
+     * 关注城市
+     */
+    private String focusCity;
+    /**
+     * 数据来源说明，如；excel导入，后台单个录入
+     */
+    private String sourceDesc;
 
     @Tolerate
     public Investor() {}

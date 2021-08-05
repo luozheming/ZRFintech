@@ -72,6 +72,12 @@ public class User {
      * 电子邮箱
      */
     private String email;
+    /**
+     *  联系电话号码
+     */
+    private String telephoneNo;
+    private String cardRoute;
+    private String cardBackRoute;
 
     @Tolerate
     public User() {}

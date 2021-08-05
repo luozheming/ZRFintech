@@ -152,6 +152,14 @@ public class ProjectDto {
      */
     private List<String> hideFieldList;
     /**
+     * 项目展示标识：0-不展示，1-企业授权展示
+     */
+    private Integer showFlag;
+    /**
+     * 项目置顶刷新时间
+     */
+    private Date topFlushTime;
+    /**
      * 用户名称
      */
     private String userName;

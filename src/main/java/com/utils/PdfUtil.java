@@ -79,12 +79,12 @@ public class PdfUtil {
         Paragraph paragraph = null;
         int n = 1;
         for (PdfDto pdfDto : pdfDtoList) {
-            paragraph = new Paragraph(n + "、" + pdfDto.getHead(), headFont);
-            paragraph.setAlignment(Element.ALIGN_LEFT);// 设置文字居中 0靠左 1，居中 2，靠右
-            paragraph.setIndentationLeft(10); //设置左缩进
-            paragraph.setLeading(20f); //行间距
-            paragraph.setSpacingAfter(5f); //设置段落下空白
-            document.add(paragraph);// 正文添加小标题
+//            paragraph = new Paragraph(n + "、" + pdfDto.getHead(), headFont);
+//            paragraph.setAlignment(Element.ALIGN_LEFT);// 设置文字居中 0靠左 1，居中 2，靠右
+//            paragraph.setIndentationLeft(10); //设置左缩进
+//            paragraph.setLeading(20f); //行间距
+//            paragraph.setSpacingAfter(5f); //设置段落下空白
+//            document.add(paragraph);// 正文添加小标题
 
             String text = StringUtils.isEmpty(pdfDto.getText()) ? "无" : pdfDto.getText();
             Font textFonts = StringUtils.isEmpty(pdfDto.getText()) ? nullTextFont : textFont;

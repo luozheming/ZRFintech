@@ -37,7 +37,7 @@ public class ActivityRecordController {
         try {
             int count = activityRecordService.count(activityType, userId);
             int totalPage = count/pageSize;
-            PageListDto pageListDto = new PageListDto<Project>();
+            PageListDto pageListDto = new PageListDto<ActivityRecord>();
             pageListDto.setTotal(count);
             if(pageNum <= totalPage){
                 List<ActivityRecord> activityRecords =  activityRecordService.pageList(pageNum, pageSize, activityType, userId);

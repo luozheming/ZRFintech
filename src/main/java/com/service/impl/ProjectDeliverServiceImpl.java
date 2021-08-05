@@ -1,16 +1,21 @@
 package com.service.impl;
 
-import com.pojo.Order;
+import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.pojo.Project;
 import com.pojo.ProjectDeliver;
 import com.service.ProjectDeliverService;
 import com.utils.CommonUtils;
+import com.utils.ErrorCode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.Date;
 import java.util.List;
@@ -26,17 +31,25 @@ public class ProjectDeliverServiceImpl implements ProjectDeliverService {
     @Autowired
     private MongoTemplate mongoTemplate;
 
+    private static final Logger logger = LoggerFactory.getLogger(ProjectDeliverServiceImpl.class);
+
     @Override
-    public void add(ProjectDeliver projectDeliver) {
+    public void add(ProjectDeliver projectDeliver) throws Exception {
+        logger.info("单笔bp投递入参：" + JSONObject.toJSONString(projectDeliver));
+        if (StringUtils.isEmpty(projectDeliver.getUserId())) {
+            throw new Exception("userId为空");
+        }
         // 获取用户的项目信息
         Project project = mongoTemplate.findOne(query(where("entUserId").is(projectDeliver.getUserId())), Project.class);
         if (null == project) {
-            return;
+            throw new Exception(ErrorCode.PROJECTEMPTY.getMessage());
         }
+        if (StringUtils.isEmpty(project.getBpRoute())) {
+            throw new Exception(ErrorCode.BPROUTEEMPTY.getMessage());
+        }
+        BeanUtils.copyProperties(project, projectDeliver);
         projectDeliver.setId(commonUtils.getNumCode());
         projectDeliver.setCreateDate(new Date());
-        projectDeliver.setProjectNo(project.getProjectNo());
-        projectDeliver.setBpRoute(project.getBpRoute());
         projectDeliver.setStatus(0);
         mongoTemplate.save(projectDeliver);
     }

@@ -1,8 +1,5 @@
 package com.dto.outdto;
 
-import com.pojo.EntUser;
-import com.pojo.FinancialAdvisor;
-import com.pojo.Investor;
 import lombok.Data;
 
 import java.util.Date;
@@ -70,4 +67,12 @@ public class UserRespDto {
      * 用户扩展信息
      */
     private Object extendData;
+    /**
+     * 电子邮箱
+     */
+    private String email;
+    /**
+     *  联系电话号码
+     */
+    private String telephoneNo;
 }

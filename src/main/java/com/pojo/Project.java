@@ -153,6 +153,14 @@ public class Project {
      * 不展示的字段
      */
     private List<String> hideFieldList;
+    /**
+     * 项目展示标识：0-不展示，1-企业授权展示
+     */
+    private Integer showFlag;
+    /**
+     * 项目置顶刷新时间
+     */
+    private Date topFlushTime;
 
     @Tolerate
     public Project() {}

@@ -78,6 +78,10 @@ public class ActivityRecord {
      */
     private Integer activityType;
     /**
+     * 活动开展方式：1-线上，2-线下
+     */
+    private Integer activityMode;
+    /**
      * 用户id
      */
     private String userId;

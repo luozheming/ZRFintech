@@ -15,6 +15,8 @@ import com.service.OrderService;
 import com.service.WxPayService;
 import com.service.manage.ProjectCommentService;
 import com.utils.ErrorCode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +30,8 @@ public class OrderController {
     private OrderService orderService;
     @Autowired
     private ProjectCommentService projectCommentService;
+
+    private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
 
     @PostMapping("/createOrder")
     public String createOrder(@RequestBody OrderDto orderDto ) {
@@ -76,6 +80,7 @@ public class OrderController {
 
     @GetMapping("/pageList")
     public String pageList(Integer pageNum, Integer pageSize, String openId, String userId) {
+        logger.info("订单查询列表入参：userId=" +userId);
         if (pageNum < 0 || pageSize <= 0) {
             return ErrorCode.PAGEBELLOWZERO.toJsonString();
         }

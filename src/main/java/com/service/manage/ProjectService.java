@@ -21,4 +21,6 @@ public interface ProjectService {
     List<Project> listByEntUserId(String entUserID);
 
     void edit(Project project);
+
+    void topProject(String userId);
 }

@@ -1,5 +1,6 @@
 package com.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.dto.outdto.VIPCardUsageRespDto;
 import com.pojo.*;
 import com.service.VIPCardUsageLogService;
@@ -7,6 +8,8 @@ import com.service.VIPCardUsageService;
 import com.utils.CommonUtils;
 import com.utils.DateUtil;
 import com.utils.ErrorCode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -30,12 +33,14 @@ public class VIPCardUsageServiceImpl implements VIPCardUsageService {
     private MongoTemplate mongoTemplate;
     @Autowired
     private VIPCardUsageLogService vipCardUsageLogService;
-
-    private static final int proDeliverTimesMonth = 50;// 系统默认50次
+    private static final int proDeliverTimesMonth = 200;// 系统默认200次
     private static final int proDeliverTimesDay = 3;// 系统默认每天免费3次
+
+    private static final Logger logger = LoggerFactory.getLogger(VIPCardUsageServiceImpl.class);
 
     @Override
     public VIPCardUsageRespDto detailByUserId(String userId) {
+        logger.info("会员卡详情入参：userId=" + userId);
         VIPCardUsageRespDto vipCardUsageRespDto = new VIPCardUsageRespDto();
         VIPCardUsage vipCardUsage = mongoTemplate.findOne(query(where("userId").is(userId)), VIPCardUsage.class);
         if (null != vipCardUsage) {
@@ -72,15 +77,18 @@ public class VIPCardUsageServiceImpl implements VIPCardUsageService {
         if (!CollectionUtils.isEmpty(projectDelivers)) {
             vipCardUsageRespDto.setProDeliverTimesPerDay(proDeliverTimesDay - projectDelivers.size());
         }
+        logger.info("会员卡详情返回：vipCardUsageRespDto=" + JSONObject.toJSONString(vipCardUsageRespDto));
         return vipCardUsageRespDto;
     }
 
     @Override
     public void add(VIPCardUsage vipCardUsage) throws Exception {
         // 通过vip卡的id获取详细信息
-        VIPCard vipCard = mongoTemplate.findOne(query(where("cardId").is(vipCardUsage.getCardId())), VIPCard.class);
+        logger.info(vipCardUsage.getVipCardId());
+        VIPCard vipCard = mongoTemplate.findOne(query(where("id").is(vipCardUsage.getVipCardId())), VIPCard.class);
         if (null == vipCard) {
-            throw new Exception(ErrorCode.NULLOBJECT.toJsonString());
+            logger.error("查询会员卡信息为空");
+            throw new Exception(ErrorCode.NULLOBJECT.getMessage());
         }
 
         VIPCardUsage vipCardUsageResp = mongoTemplate.findOne(query(where("userId").is(vipCardUsage.getUserId())), VIPCardUsage.class);
@@ -109,7 +117,7 @@ public class VIPCardUsageServiceImpl implements VIPCardUsageService {
             // 初始化vip卡使用情况数据
             VIPCardUsage vipCardUsageAdd = new VIPCardUsage();
             vipCardUsageAdd.setId(commonUtils.getNumCode());
-            vipCardUsageAdd.setCardId(vipCard.getCardId());
+            vipCardUsageAdd.setVipCardId(vipCard.getId());
             vipCardUsageAdd.setOpenId(vipCardUsage.getOpenId());
             vipCardUsageAdd.setUserId(vipCardUsage.getUserId());
             Date startTime = new Date();
@@ -129,6 +137,7 @@ public class VIPCardUsageServiceImpl implements VIPCardUsageService {
             }
             vipCardUsageAdd.setStartTime(startTime);
             vipCardUsageAdd.setEndTime(endTime);
+            vipCardUsageAdd.setIsVipTemplate(true);
             mongoTemplate.save(vipCardUsageAdd);
         }
     }
@@ -136,6 +145,9 @@ public class VIPCardUsageServiceImpl implements VIPCardUsageService {
     @Override
     public void edit(VIPCardUsage vipCardUsage) {
         Update update = new Update();
+        if (null != vipCardUsage.getIsVipTemplate()) {
+            update.set("isVipTemplate", vipCardUsage.getIsVipTemplate());
+        }
         mongoTemplate.updateFirst(query(where("id").is(vipCardUsage.getId())), update, VIPCardUsage.class);
     }
 

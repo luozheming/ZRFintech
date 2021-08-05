@@ -30,7 +30,8 @@ public class ProjectDeliverController {
             projectDeliverService.add(projectDeliver);
             return ErrorCode.SUCCESS.toJsonString();
         } catch (Exception e) {
-            return ErrorCode.OTHEREEEOR.toJsonString();
+            OutputFormate outputFormate = new OutputFormate("", ErrorCode.OTHEREEEOR.getCode(), e.getMessage());
+            return JSONObject.toJSONString(outputFormate);
         }
     }
 

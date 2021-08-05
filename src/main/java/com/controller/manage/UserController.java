@@ -74,13 +74,13 @@ public class UserController {
      * @return
      */
     @GetMapping("/synchroHistData")
-    public String synchroHistData(@RequestParam(value = "userId", required = true) String userId) {
+    public String synchroHistData(@RequestParam(value = "userId", required = false) String userId) {
         try {
             // 检验用户是否存在
-            User user = userService.getById(userId);
-            if (null == user || !"management".equals(user.getRoleCode())) {
-                return ErrorCode.EMPITYUSER.toJsonString();
-            }
+//            User user = userService.getById(userId);
+//            if (null == user || !"management".equals(user.getRoleCode())) {
+//                return ErrorCode.EMPITYUSER.toJsonString();
+//            }
             userService.synchroHistData();
         } catch (Exception e) {
             return ErrorCode.OTHEREEEOR.toJsonString();

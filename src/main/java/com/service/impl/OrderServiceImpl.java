@@ -130,7 +130,7 @@ public class OrderServiceImpl implements OrderService {
             List<Integer> payStatusList = new ArrayList<>();
             payStatusList.add(1);
             payStatusList.add(5);
-            criteria = where("userId").is(userId).and("payStatus").nin(payStatusList);
+            criteria = where("userId").is(userId).and("bizType").ne(OrderBizType.PURCHASEVIP.getCode()).and("payStatus").nin(payStatusList);
         }
         int startNum = pageNum * pageSize;
         List<Order> orders = mongoTemplate.find(new Query(criteria).skip(startNum).limit(pageSize), Order.class);

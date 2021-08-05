@@ -10,6 +10,7 @@ import com.service.manage.ProjectCommentService;
 import com.service.manage.ProjectService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -35,7 +36,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public List<Project> pageList(Integer pageNum, Integer pageSize) {
         int startNum = pageNum * pageSize;
-        List<Project> projects = mongoTemplate.find(new Query(where("isDone").is(true)).skip(startNum).limit(pageSize), Project.class);
+        List<Project> projects = mongoTemplate.find(new Query(where("isDone").is(true).and("showFlag").is(1)).with(Sort.by(Sort.Order.desc("topFlushTime"))).skip(startNum).limit(pageSize), Project.class);
 //        if (!CollectionUtils.isEmpty(projects)) {
 //            for (Project project : projects) {
 //                List<Integer> commentTypes = mongoTemplate.findDistinct(query(where("projectNo").is(project.getProjectNo())), "commentType", "projectComment", Integer.class);
@@ -120,5 +121,19 @@ public class ProjectServiceImpl implements ProjectService {
         // 先删除原项目,再重新插入一笔同projectNo的项目
         mongoTemplate.remove(query(where("projectNo").is(project.getProjectNo())), Project.class);
         mongoTemplate.save(project);
+    }
+
+    @Override
+    public void topProject(String userId) {
+        // 通过userId查询项目信息
+        List<Project> projectList = mongoTemplate.find(query(where("entUserId").is(userId)), Project.class);
+        if (CollectionUtils.isEmpty(projectList)) {
+            return;
+        }
+        Project project = projectList.get(0);
+        String projectNo = project.getProjectNo();
+        Update update = new Update();
+        update.set("topFlushTime", new Date());
+        mongoTemplate.upsert(query(where("projectNo").is(projectNo)), update, Project.class);
     }
 }

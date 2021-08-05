@@ -14,6 +14,8 @@ import com.pojo.*;
 import com.service.UserLoginService;
 import com.service.VIPCardUsageService;
 import com.utils.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -53,6 +55,8 @@ public class UserLoginController {
     private CommonUtils commonUtils;
     @Value("${s3BucketName}")
     private String s3BucketName;
+
+    private static final Logger logger = LoggerFactory.getLogger(UserLoginController.class);
 
     @PostMapping(value = "/investor/investorLogin")
     public String investorLogin(@RequestBody Investor investor){
@@ -230,12 +234,34 @@ public class UserLoginController {
      * @return
      */
     @PostMapping("/user/editUser")
-    public String edit(@RequestBody User user) {
-        Update update = new Update();
-        update.set("companyName", user.getCompanyName());
-        update.set("positionName", user.getPositionName());
-        mongoTemplate.updateFirst(query(where("userId").is(user.getUserId())), update, User.class);
-        return ErrorCode.SUCCESS.toJsonString();
+    public String edit(MultipartFile cardFile, MultipartFile cardBackFile, User user) {
+        try {
+            Update update = new Update();
+            if (null != cardFile) {
+                String filePath = entUserSavedFilepath + user.getUserId() + "/" + cardFile.getOriginalFilename();
+                // AWS S3存储文件
+                commonUtils.uploadFile(s3BucketName, filePath, cardFile.getBytes());
+                //文件保存后更新数据库信息
+                update.set("cardRoute", filePath);
+            }
+            if (null != cardBackFile) {
+                String filePath = entUserSavedFilepath + user.getUserId() + "/" + cardBackFile.getOriginalFilename();
+                // AWS S3存储文件
+                commonUtils.uploadFile(s3BucketName, filePath, cardBackFile.getBytes());
+                //文件保存后更新数据库信息
+                update.set("cardBackRoute", filePath);
+            }
+            update.set("userName", user.getUserName());
+            update.set("companyName", user.getCompanyName());
+            update.set("positionName", user.getPositionName());
+            update.set("email", user.getEmail());
+            update.set("telephoneNo", user.getTelephoneNo());
+            mongoTemplate.updateFirst(query(where("userId").is(user.getUserId())), update, User.class);
+            return ErrorCode.SUCCESS.toJsonString();
+        } catch (Exception e) {
+            logger.error("修改客户信息系统异常：", e);
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
     }
 
     /**
@@ -259,7 +285,9 @@ public class UserLoginController {
      * @return
      */
     @PostMapping("/user/verify")
-    public String verify(MultipartFile cardFile, User user, String captcha, String targetRoleCode) {
+    public String verify(MultipartFile cardFile, MultipartFile cardBackFile, User user, String captcha, String targetRoleCode) {
+        logger.info("身份认证入参： user=" + JSONObject.toJSONString(user));
+        logger.info("身份认证入参： targetRoleCode=" + targetRoleCode);
         Map<String, Object> respMap = userLoginService.validateSms(user.getPhoneNm(), captcha);
         if (!(boolean)respMap.get("result")) {
             OutputFormate outputFormate = new OutputFormate("", ErrorCode.OTHEREEEOR.getCode(), String.valueOf(respMap.get("msg")));
@@ -267,6 +295,7 @@ public class UserLoginController {
         }
         try {
             User userResp = mongoTemplate.findOne(query(where("userId").is(user.getUserId())), User.class);
+            logger.info("身份认证通过userId获取用户信息： userResp=" + JSONObject.toJSONString(userResp));
             if (null != userResp && userResp.getIsVerify()) {
                 OutputFormate outputFormate = new OutputFormate("", ErrorCode.OTHEREEEOR.getCode(), "该用户已认证");
                 return JSONObject.toJSONString(outputFormate);
@@ -279,11 +308,19 @@ public class UserLoginController {
                 //文件保存后更新数据库信息
                 update.set("cardRoute", filePath);
             }
+            if (null != cardBackFile) {
+                String filePath = entUserSavedFilepath + user.getUserId() + "/" + cardBackFile.getOriginalFilename();
+                // AWS S3存储文件
+                commonUtils.uploadFile(s3BucketName, filePath, cardBackFile.getBytes());
+                //文件保存后更新数据库信息
+                update.set("cardBackRoute", filePath);
+            }
             if (RoleCode.ENTUSER.getCode().equals(targetRoleCode)) {
                 update.set("userName", user.getUserName());
                 update.set("companyName", user.getCompanyName());
                 update.set("positionName", user.getPositionName());
                 update.set("email", user.getEmail());
+                update.set("telephoneNo", user.getTelephoneNo());
 
                 EntUser entUser = mongoTemplate.findOne(query(where("entUserId").is(user.getUserId())), EntUser.class);
                 if (null == entUser) {
@@ -303,8 +340,10 @@ public class UserLoginController {
             update.set("roleCode", targetRoleCode);
             update.set("isVerify", true);
             mongoTemplate.updateFirst(query(where("userId").is(user.getUserId())), update, User.class);
+            logger.info("身份认证成功...");
             return ErrorCode.SUCCESS.toJsonString();
         } catch (Exception e) {
+            logger.error("身份认证系统异常：" + e);
             return ErrorCode.OTHEREEEOR.toJsonString();
         }
     }

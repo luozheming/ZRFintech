@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.experimental.Tolerate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
@@ -28,9 +29,37 @@ public class ProjectDeliver {
      */
     private String projectNo;
     /**
+     * 项目名称
+     */
+    private String projectNm;
+    /**
      * bp文件路径
      */
     private String bpRoute;
+    /**
+     * 所属行业
+     */
+    private String proIndus;
+    /**
+     * 融资轮次
+     */
+    private String finRound;
+    /**
+     * 期望融资额度
+     */
+    private String quota;
+    /**
+     * 股份出让比例
+     */
+    private BigDecimal sharesTransfer;
+    /**
+     * 项目联系人
+     */
+    private String proUser;
+    /**
+     * 项目联系人电话
+     */
+    private String proPhonum;
     /**
      *  项目投递目标：1-VC,2-FA
      */

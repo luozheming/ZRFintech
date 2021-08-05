@@ -47,6 +47,8 @@ public class WxPayServiceImpl implements WxPayService {
     private String apiV3Key = "qirongxing20210308qirongxing2021";
     @Value("${weChatPayCertFilePath}")
     private String weChatPayCertFilePath;
+    @Value("${wx.notifyUrl}")
+    private String notifyUrl;
 
     @Autowired
     private CommonUtils commonUtils;
@@ -81,7 +83,7 @@ public class WxPayServiceImpl implements WxPayService {
                 .put("appid", appId)
                 .put("description", "企融星订单")
                 .put("out_trade_no", orderNo)
-                .put("notify_url", "https://zrfintech-dev.oa.cmbchina.biz/wxPay/notify");
+                .put("notify_url", notifyUrl);
         rootNode.putObject("amount")
                 .put("total", payAmount.intValue());
         rootNode.putObject("payer")

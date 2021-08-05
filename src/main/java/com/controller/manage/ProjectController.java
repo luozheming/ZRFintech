@@ -135,4 +135,10 @@ public class ProjectController {
         return ErrorCode.SUCCESS.toJsonString();
     }
 
+    @PostMapping("/topProject")
+    public String topProject(String userId) {
+        projectService.topProject(userId);
+        return ErrorCode.SUCCESS.toJsonString();
+    }
+
 }

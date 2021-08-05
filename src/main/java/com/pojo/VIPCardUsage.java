@@ -28,7 +28,7 @@ public class VIPCardUsage {
     /**
      * 金卡卡种id
      */
-    private String cardId;
+    private String vipCardId;
     /**
      * 会员卡开始时间
      */
@@ -37,6 +37,10 @@ public class VIPCardUsage {
      * 会员卡结束时间
      */
     private Date endTime;
+    /**
+     * 是否金卡模板：true-是，false-否
+     */
+    private Boolean isVipTemplate;
 
     @Tolerate
     public VIPCardUsage() {}

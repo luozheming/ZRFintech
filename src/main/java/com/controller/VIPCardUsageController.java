@@ -5,7 +5,10 @@ import com.dto.outdto.OutputFormate;
 import com.dto.outdto.VIPCardUsageRespDto;
 import com.pojo.VIPCardUsage;
 import com.service.VIPCardUsageService;
+import com.service.impl.VIPCardUsageServiceImpl;
 import com.utils.ErrorCode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +18,8 @@ public class VIPCardUsageController {
 
     @Autowired
     private VIPCardUsageService vipCardUsageService;
+
+    private static final Logger logger = LoggerFactory.getLogger(VIPCardUsageController.class);
 
     /**
      * 查询用户VIP卡的使用情况
@@ -43,6 +48,7 @@ public class VIPCardUsageController {
             vipCardUsageService.add(vipCardUsage);
             return ErrorCode.SUCCESS.toJsonString();
         } catch (Exception e) {
+            logger.error("购买会员卡系统错误：", e);
             return ErrorCode.OTHEREEEOR.toJsonString();
         }
     }

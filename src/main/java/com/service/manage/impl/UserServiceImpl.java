@@ -1,14 +1,19 @@
 package com.service.manage.impl;
 
 import com.dto.outdto.HomePageDto;
-import com.enums.OrderBizType;
-import com.pojo.*;
+import com.enums.RoleCode;
+import com.pojo.EntUser;
+import com.pojo.Investor;
+import com.pojo.Project;
+import com.pojo.User;
 import com.service.manage.UserService;
 import com.utils.CommonUtils;
 import com.utils.DateUtil;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.ArrayOperators;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
@@ -92,80 +97,90 @@ public class UserServiceImpl implements UserService {
     public void synchroHistData() {
         // 同步用户信息，给企业客户表新增字段entUserId赋值,且更新项目、项目评论信息
         List<EntUser> entUsers = mongoTemplate.find(new Query(where("entUserId").is(null)), EntUser.class);
+        List<User> userList = new ArrayList<>();
+        User user = null;
         if (!CollectionUtils.isEmpty(entUsers)) {
             for (EntUser entUser : entUsers) {
+                String userId = commonUtils.getNumCode();
+                user = new User();
+                BeanUtils.copyProperties(entUser, user);
+                user.setIsDelete(0);
+                user.setIsVerify(false);
+                user.setRoleCode(RoleCode.VISITOR.getCode());
+                user.setUserId(userId);
+                if (null == user.getCreateTime()) {
+                    user.setCreateTime(new Date());
+                }
+                userList.add(user);
+
                 Update update = new Update();
-                String entUserId = commonUtils.getNumCode();
-                update.set("entUserId", entUserId);
+                update.set("entUserId", userId);
                 mongoTemplate.updateFirst(query(where("openId").is(entUser.getOpenId())), update, EntUser.class);
 
                 // 通过openId更新项目表Project的entUserId，方便后续查询时跟PC端同步用entUserId查询相关信息
                 Update projectUpdate = new Update();
-                projectUpdate.set("entUserId", entUserId);
-                mongoTemplate.updateMulti(query(where("openId").is(entUser.getOpenId())), update, Project.class);
-
-                // 通过openId更新评论表ProjectComment的entUserId，方便后续查询时跟PC端同步用entUserId查询相关信息
-                Update commentUpdate = new Update();
-                commentUpdate.set("entUserId", entUserId);
-                mongoTemplate.updateMulti(query(where("openId").is(entUser.getOpenId())), update, ProjectComment.class);
+                projectUpdate.set("entUserId", userId);
+                mongoTemplate.updateMulti(query(where("openId").is(entUser.getOpenId()).and("isDone").is(true)), update, Project.class);
             }
+            mongoTemplate.insert(userList, User.class);
         }
-
-        // 获取评论信息生成订单信息
-        List<ProjectComment> projectComments = mongoTemplate.find(new Query(), ProjectComment.class);
-        if (!CollectionUtils.isEmpty(projectComments)) {
-            List<Order> orderList = new ArrayList<>();
-            Order order = null;
-            for (ProjectComment projectComment : projectComments) {
-                order = new Order();
-                order.setOrderNo(commonUtils.getNumCode().substring(0, 32));
-                order.setBizId(projectComment.getId());
-                Integer bizType = projectComment.getCommentType() == null ? 1 : projectComment.getCommentType();
-                order.setBizType(bizType);// 详情见OrderBizType
-                order.setOpenId(projectComment.getOpenId());
-                Integer commentStatus = projectComment.getCommonStatus();
-                if (!StringUtils.isEmpty(commentStatus) && 2 == commentStatus ) {
-                    order.setBizStatus(11);
-                } else {
-                    order.setBizStatus(3);
-                }
-                order.setCreateTime(projectComment.getCreateTime());
-                order.setPayAmount(projectComment.getCommentAmount());
-                order.setStars(projectComment.getStars());
-                order.setReply(projectComment.getReply());
-                order.setReplyTm(projectComment.getReplyTm());
-                orderList.add(order);
-            }
-
-            if (!CollectionUtils.isEmpty(orderList)) {
-                mongoTemplate.insert(orderList, Order.class);
-            }
-        }
-
-        // 同步商业计划书申请订单
-        List<ProjectBpApply> projectBpApplyList = mongoTemplate.find(new Query(), ProjectBpApply.class);
-        if (!CollectionUtils.isEmpty(projectBpApplyList)) {
-            List<Order> orderList = new ArrayList<>();
-            Order order = null;
-            for(ProjectBpApply projectBpApply : projectBpApplyList) {
-                order = new Order();
-                order.setOrderNo(commonUtils.getNumCode().substring(0, 32));
-                order.setBizId(projectBpApply.getId());
-                order.setBizType(OrderBizType.BPOPTIMIZE.getCode());// 详情见OrderBizType.
-                Integer commentStatus = projectBpApply.getDealStatus();
-                if (!StringUtils.isEmpty(commentStatus) && 1 == commentStatus ) {
-                    order.setBizStatus(11);
-                } else {
-                    order.setBizStatus(3);
-                }
-                order.setCreateTime(projectBpApply.getCreateTime());
-                orderList.add(order);
-            }
-
-            if (!CollectionUtils.isEmpty(orderList)) {
-                mongoTemplate.insert(orderList, Order.class);
-            }
-        }
+//
+//        // 获取评论信息生成订单信息
+//        List<ProjectComment> projectComments = mongoTemplate.find(new Query(), ProjectComment.class);
+//        if (!CollectionUtils.isEmpty(projectComments)) {
+//            List<Order> orderList = new ArrayList<>();
+//            Order order = null;
+//            for (ProjectComment projectComment : projectComments) {
+//                order = new Order();
+//                order.setOrderNo(commonUtils.getNumCode().substring(0, 32));
+//                order.setBizId(projectComment.getId());
+//                Integer bizType = projectComment.getCommentType() == null ? 1 : projectComment.getCommentType();
+//                order.setBizType(bizType);// 详情见OrderBizType
+//                order.setOpenId(projectComment.getOpenId());
+//                Integer commentStatus = projectComment.getCommonStatus();
+//                if (!StringUtils.isEmpty(commentStatus) && 2 == commentStatus ) {
+//                    order.setBizStatus(11);
+//                } else {
+//                    order.setBizStatus(3);
+//                }
+//                order.setCreateTime(projectComment.getCreateTime());
+//                order.setPayAmount(projectComment.getCommentAmount());
+//                order.setStars(projectComment.getStars());
+//                order.setReply(projectComment.getReply());
+//                order.setReplyTm(projectComment.getReplyTm());
+//                orderList.add(order);
+//            }
+//
+//            if (!CollectionUtils.isEmpty(orderList)) {
+//                mongoTemplate.insert(orderList, Order.class);
+//            }
+//        }
+//
+//        // 同步商业计划书申请订单
+//        List<ProjectBpApply> projectBpApplyList = mongoTemplate.find(new Query(), ProjectBpApply.class);
+//        if (!CollectionUtils.isEmpty(projectBpApplyList)) {
+//            List<Order> orderList = new ArrayList<>();
+//            Order order = null;
+//            for(ProjectBpApply projectBpApply : projectBpApplyList) {
+//                order = new Order();
+//                order.setOrderNo(commonUtils.getNumCode().substring(0, 32));
+//                order.setBizId(projectBpApply.getId());
+//                order.setBizType(OrderBizType.BPOPTIMIZE.getCode());// 详情见OrderBizType.
+//                Integer commentStatus = projectBpApply.getDealStatus();
+//                if (!StringUtils.isEmpty(commentStatus) && 1 == commentStatus ) {
+//                    order.setBizStatus(11);
+//                } else {
+//                    order.setBizStatus(3);
+//                }
+//                order.setCreateTime(projectBpApply.getCreateTime());
+//                orderList.add(order);
+//            }
+//
+//            if (!CollectionUtils.isEmpty(orderList)) {
+//                mongoTemplate.insert(orderList, Order.class);
+//            }
+//        }
     }
+
 
 }

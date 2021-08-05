@@ -23,6 +23,8 @@ public enum ErrorCode {
     REPEATCOMMIT(617,"重复提交"),
     EXISTSUSER(618,"用户已存在"),
     ERRORPASSWORD(619,"密码不正确"),
+    BPROUTEEMPTY(620,"项目投递前须上传商业计划书"),
+    PROJECTEMPTY(621,"项目投递前须创建项目"),
     OTHEREEEOR(669,"其余未知错误");
 
     private int code;

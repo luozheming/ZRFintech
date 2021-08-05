@@ -15,6 +15,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,10 +34,6 @@ public class ProjectDeliverJob {
 
     @Value("${project.deliver.email}")
     private String email;
-    @Value("${project.deliver.theme}")
-    private String theme;
-    @Value("${project.deliver.content}")
-    private String content;
     @Autowired
     private ProjectDeliverService projectDeliverService;
     @Autowired
@@ -46,7 +43,7 @@ public class ProjectDeliverJob {
 
     private static final Logger logger = LoggerFactory.getLogger(ProjectDeliverJob.class);
 
-    @Scheduled(cron = "0 */10 * * * ?")
+    @Scheduled(cron = "0 */15 * * * ?")
     public void projectDeliver() {
         logger.info("项目投递定时任务开始...");
         int total = 0;
@@ -59,15 +56,21 @@ public class ProjectDeliverJob {
                 Update update = new Update();
                 update.set("status", 1);
                 SendEmailDto sendEmailDto = null;
-                List<String> filePath = new ArrayList<>();
+                List<String> filePath = null;
                 for (ProjectDeliver projectDeliver : projectDeliverList) {
                     sendEmailDto = new SendEmailDto();
+                    filePath = new ArrayList<>();
                     // 随机设置邮件发送方
-                    sendEmailDto.setSender(emails.get(new Random().nextInt(emails.size()-1)));
+                    sendEmailDto.setSender(emails.get(new Random().nextInt(emails.size())));
                     sendEmailDto.setReceiver(projectDeliver.getTargetEmail());
-                    sendEmailDto.setTheme(theme);
-                    sendEmailDto.setContent(content);
-                    filePath.add(projectDeliver.getBpRoute());
+                    String theme = "项目推荐-【" + projectDeliver.getProjectNm() + "】";
+                    sendEmailDto.setTheme(theme);// 邮件主题
+                    sendEmailDto.setContent(getEmailContent(projectDeliver));// 邮件内容
+                    if (!StringUtils.isEmpty(projectDeliver.getBpRoute())) {
+                        filePath.add(projectDeliver.getBpRoute());
+                    } else {
+                        logger.info("项目编号|项目名称：" + projectDeliver.getProjectNo() + "|" + projectDeliver.getProjectNm() + "未上传BP");
+                    }
                     sendEmailDto.setFilePathList(filePath);
                     emailService.sendAttachmentsMail(sendEmailDto);
 
@@ -80,7 +83,26 @@ public class ProjectDeliverJob {
             }
             logger.info("项目投递定时任务结束，共投递邮件数：" + total);
         } catch (Exception e) {
-            logger.error("项目投递定时任务异常：" + e);
+            logger.error("项目投递定时任务异常：", e);
         }
+    }
+
+    /**
+     * 获取邮件正文内容
+     * @param projectDeliver
+     * @return
+     */
+    private String getEmailContent(ProjectDeliver projectDeliver) {
+        StringBuilder stringBuilder = new StringBuilder("尊敬的投资人，您好：\n");
+        stringBuilder.append("\n");
+        stringBuilder.append("[" + projectDeliver.getProjectNm() + "]融资信息如下：");
+        stringBuilder.append("\n");
+        stringBuilder.append("所属行业：").append(null == projectDeliver.getProIndus()?"未提供":projectDeliver.getProIndus()).append("\n");
+        stringBuilder.append("融资轮次：").append(null == projectDeliver.getFinRound()?"未提供":projectDeliver.getFinRound()).append("\n");
+        stringBuilder.append("融资金额：").append(null == projectDeliver.getQuota()?"未提供":projectDeliver.getQuota()).append("\n");
+        stringBuilder.append("出让股权：").append(null == projectDeliver.getSharesTransfer()?"未提供":projectDeliver.getSharesTransfer()).append("\n");
+        stringBuilder.append("项目方联系人：").append(null == projectDeliver.getProUser()?"未提供":projectDeliver.getProUser()).append("\n");
+        stringBuilder.append("项目方电话：").append(null == projectDeliver.getProPhonum()?"未提供":projectDeliver.getProPhonum()).append("\n");
+        return stringBuilder.toString();
     }
 }

@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("mail")
-public class MailController {
+@RequestMapping("email")
+public class EmailController {
 
     @Autowired
     private EmailService emailService;
@@ -18,7 +18,7 @@ public class MailController {
     @GetMapping("/sendSimpleTextMail")
     public String sendSimpleTextMail() {
         try {
-            emailService.sendSimpleTextMail();
+            emailService.sendSimpleTextMail(null);
         } catch (Exception e) {
             return ErrorCode.OTHEREEEOR.toJsonString();
         }

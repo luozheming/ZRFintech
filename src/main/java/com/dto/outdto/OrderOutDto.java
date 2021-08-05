@@ -64,8 +64,17 @@ public class OrderOutDto {
      * 回复时间
      */
     private Date replyTm;
+
     /**
      * 评论信息
      */
     ProjectComment projectComment;
+    /**
+     * 电话号码
+     */
+    private String phoneNm;
+    /**
+     * 联系人姓名
+     */
+    private String userName;
 }

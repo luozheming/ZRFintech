@@ -49,6 +49,10 @@ public class VIPCardUsageRespDto {
      * 是否有效：false-否，true-是
      */
     private Boolean isValid;
+    /**
+     * 是否金卡模板：true-是，false-否
+     */
+    private Boolean isVipTemplate;
 
     @Tolerate
     public VIPCardUsageRespDto() {}
