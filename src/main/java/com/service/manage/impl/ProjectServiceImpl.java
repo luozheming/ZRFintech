@@ -8,6 +8,8 @@ import com.pojo.ProjectComment;
 import com.pojo.User;
 import com.service.manage.ProjectCommentService;
 import com.service.manage.ProjectService;
+import com.utils.DateUtil;
+import com.utils.ErrorCode;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -124,13 +126,20 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public void topProject(String userId) {
+    public void topProject(String userId) throws Exception {
         // 通过userId查询项目信息
         List<Project> projectList = mongoTemplate.find(query(where("entUserId").is(userId)), Project.class);
         if (CollectionUtils.isEmpty(projectList)) {
-            return;
+            throw new Exception(ErrorCode.PROJECTEMPTY.getMessage());
         }
         Project project = projectList.get(0);
+        if (StringUtils.isEmpty(project.getBpRoute())) {
+            throw new Exception(ErrorCode.BPROUTEEMPTY.getMessage());
+        }
+        Date topFlushTime = project.getTopFlushTime();
+        if (null != topFlushTime && DateUtil.getDiffDate(topFlushTime, new Date(), 4) == 0) {
+            throw new Exception(ErrorCode.TOPPROJECT.getMessage());
+        }
         String projectNo = project.getProjectNo();
         Update update = new Update();
         update.set("topFlushTime", new Date());

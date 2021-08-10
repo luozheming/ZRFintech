@@ -39,9 +39,9 @@ public class VIPCardUsageLogController {
     }
 
     @PostMapping("/sendMailToAdviser")
-    public String sendMailToAdviser(String userId) {
+    public String sendMailToAdviser(String userId, String telephoneNo) {
         try {
-            vipCardUsageLogService.sendMailToAdviser(userId);
+            vipCardUsageLogService.sendMailToAdviser(userId, telephoneNo);
             return ErrorCode.SUCCESS.toJsonString();
         } catch (Exception e) {
             logger.error("金卡顾问服务申请通知系统错误:", e);

@@ -10,6 +10,7 @@ import com.dto.outdto.PageListDto;
 import com.dto.outdto.ProjectDto;
 import com.pojo.*;
 import com.service.OrderService;
+import com.service.ProjectDeliverService;
 import com.utils.CommonUtils;
 import com.utils.ErrorCode;
 import org.slf4j.Logger;
@@ -60,6 +61,9 @@ public class InfoDisplayController {
     @Value("${s3BucketName}")
     private String s3BucketName;
 
+    @Autowired
+    private ProjectDeliverService projectDeliverService;
+
     private static final Logger logger = LoggerFactory.getLogger(InfoDisplayController.class);
 
     /**
@@ -105,6 +109,7 @@ public class InfoDisplayController {
             } else {
                 pageListDto = getInvestorList(pageDto);
             }
+
             OutputFormate outputFormate = new OutputFormate(pageListDto);
             return JSONObject.toJSONString(outputFormate);
         }

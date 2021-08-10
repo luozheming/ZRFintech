@@ -137,8 +137,13 @@ public class ProjectController {
 
     @PostMapping("/topProject")
     public String topProject(String userId) {
-        projectService.topProject(userId);
-        return ErrorCode.SUCCESS.toJsonString();
+        try {
+            projectService.topProject(userId);
+            return ErrorCode.SUCCESS.toJsonString();
+        } catch (Exception e) {
+            OutputFormate outputFormate = new OutputFormate("", ErrorCode.OTHEREEEOR.getCode(), e.getMessage());
+            return JSONObject.toJSONString(outputFormate);
+        }
     }
 
 }

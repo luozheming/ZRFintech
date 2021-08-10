@@ -86,15 +86,16 @@ public class PdfUtil {
 //            paragraph.setSpacingAfter(5f); //设置段落下空白
 //            document.add(paragraph);// 正文添加小标题
 
-            String text = StringUtils.isEmpty(pdfDto.getText()) ? "无" : pdfDto.getText();
             Font textFonts = StringUtils.isEmpty(pdfDto.getText()) ? nullTextFont : textFont;
-            paragraph = new Paragraph(text, textFonts);
-            paragraph.setAlignment(Element.ALIGN_LEFT);// 设置文字居中 0靠左 1，居中 2，靠右
-            paragraph.setIndentationLeft(30); //设置左缩进
-            paragraph.setLeading(20f); //行间距
-            paragraph.setSpacingAfter(20f); //设置段落下空白
-            document.add(paragraph);// 正文添加小标题下的文本内容
-            n ++;
+            if (!StringUtils.isEmpty(pdfDto.getText())) {
+                paragraph = new Paragraph(pdfDto.getText(), textFonts);
+                paragraph.setAlignment(Element.ALIGN_LEFT);// 设置文字居中 0靠左 1，居中 2，靠右
+                paragraph.setIndentationLeft(30); //设置左缩进
+                paragraph.setLeading(20f); //行间距
+                paragraph.setSpacingAfter(20f); //设置段落下空白
+                document.add(paragraph);// 正文添加小标题下的文本内容
+                n ++;
+            }
         }
 
         // 5.关闭文档

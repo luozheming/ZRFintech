@@ -17,6 +17,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -100,7 +101,12 @@ public class ProjectDeliverJob {
         stringBuilder.append("所属行业：").append(null == projectDeliver.getProIndus()?"未提供":projectDeliver.getProIndus()).append("\n");
         stringBuilder.append("融资轮次：").append(null == projectDeliver.getFinRound()?"未提供":projectDeliver.getFinRound()).append("\n");
         stringBuilder.append("融资金额：").append(null == projectDeliver.getQuota()?"未提供":projectDeliver.getQuota()).append("\n");
-        stringBuilder.append("出让股权：").append(null == projectDeliver.getSharesTransfer()?"未提供":projectDeliver.getSharesTransfer()).append("\n");
+        BigDecimal sharesTransfer = projectDeliver.getSharesTransfer();
+        if (null == sharesTransfer) {
+            stringBuilder.append("出让股权：").append("未提供").append("\n");
+        } else {
+            stringBuilder.append("出让股权：").append(projectDeliver.getSharesTransfer()).append("%").append("\n");
+        }
         stringBuilder.append("项目方联系人：").append(null == projectDeliver.getProUser()?"未提供":projectDeliver.getProUser()).append("\n");
         stringBuilder.append("项目方电话：").append(null == projectDeliver.getProPhonum()?"未提供":projectDeliver.getProPhonum()).append("\n");
         return stringBuilder.toString();

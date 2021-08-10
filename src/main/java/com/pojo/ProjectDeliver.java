@@ -73,7 +73,7 @@ public class ProjectDeliver {
      */
     private String targetEmail;
     /**
-     * 投递状态：0-未投递，1-成功，2-失败
+     * 投递状态：0-录入成功未投递，1-定时投递成功，2-失败
      */
     private Integer status;
     /**

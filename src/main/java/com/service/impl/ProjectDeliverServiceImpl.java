@@ -40,7 +40,8 @@ public class ProjectDeliverServiceImpl implements ProjectDeliverService {
             throw new Exception("userId为空");
         }
         // 获取用户的项目信息
-        Project project = mongoTemplate.findOne(query(where("entUserId").is(projectDeliver.getUserId())), Project.class);
+        Project project = mongoTemplate.findOne(query(where("entUserId").is(projectDeliver.getUserId())).with(Sort.by(Sort.Order.asc("createTime"))), Project.class);
+        logger.info("单笔bp投递，获取项目信息：" + JSONObject.toJSONString(project));
         if (null == project) {
             throw new Exception(ErrorCode.PROJECTEMPTY.getMessage());
         }
@@ -61,14 +62,13 @@ public class ProjectDeliverServiceImpl implements ProjectDeliverService {
 
     @Override
     public List<ProjectDeliver> list() {
-        return mongoTemplate.find(query(where("status").is(0)).limit(50).with(Sort.by(Sort.Order.asc("createTime"))), ProjectDeliver.class);
+        return mongoTemplate.find(query(where("status").is(0)).limit(50).with(Sort.by(Sort.Order.asc("createDate"))), ProjectDeliver.class);
     }
 
     @Override
     public List<ProjectDeliver> pageListByUserId(Integer pageNum, Integer pageSize, String userId) {
         int startNum = pageNum * pageSize;
-        Query query = new Query(where("userId").is(userId));
-        query.with(Sort.by(Sort.Order.desc("createTime")));
+        Query query = new Query(where("userId").is(userId)).with(Sort.by(Sort.Order.desc("createDate")));
         List<ProjectDeliver> projectDeliverList = mongoTemplate.find(query.skip(startNum).limit(pageSize), ProjectDeliver.class);
         return projectDeliverList;
     }

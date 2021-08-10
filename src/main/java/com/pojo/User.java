@@ -76,7 +76,13 @@ public class User {
      *  联系电话号码
      */
     private String telephoneNo;
+    /**
+     * 名片正面路径
+     */
     private String cardRoute;
+    /**
+     * 名片反面路径
+     */
     private String cardBackRoute;
 
     @Tolerate

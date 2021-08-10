@@ -22,5 +22,5 @@ public interface ProjectService {
 
     void edit(Project project);
 
-    void topProject(String userId);
+    void topProject(String userId) throws Exception;
 }

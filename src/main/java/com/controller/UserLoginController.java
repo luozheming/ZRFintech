@@ -234,9 +234,24 @@ public class UserLoginController {
      * @return
      */
     @PostMapping("/user/editUser")
-    public String edit(MultipartFile cardFile, MultipartFile cardBackFile, User user) {
+    public String edit(MultipartFile photoFile, MultipartFile cardFile, MultipartFile cardBackFile, String captcha, User user) {
         try {
+            if (!StringUtils.isEmpty(captcha)) {
+                Map<String, Object> respMap = userLoginService.validateSms(user.getPhoneNm(), captcha);
+                if (!(boolean)respMap.get("result")) {
+                    OutputFormate outputFormate = new OutputFormate("", ErrorCode.OTHEREEEOR.getCode(), String.valueOf(respMap.get("msg")));
+                    return JSONObject.toJSONString(outputFormate);
+                }
+            }
+
             Update update = new Update();
+            if (null != photoFile) {
+                String filePath = entUserSavedFilepath + user.getUserId() + "/" + photoFile.getOriginalFilename();
+                // AWS S3存储文件
+                commonUtils.uploadFile(s3BucketName, filePath, photoFile.getBytes());
+                //文件保存后更新数据库信息
+                update.set("photoRoute", filePath);
+            }
             if (null != cardFile) {
                 String filePath = entUserSavedFilepath + user.getUserId() + "/" + cardFile.getOriginalFilename();
                 // AWS S3存储文件
@@ -257,7 +272,9 @@ public class UserLoginController {
             update.set("email", user.getEmail());
             update.set("telephoneNo", user.getTelephoneNo());
             mongoTemplate.updateFirst(query(where("userId").is(user.getUserId())), update, User.class);
-            return ErrorCode.SUCCESS.toJsonString();
+            User userResp = mongoTemplate.findOne(query(where("userId").is(user.getUserId())), User.class);
+            OutputFormate outputFormate = new OutputFormate(userResp, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
+            return JSONObject.toJSONString(outputFormate);
         } catch (Exception e) {
             logger.error("修改客户信息系统异常：", e);
             return ErrorCode.OTHEREEEOR.toJsonString();
@@ -285,7 +302,7 @@ public class UserLoginController {
      * @return
      */
     @PostMapping("/user/verify")
-    public String verify(MultipartFile cardFile, MultipartFile cardBackFile, User user, String captcha, String targetRoleCode) {
+    public String verify(MultipartFile photoFile, MultipartFile cardFile, MultipartFile cardBackFile, User user, String captcha, String targetRoleCode) {
         logger.info("身份认证入参： user=" + JSONObject.toJSONString(user));
         logger.info("身份认证入参： targetRoleCode=" + targetRoleCode);
         Map<String, Object> respMap = userLoginService.validateSms(user.getPhoneNm(), captcha);
@@ -301,6 +318,13 @@ public class UserLoginController {
                 return JSONObject.toJSONString(outputFormate);
             }
             Update update = new Update();
+            if (null != photoFile) {
+                String filePath = entUserSavedFilepath + user.getUserId() + "/" + photoFile.getOriginalFilename();
+                // AWS S3存储文件
+                commonUtils.uploadFile(s3BucketName, filePath, photoFile.getBytes());
+                //文件保存后更新数据库信息
+                update.set("photoRoute", filePath);
+            }
             if (null != cardFile) {
                 String filePath = entUserSavedFilepath + user.getUserId() + "/" + cardFile.getOriginalFilename();
                 // AWS S3存储文件
@@ -340,8 +364,11 @@ public class UserLoginController {
             update.set("roleCode", targetRoleCode);
             update.set("isVerify", true);
             mongoTemplate.updateFirst(query(where("userId").is(user.getUserId())), update, User.class);
+
+            User userDto = mongoTemplate.findOne(query(where("userId").is(user.getUserId())), User.class);
+            OutputFormate outputFormate = new OutputFormate(userDto, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
             logger.info("身份认证成功...");
-            return ErrorCode.SUCCESS.toJsonString();
+            return JSONObject.toJSONString(outputFormate);
         } catch (Exception e) {
             logger.error("身份认证系统异常：" + e);
             return ErrorCode.OTHEREEEOR.toJsonString();

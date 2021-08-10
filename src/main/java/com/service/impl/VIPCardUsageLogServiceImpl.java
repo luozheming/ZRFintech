@@ -6,6 +6,7 @@ import com.service.EmailService;
 import com.service.VIPCardUsageLogService;
 import com.utils.CommonUtils;
 import com.utils.ErrorCode;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -66,12 +67,11 @@ public class VIPCardUsageLogServiceImpl implements VIPCardUsageLogService {
                 ProjectDeliver projectDeliver =  null;
                 for (Investor investor : investors) {
                     projectDeliver = new ProjectDeliver();
+                    BeanUtils.copyProperties(project, projectDeliver);
                     projectDeliver.setId(commonUtils.getNumCode());
                     projectDeliver.setUserId(vipCardUsageLog.getUserId());
                     projectDeliver.setVipCardUsageLogId(vipCardUsageLogId);
                     projectDeliver.setTargetType(1);// 项目投递目标：1-VC,2-FA
-                    projectDeliver.setProjectNo(project.getProjectNo());
-                    projectDeliver.setBpRoute(project.getBpRoute());
                     projectDeliver.setStatus(0);
                     projectDeliver.setTargetEmail(investor.getInvesEmail());
                     projectDeliver.setTargetObject(investor);
@@ -84,7 +84,7 @@ public class VIPCardUsageLogServiceImpl implements VIPCardUsageLogService {
     }
 
     @Override
-    public void sendMailToAdviser(String userId) throws Exception {
+    public void sendMailToAdviser(String userId, String telephoneNo) throws Exception {
         // 获取用户信息
         User user = mongoTemplate.findOne(query(where("userId").is(userId)), User.class);
         if (null == user) {
@@ -100,8 +100,8 @@ public class VIPCardUsageLogServiceImpl implements VIPCardUsageLogService {
         StringBuilder stringBuilder = new StringBuilder("客户信息：");
         stringBuilder.append("\n");
         stringBuilder.append("姓名：").append(null == user.getUserName()?"":user.getUserName()).append("\n");
-        stringBuilder.append("联系电话：").append(null == user.getTelephoneNo()?"":user.getTelephoneNo()).append("\n");
         stringBuilder.append("手机：").append(null == user.getPhoneNm()?"":user.getPhoneNm()).append("\n");
+        stringBuilder.append("联系电话：").append(null == telephoneNo?"":telephoneNo).append("\n");
         List<String> filePath = new ArrayList<>();
         if (null != project) {
             if (!StringUtils.isEmpty(project.getBpRoute())) {
