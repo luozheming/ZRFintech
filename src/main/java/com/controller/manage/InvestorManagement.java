@@ -143,4 +143,10 @@ public class InvestorManagement {
         return ErrorCode.SUCCESS.toJsonString();
     }
 
+    @PostMapping("/investor/updateShowFlag")
+    public String updateShowFlag(String investorId, Integer showFlag){
+        investorService.updateShowFlag(investorId, showFlag);
+        return ErrorCode.SUCCESS.toJsonString();
+    }
+
 }

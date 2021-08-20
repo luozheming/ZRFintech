@@ -125,7 +125,7 @@ public class InfoDisplayController {
         int pageSize = pageDto.getPageSize();
 
         Query query = new Query();
-        query.addCriteria(where("status").is(0));
+        query.addCriteria(where("status").is(0).and("showFlag").is(1));
         // 行业
         Criteria proIndusCriteria = null;
         if (!StringUtils.isEmpty(pageDto.getProIndus())) {
@@ -190,12 +190,12 @@ public class InfoDisplayController {
 
         // 精确匹配查询条件
         Query accurateQuery = new Query();
-        accurateQuery.addCriteria(where("status").is(0));
+        accurateQuery.addCriteria(where("status").is(0).and("showFlag").is(1));
 
         // 智能匹配查询条件
         Query matchedQuery = new Query();
         Pattern pattern = null;
-        matchedQuery.addCriteria(where("status").is(0));
+        matchedQuery.addCriteria(where("status").is(0).and("showFlag").is(1));
         List<Criteria> proCriteriaList = new ArrayList<>();
         if (!StringUtils.isEmpty(project.getProIndus())) {
             pattern = Pattern.compile("^.*"+project.getProIndus()+".*$", Pattern.CASE_INSENSITIVE);
@@ -276,7 +276,7 @@ public class InfoDisplayController {
 
         // 其他未匹配的查询条件
         Query otherQuery = new Query();
-        otherQuery.addCriteria(where("status").is(0).and("investorId").nin(investorIdList));
+        otherQuery.addCriteria(where("status").is(0).and("showFlag").is(1).and("investorId").nin(investorIdList));
         if (null != proIndusCriteria && null != finRoundCriteria) {
             otherQuery.addCriteria(new Criteria().andOperator(proIndusCriteria, finRoundCriteria));
         } else if (null != proIndusCriteria && null == finRoundCriteria) {

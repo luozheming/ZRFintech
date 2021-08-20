@@ -107,4 +107,15 @@ public class InvestorService {
         update.set("surplusAmount", surplusAmount);
         mongoTemplate.updateFirst(query(where("InvestorId").is(InvestorId)), update, Investor.class);
     }
+
+    /**
+     * 更新投资人是否公开展示
+     * @param investorId
+     * @param showFlag
+     */
+    public void updateShowFlag(String investorId, Integer showFlag) {
+        Update update = new Update();
+        update.set("showFlag", showFlag);
+        mongoTemplate.updateFirst(query(where("InvestorId").is(investorId)), update, Investor.class);
+    }
 }

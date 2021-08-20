@@ -76,11 +76,12 @@ public class ProjectDeliverServiceImpl implements ProjectDeliverService {
     public List<ProjectDeliver> list() {
         // 获取未发送或者发送失败的邮件
         Query query = new Query();
-        Criteria criteria = new Criteria();
+        Criteria statusCriteria = new Criteria();
         // 投递状态：0-录入成功未投递，1-定时投递成功，2-失败,投递失败允许再投2次
-        criteria.orOperator(where("status").is(0), where("status").is(2));
-        criteria.and("deliverTimes").lt(4);
-        query.addCriteria(criteria);
+        statusCriteria.orOperator(where("status").is(0), where("status").is(2));
+        Criteria deliverTimesCriteria = new Criteria();
+        deliverTimesCriteria.orOperator(where("deliverTimes").lt(3), where("deliverTimes").is(null));
+        query.addCriteria(new Criteria().andOperator(statusCriteria, deliverTimesCriteria));
         return mongoTemplate.find(query.with(Sort.by(Sort.Order.asc("updateDate"))).limit(50), ProjectDeliver.class);
     }
 

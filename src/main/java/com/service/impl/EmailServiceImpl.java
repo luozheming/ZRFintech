@@ -69,7 +69,7 @@ public class EmailServiceImpl implements EmailService {
         logger.info("邮件发送入参：" + JSONObject.toJSONString(sendEmailDto));
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
-        helper.setFrom(sendEmailDto.getSender());
+        helper.setFrom(javaMailSender.getUsername());
         helper.setTo(sendEmailDto.getReceiver());
         helper.setSubject(sendEmailDto.getTheme());
         helper.setText(sendEmailDto.getContent());

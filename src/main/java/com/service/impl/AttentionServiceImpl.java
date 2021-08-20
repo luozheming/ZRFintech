@@ -58,6 +58,7 @@ public class AttentionServiceImpl implements AttentionService {
         attention.setId(commonUtils.getNumCode());
         attention.setCreateTime(new Date());
         attention.setAttentionUserId(user.getUserId());
+        attention.setAttentionUserName(user.getUserName());
         attention.setAttentionCompanyName(user.getCompanyName());
         attention.setAttentionPositionName(user.getPositionName());
         attention.setAttentionRoleCode(user.getRoleCode());

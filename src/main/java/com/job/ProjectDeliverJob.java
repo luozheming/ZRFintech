@@ -39,7 +39,7 @@ public class ProjectDeliverJob {
 
     private static final Logger logger = LoggerFactory.getLogger(ProjectDeliverJob.class);
 
-    @Scheduled(cron = "0 */15 * * * ?")
+    @Scheduled(cron = "0 */10 * * * ?")
     public void projectDeliver() {
         logger.info("项目投递定时任务开始...");
         int total = 0;
@@ -69,6 +69,7 @@ public class ProjectDeliverJob {
                     try {
                         emailService.sendAttachmentsMail(sendEmailDto);
                     } catch (Exception e) {
+                        logger.error("项目投递邮件发送异常：", e);
                         update.set("status", 2);// 更新邮件发送失败
                     }
 
@@ -79,12 +80,11 @@ public class ProjectDeliverJob {
                     operations.updateOne(query(where("id").is(projectDeliver.getId())), update);
                 }
 
-                // 批量更新项目投递状态为成功
+                // 批量更新项目投递状态
                 operations.execute();
             }
             logger.info("项目投递定时任务结束，共投递邮件数：" + total);
         } catch (Exception e) {
-
             logger.error("项目投递定时任务异常：", e);
         }
     }

@@ -22,10 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class ExcelServiceImpl implements ExcelService {
@@ -35,8 +32,10 @@ public class ExcelServiceImpl implements ExcelService {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    private static final String photoRoute = "/home/ec2-user/data/investor/默认投资人.jpg";
+    private static final Integer investorPhotoTotal = 13;
+    private static final String photoRoute = "/home/ec2-user/data/investor/";
     private static final Logger logger = LoggerFactory.getLogger(ExcelServiceImpl.class);
+
 
     @Override
     public void importInvestor(MultipartFile file) throws Exception {
@@ -68,9 +67,12 @@ public class ExcelServiceImpl implements ExcelService {
                 investor.setFinRound(String.valueOf(getCellFormatValue(row.getCell(5))).replaceAll("，|、", ","));// 关注轮次
                 investor.setFocusCity(String.valueOf(getCellFormatValue(row.getCell(6))).replaceAll("，|、", ","));// 关注城市
                 investor.setInvestorId(commonUtils.getNumCode());
-                investor.setInvesPhotoRoute(photoRoute);
+                int random = new Random().nextInt(investorPhotoTotal) + 1;
+                String fileName = random + ".jpg";
+                investor.setInvesPhotoRoute(new StringBuilder(photoRoute).append(fileName).toString());
                 investor.setSourceDesc("excel批量导入");
                 investor.setStatus(0);
+                investor.setShowFlag(1);
 
                 investorList.add(investor);
             }

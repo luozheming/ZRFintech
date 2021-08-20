@@ -45,6 +45,18 @@ public class ProjectDeliver {
      */
     private String finRound;
     /**
+     * 企业所在城市
+     */
+    private String entCity;
+    /**
+     *  logo图片路径路径
+     */
+    private String logoRoute;
+    /**
+     * 项目简介；1句话描述
+     */
+    private String proBriefDes;
+    /**
      * 期望融资额度
      */
     private String quota;

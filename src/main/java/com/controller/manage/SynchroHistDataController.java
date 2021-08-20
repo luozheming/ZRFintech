@@ -46,6 +46,7 @@ public class SynchroHistDataController {
                 photoRoute = photoRoute + fileName;
                 update = new Update();
                 update.set("invesPhotoRoute", photoRoute);
+                update.set("", "");
                 mongoTemplate.updateFirst(query(where("investorId").is(investor.getInvestorId())), update, Investor.class);
             }
         }

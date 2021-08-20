@@ -37,9 +37,14 @@ public class FinancialAdvisor {
      */
     private String faName;
     /**
-     * 个人简介
+     * 机构简介
      */
     private String introd;
+    /**
+     * 个人简介
+     */
+    private String selfIntroduction;
+
     /**
      * 联系人
      */

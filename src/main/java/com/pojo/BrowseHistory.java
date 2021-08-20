@@ -44,6 +44,10 @@ public class BrowseHistory {
      */
     private String proBriefDes;
     /**
+     * logo路径
+     */
+    private String logoRoute;
+    /**
      * 累计浏览次数
      */
     private Integer browseTimes;

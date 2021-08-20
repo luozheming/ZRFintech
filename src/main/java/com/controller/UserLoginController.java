@@ -32,6 +32,7 @@ import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
@@ -239,6 +240,7 @@ public class UserLoginController {
      */
     @PostMapping("/user/editUser")
     public String edit(MultipartFile photoFile, MultipartFile cardFile, MultipartFile cardBackFile, UserEditDto userEditDto) {
+        logger.info("修改用户接口入参：" + JSONObject.toJSONString(userEditDto));
         try {
             if (!StringUtils.isEmpty(userEditDto.getCaptcha())) {
                 Map<String, Object> respMap = userLoginService.validateSms(userEditDto.getPhoneNm(), userEditDto.getCaptcha());
@@ -450,21 +452,31 @@ public class UserLoginController {
             insertInvestor.setInvestor(user.getUserName());
             insertInvestor.setInvesEmail(user.getEmail());
             insertInvestor.setStatus(1);// 状态：0-有效，1-失效
+            insertInvestor.setShowFlag(0);// 投资人展示标识：0-不展示，1-投资人授权展示
             insertInvestor.setOrgNm(user.getCompanyName() + "  |  " + user.getPositionName());
             insertInvestor.setPhoneNm(user.getPhoneNm());
+            if (StringUtils.isEmpty(user.getPhotoRoute())) {
+                // 给个随机默认投资人头像
+                String photoRoute = "/home/ec2-user/data/investor/";
+                int random = new Random().nextInt(13) + 1;
+                String fileName = random + ".jpg";
+                photoRoute = photoRoute + fileName;
+                insertInvestor.setInvesPhotoRoute(photoRoute);
+
+                update.set("photoRoute", photoRoute);// 更新用户的头像
+            }
             mongoTemplate.insert(insertInvestor, "investor");
         } else {
             update.set("auditStatus", 2);// 审核状态：1-待审核，2-审核通过，3-审核不通过
             update.set("isVerify", true);
+            Update investorUpdate = new Update();
+            investorUpdate.set("investorId", user.getUserId());
             if (!StringUtils.isEmpty(user.getEmail())) {
-                Update investorUpdate = new Update();
-                investorUpdate.set("investorId", user.getUserId());
                 investorUpdate.set("investor", user.getUserName());
                 investorUpdate.set("invesEmail", user.getEmail());
                 investorUpdate.set("status", 0);// 状态：0-有效，1-失效
                 investorUpdate.set("orgNm", user.getCompanyName() + "  |  " + user.getPositionName());
                 investorUpdate.set("phoneNm", user.getPhoneNm());
-                mongoTemplate.updateFirst(query(where("investorId").is(investor.getInvestorId())), investorUpdate, Investor.class);
             } else {
                 update.set("userName", investor.getInvestor());
                 if (!StringUtils.isEmpty(investor.getOrgNm()) && investor.getOrgNm().split("\\|").length == 2) {
@@ -474,6 +486,7 @@ public class UserLoginController {
                 update.set("email", investor.getInvesEmail());
                 update.set("telephoneNo", investor.getPhoneNm());
             }
+            mongoTemplate.updateFirst(query(where("investorId").is(investor.getInvestorId())), investorUpdate, Investor.class);
         }
     }
 
