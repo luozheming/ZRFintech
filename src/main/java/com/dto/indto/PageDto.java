@@ -32,5 +32,13 @@ public class PageDto {
      * 是否自动匹配
      */
     private Boolean isAutoMatch;
+    /**
+     * 角色编码
+     */
+    private String roleCode;
+    /**
+     * fa类型：1-fa个人,2-fa机构
+     */
+    private Integer faType;
 
 }

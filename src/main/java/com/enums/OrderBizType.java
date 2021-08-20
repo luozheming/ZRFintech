@@ -11,7 +11,11 @@ public enum OrderBizType {
     BPOPTIMIZE(4, "商业计划书优化"),
     BPDELIVER(5, "商业计划书代投"),
     STANDARDROADSHOWCOACH(6, "标准版路演辅导"),
-    DELUXEROADSHOWCOACH(7, "高级版路演辅导");
+    DELUXEROADSHOWCOACH(7, "高级版路演辅导"),
+    PURCHASEMONTHVIP(8, "金卡会员月卡"),
+    PURCHASEQUARTERVIP(9, "金卡会员季卡"),
+    PURCHASEYEARVIP(10, "金卡会员年卡"),
+    PROJECTDIAGNOSE(11, "项目诊断");
 
     private int code;
     private String message;

@@ -168,29 +168,22 @@ public class CommonUtils {
      * @param fileData
      * @return
      */
-    public String uploadFile(String bucketName, String objectKey, byte[] fileData) {
+    public String uploadFile(String bucketName, String objectKey, byte[] fileData) throws Exception {
         Region region = Region.CN_NORTHWEST_1;
-        try {
-            if (objectKey.indexOf("/") == 0) {
-                objectKey = objectKey.substring(1, objectKey.length());
-            }
-            S3Client s3Client = S3Client.builder().region(region).build();
-            Map<String, String> metadata = new HashMap<>();
-            metadata.put("x-amz-meta-myVal", "test");
-            PutObjectRequest putOb = PutObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(objectKey)
-                    .metadata(metadata)
-                    .build();
-            PutObjectResponse response = s3Client.putObject(putOb, RequestBody.fromBytes(fileData));
-            System.out.println(response.toString());
-            return response.eTag();
-        } catch (Exception e) {
-            // The call was transmitted successfully, but Amazon S3 couldn't process
-            // it, so it returned an error response.
-            System.out.println("系统异常：" + e);
-            return "upload Exception";
+        if (objectKey.indexOf("/") == 0) {
+            objectKey = objectKey.substring(1, objectKey.length());
         }
+        S3Client s3Client = S3Client.builder().region(region).build();
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put("x-amz-meta-myVal", "test");
+        PutObjectRequest putOb = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(objectKey)
+                .metadata(metadata)
+                .build();
+        PutObjectResponse response = s3Client.putObject(putOb, RequestBody.fromBytes(fileData));
+        System.out.println(response.toString());
+        return response.eTag();
     }
 
     /**

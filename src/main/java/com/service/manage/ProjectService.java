@@ -1,5 +1,7 @@
 package com.service.manage;
 
+import com.dto.indto.PageDto;
+import com.dto.outdto.PageListDto;
 import com.dto.outdto.ProjectDto;
 import com.pojo.Project;
 
@@ -8,7 +10,7 @@ import java.util.List;
 public interface ProjectService {
     List<Project> pageList(Integer pageNm, Integer pageSize);
 
-    ProjectDto detail(String projectNo);
+    ProjectDto detail(String projectNo, String userId);
 
     Integer count();
 
@@ -18,9 +20,9 @@ public interface ProjectService {
 
     void status(String projectNo, Integer status);
 
-    List<Project> listByEntUserId(String entUserID);
-
     void edit(Project project);
 
     void topProject(String userId) throws Exception;
+
+    PageListDto pageListByInvestor(PageDto pageDto);
 }

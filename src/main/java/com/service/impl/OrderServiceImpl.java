@@ -115,10 +115,14 @@ public class OrderServiceImpl implements OrderService {
     public Integer count(String userId) {
         Criteria criteria = new Criteria();
         if (null != userId) {
+            List<Integer> bizTypeList = new ArrayList<>();
+            bizTypeList.add(OrderBizType.PURCHASEMONTHVIP.getCode());
+            bizTypeList.add(OrderBizType.PURCHASEQUARTERVIP.getCode());
+            bizTypeList.add(OrderBizType.PURCHASEYEARVIP.getCode());
             List<Integer> payStatusList = new ArrayList<>();
             payStatusList.add(1);
             payStatusList.add(5);
-            criteria = where("userId").is(userId).and("payStatus").nin(payStatusList);
+            criteria = where("userId").is(userId).and("bizType").nin(bizTypeList).and("payStatus").nin(payStatusList);
         }
         return (int) mongoTemplate.count(new Query(criteria),"order");
     }
@@ -127,10 +131,14 @@ public class OrderServiceImpl implements OrderService {
     public List<OrderOutDto> pageList(Integer pageNum, Integer pageSize, String openId, String userId) {
         Criteria criteria = new Criteria();
         if (null != userId) {
+            List<Integer> bizTypeList = new ArrayList<>();
+            bizTypeList.add(OrderBizType.PURCHASEMONTHVIP.getCode());
+            bizTypeList.add(OrderBizType.PURCHASEQUARTERVIP.getCode());
+            bizTypeList.add(OrderBizType.PURCHASEYEARVIP.getCode());
             List<Integer> payStatusList = new ArrayList<>();
             payStatusList.add(1);
             payStatusList.add(5);
-            criteria = where("userId").is(userId).and("bizType").ne(OrderBizType.PURCHASEVIP.getCode()).and("payStatus").nin(payStatusList);
+            criteria = where("userId").is(userId).and("bizType").nin(bizTypeList).and("payStatus").nin(payStatusList);
         }
         int startNum = pageNum * pageSize;
         List<Order> orders = mongoTemplate.find(new Query(criteria).skip(startNum).limit(pageSize), Order.class);
@@ -140,15 +148,6 @@ public class OrderServiceImpl implements OrderService {
             for (Order order : orders) {
                 orderOutDto = new OrderOutDto();
                 BeanUtils.copyProperties(order, orderOutDto);
-//                if (OrderBizType.PROJECTCOMMENT.getCode() == order.getBizType() ||
-//                        OrderBizType.ONLINECONVERSATION.getCode() == order.getBizType() ||
-//                        OrderBizType.OFFLINECONVERSATION.getCode() == order.getBizType()) {
-//                    ProjectComment projectComment = mongoTemplate.findOne(query(where("id").is(order.getBizId())), ProjectComment.class);
-//                    if (null != projectComment && !StringUtils.isEmpty(projectComment.getInvesPhotoRoute())) {
-//                        projectComment.setInvesPhotoRoute(commonUtils.getFullFilePath(projectComment.getInvesPhotoRoute()));
-//                    }
-//                    orderOutDto.setProjectComment(projectComment);
-//                }
                 orderOutDtos.add(orderOutDto);
             }
         }
@@ -161,8 +160,37 @@ public class OrderServiceImpl implements OrderService {
         update.set("stars", order.getStars());
         update.set("reply", order.getReply());
         update.set("replyTm", new Date());
-        update.set("bizStatus", 11);
+        update.set("bizStatus", 4);
         mongoTemplate.updateFirst(query(where("orderNo").is(order.getOrderNo())), update, Order.class);
+    }
+
+    @Override
+    public Integer countAll(String userId) {
+        Criteria criteria = new Criteria();
+        if (null != userId) {
+            criteria = where("userId").is(userId);
+        }
+        return (int) mongoTemplate.count(new Query(criteria),"order");
+    }
+
+    @Override
+    public List<OrderOutDto> pageListAll(Integer pageNum, Integer pageSize, String userId) {
+        Criteria criteria = new Criteria();
+        if (null != userId) {
+            criteria = where("userId").is(userId);
+        }
+        int startNum = pageNum * pageSize;
+        List<Order> orders = mongoTemplate.find(new Query(criteria).skip(startNum).limit(pageSize), Order.class);
+        List<OrderOutDto> orderOutDtos = new ArrayList<>();
+        OrderOutDto orderOutDto = null;
+        if (!CollectionUtils.isEmpty(orders)) {
+            for (Order order : orders) {
+                orderOutDto = new OrderOutDto();
+                BeanUtils.copyProperties(order, orderOutDto);
+                orderOutDtos.add(orderOutDto);
+            }
+        }
+        return orderOutDtos;
     }
 
 }

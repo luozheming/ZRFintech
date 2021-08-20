@@ -3,7 +3,7 @@ package com.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.dto.indto.EntUserEditDto;
+import com.dto.indto.UserEditDto;
 import com.dto.indto.UserRegisterDto;
 import com.dto.indto.UserUpdatePasswordDto;
 import com.dto.outdto.OutputFormate;
@@ -13,6 +13,7 @@ import com.enums.RoleCode;
 import com.pojo.*;
 import com.service.UserLoginService;
 import com.service.VIPCardUsageService;
+import com.service.manage.UserService;
 import com.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +56,8 @@ public class UserLoginController {
     private CommonUtils commonUtils;
     @Value("${s3BucketName}")
     private String s3BucketName;
+    @Autowired
+    private UserService userService;
 
     private static final Logger logger = LoggerFactory.getLogger(UserLoginController.class);
 
@@ -75,7 +78,8 @@ public class UserLoginController {
     }
 
     @PostMapping(value = "/user/loginByWechat")
-    public String loginByWechat(@RequestBody User user){
+    public String loginByWechat(@RequestBody User user) {
+        logger.info("用户小程序登录入参：" + JSONObject.toJSONString(user));
         UserRespDto userRespDto = new UserRespDto();
         try{
             //如果用户已存在数据库，返回成功信息。否则将用户数据保存至数据库
@@ -230,14 +234,14 @@ public class UserLoginController {
 
     /**
      * 修改用户信息
-     * @param user
+     * @param userEditDto
      * @return
      */
     @PostMapping("/user/editUser")
-    public String edit(MultipartFile photoFile, MultipartFile cardFile, MultipartFile cardBackFile, String captcha, User user) {
+    public String edit(MultipartFile photoFile, MultipartFile cardFile, MultipartFile cardBackFile, UserEditDto userEditDto) {
         try {
-            if (!StringUtils.isEmpty(captcha)) {
-                Map<String, Object> respMap = userLoginService.validateSms(user.getPhoneNm(), captcha);
+            if (!StringUtils.isEmpty(userEditDto.getCaptcha())) {
+                Map<String, Object> respMap = userLoginService.validateSms(userEditDto.getPhoneNm(), userEditDto.getCaptcha());
                 if (!(boolean)respMap.get("result")) {
                     OutputFormate outputFormate = new OutputFormate("", ErrorCode.OTHEREEEOR.getCode(), String.valueOf(respMap.get("msg")));
                     return JSONObject.toJSONString(outputFormate);
@@ -245,34 +249,61 @@ public class UserLoginController {
             }
 
             Update update = new Update();
+            String photoFilePath = "";
             if (null != photoFile) {
-                String filePath = entUserSavedFilepath + user.getUserId() + "/" + photoFile.getOriginalFilename();
+                photoFilePath = entUserSavedFilepath + userEditDto.getUserId() + "/" + photoFile.getOriginalFilename();
                 // AWS S3存储文件
-                commonUtils.uploadFile(s3BucketName, filePath, photoFile.getBytes());
+                commonUtils.uploadFile(s3BucketName, photoFilePath, photoFile.getBytes());
                 //文件保存后更新数据库信息
-                update.set("photoRoute", filePath);
+                update.set("photoRoute", photoFilePath);
             }
             if (null != cardFile) {
-                String filePath = entUserSavedFilepath + user.getUserId() + "/" + cardFile.getOriginalFilename();
+                String filePath = entUserSavedFilepath + userEditDto.getUserId() + "/" + cardFile.getOriginalFilename();
                 // AWS S3存储文件
                 commonUtils.uploadFile(s3BucketName, filePath, cardFile.getBytes());
                 //文件保存后更新数据库信息
                 update.set("cardRoute", filePath);
             }
             if (null != cardBackFile) {
-                String filePath = entUserSavedFilepath + user.getUserId() + "/" + cardBackFile.getOriginalFilename();
+                String filePath = entUserSavedFilepath + userEditDto.getUserId() + "/" + cardBackFile.getOriginalFilename();
                 // AWS S3存储文件
                 commonUtils.uploadFile(s3BucketName, filePath, cardBackFile.getBytes());
                 //文件保存后更新数据库信息
                 update.set("cardBackRoute", filePath);
             }
-            update.set("userName", user.getUserName());
-            update.set("companyName", user.getCompanyName());
-            update.set("positionName", user.getPositionName());
-            update.set("email", user.getEmail());
-            update.set("telephoneNo", user.getTelephoneNo());
-            mongoTemplate.updateFirst(query(where("userId").is(user.getUserId())), update, User.class);
-            User userResp = mongoTemplate.findOne(query(where("userId").is(user.getUserId())), User.class);
+            update.set("userName", userEditDto.getUserName());
+            update.set("companyName", userEditDto.getCompanyName());
+            update.set("positionName", userEditDto.getPositionName());
+            update.set("email", userEditDto.getEmail());
+            update.set("telephoneNo", userEditDto.getTelephoneNo());
+            mongoTemplate.updateFirst(query(where("userId").is(userEditDto.getUserId())), update, User.class);
+
+            // 如果用户是投资人，则一并修改投资人相关信息
+            if (RoleCode.INVESTOR.getCode().equals(userEditDto.getRoleCode())) {
+                Update investorUpdate = new Update();
+                investorUpdate.set("focusFiled", userEditDto.getFocusFiled());
+                investorUpdate.set("finRound", userEditDto.getFinRound());
+                investorUpdate.set("selfIntroduction", userEditDto.getSelfIntroduction());
+                investorUpdate.set("focusCity", userEditDto.getFocusCity());
+                investorUpdate.set("invesEmail", userEditDto.getEmail());
+                if (!StringUtils.isEmpty(photoFilePath)) {
+                    investorUpdate.set("invesPhotoRoute", photoFilePath);
+                }
+                mongoTemplate.updateFirst(query(where("investorId").is(userEditDto.getUserId())), investorUpdate, Investor.class);
+            } else if (RoleCode.FINANCIALADVISOR.getCode().equals(userEditDto.getRoleCode())) {
+                Update faUpdate = new Update();
+                faUpdate.set("focusFiled", userEditDto.getFocusFiled());
+                faUpdate.set("finRound", userEditDto.getFinRound());
+                faUpdate.set("selfIntroduction", userEditDto.getSelfIntroduction());
+                faUpdate.set("city", userEditDto.getFocusCity());
+                faUpdate.set("invesEmail", userEditDto.getEmail());
+                if (!StringUtils.isEmpty(photoFilePath)) {
+                    faUpdate.set("photoRoute", photoFilePath);
+                }
+                mongoTemplate.updateFirst(query(where("faId").is(userEditDto.getUserId())), faUpdate, FinancialAdvisor.class);
+            }
+
+            User userResp = mongoTemplate.findOne(query(where("userId").is(userEditDto.getUserId())), User.class);
             OutputFormate outputFormate = new OutputFormate(userResp, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
             return JSONObject.toJSONString(outputFormate);
         } catch (Exception e) {
@@ -302,14 +333,14 @@ public class UserLoginController {
      * @return
      */
     @PostMapping("/user/verify")
-    public String verify(MultipartFile photoFile, MultipartFile cardFile, MultipartFile cardBackFile, User user, String captcha, String targetRoleCode) {
+        public String verify(MultipartFile photoFile, MultipartFile cardFile, MultipartFile cardBackFile, User user, String captcha, String targetRoleCode) {
         logger.info("身份认证入参： user=" + JSONObject.toJSONString(user));
         logger.info("身份认证入参： targetRoleCode=" + targetRoleCode);
         Map<String, Object> respMap = userLoginService.validateSms(user.getPhoneNm(), captcha);
-        if (!(boolean)respMap.get("result")) {
-            OutputFormate outputFormate = new OutputFormate("", ErrorCode.OTHEREEEOR.getCode(), String.valueOf(respMap.get("msg")));
-            return JSONObject.toJSONString(outputFormate);
-        }
+//        if (!(boolean)respMap.get("result")) {
+//            OutputFormate outputFormate = new OutputFormate("", ErrorCode.OTHEREEEOR.getCode(), String.valueOf(respMap.get("msg")));
+//            return JSONObject.toJSONString(outputFormate);
+//        }
         try {
             User userResp = mongoTemplate.findOne(query(where("userId").is(user.getUserId())), User.class);
             logger.info("身份认证通过userId获取用户信息： userResp=" + JSONObject.toJSONString(userResp));
@@ -345,6 +376,9 @@ public class UserLoginController {
                 update.set("positionName", user.getPositionName());
                 update.set("email", user.getEmail());
                 update.set("telephoneNo", user.getTelephoneNo());
+                update.set("auditStatus", 2);
+                update.set("roleCode", targetRoleCode);
+                update.set("isVerify", true);
 
                 EntUser entUser = mongoTemplate.findOne(query(where("entUserId").is(user.getUserId())), EntUser.class);
                 if (null == entUser) {
@@ -354,26 +388,161 @@ public class UserLoginController {
                     mongoTemplate.save(entUser);
                 }
             } else if (RoleCode.INVESTOR.getCode().equals(targetRoleCode)) {
-                // 验证该投资人是否已维护
-                Investor investor = mongoTemplate.findOne(query(where("phoneNm").is(user.getPhoneNm())), Investor.class);
-                if (null == investor) {
-                    OutputFormate outputFormate = new OutputFormate("", ErrorCode.OTHEREEEOR.getCode(), "请联系管理员注册投资人信息");
-                    return JSONObject.toJSONString(outputFormate);
-                }
+                investorVerify(user, targetRoleCode, update);
+            } else if (RoleCode.FINANCIALADVISOR.getCode().equals(targetRoleCode)) {
+                financialAdvisorVerify(user, targetRoleCode, update);
             }
-            update.set("roleCode", targetRoleCode);
-            update.set("isVerify", true);
+            // 更新用户
             mongoTemplate.updateFirst(query(where("userId").is(user.getUserId())), update, User.class);
 
             User userDto = mongoTemplate.findOne(query(where("userId").is(user.getUserId())), User.class);
+            if (!StringUtils.isEmpty(userDto.getAuditStatus()) && 1 == userDto.getAuditStatus()) {
+                // 申请认证为待审核状态的，异步发送邮件通知管理员审核
+                userService.sendAuditMail(userDto);
+            }
             OutputFormate outputFormate = new OutputFormate(userDto, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
             logger.info("身份认证成功...");
             return JSONObject.toJSONString(outputFormate);
         } catch (Exception e) {
             logger.error("身份认证系统异常：" + e);
-            return ErrorCode.OTHEREEEOR.toJsonString();
+            OutputFormate outputFormate = new OutputFormate("", ErrorCode.OTHEREEEOR.getCode(), e.getMessage());
+            return JSONObject.toJSONString(outputFormate);
         }
     }
+
+    /**
+     * 认证投资人部分逻辑
+     * @param user
+     * @param targetRoleCode
+     * @param update
+     * @throws Exception
+     */
+    private void investorVerify(User user, String targetRoleCode, Update update) throws Exception {
+        // 验证该投资人是否已维护
+        Investor investor = mongoTemplate.findOne(query(where("phoneNm").is(user.getPhoneNm())), Investor.class);
+        if (null == investor && StringUtils.isEmpty(user.getEmail())) {
+            throw new Exception("请联系管理员注册或者上传资料审核验证");
+        }
+
+        // 如果为上传资料认证，则更新相关字段
+        if (!StringUtils.isEmpty(user.getEmail())) {
+            update.set("userName", user.getUserName());
+            update.set("companyName", user.getCompanyName());
+            update.set("positionName", user.getPositionName());
+            update.set("email", user.getEmail());
+            update.set("telephoneNo", user.getTelephoneNo());
+            update.set("roleCode", targetRoleCode);
+            update.set("auditRoleCode", targetRoleCode);
+            update.set("isVerify", false);
+            update.set("auditStatus", 1);// 审核状态：1-待审核，2-审核通过，3-审核不通过
+        }
+
+        if (null == investor) {
+            // 通过机构名称和姓名查询是否存在系统导入的投资人信息
+            Investor sysInvestor = mongoTemplate.findOne(query(where("investor").is(user.getUserName()).and("orgNm").is(user.getCompanyName() + "  |  " + user.getPhoneNm())), Investor.class);
+            if (null != sysInvestor) {
+                // 先删除原后台批量导入的信息
+                mongoTemplate.remove(query(where("investorId").is(sysInvestor.getInvestorId())), Investor.class);
+            }
+            // 插入新的用户（投资人）额外信息
+            Investor insertInvestor = new Investor();
+            insertInvestor.setInvestorId(user.getUserId());
+            insertInvestor.setInvestor(user.getUserName());
+            insertInvestor.setInvesEmail(user.getEmail());
+            insertInvestor.setStatus(1);// 状态：0-有效，1-失效
+            insertInvestor.setOrgNm(user.getCompanyName() + "  |  " + user.getPositionName());
+            insertInvestor.setPhoneNm(user.getPhoneNm());
+            mongoTemplate.insert(insertInvestor, "investor");
+        } else {
+            update.set("auditStatus", 2);// 审核状态：1-待审核，2-审核通过，3-审核不通过
+            update.set("isVerify", true);
+            if (!StringUtils.isEmpty(user.getEmail())) {
+                Update investorUpdate = new Update();
+                investorUpdate.set("investorId", user.getUserId());
+                investorUpdate.set("investor", user.getUserName());
+                investorUpdate.set("invesEmail", user.getEmail());
+                investorUpdate.set("status", 0);// 状态：0-有效，1-失效
+                investorUpdate.set("orgNm", user.getCompanyName() + "  |  " + user.getPositionName());
+                investorUpdate.set("phoneNm", user.getPhoneNm());
+                mongoTemplate.updateFirst(query(where("investorId").is(investor.getInvestorId())), investorUpdate, Investor.class);
+            } else {
+                update.set("userName", investor.getInvestor());
+                if (!StringUtils.isEmpty(investor.getOrgNm()) && investor.getOrgNm().split("\\|").length == 2) {
+                    update.set("companyName", investor.getOrgNm().split("\\|")[0].trim());
+                    update.set("positionName", investor.getOrgNm().split("\\|")[1].trim());
+                }
+                update.set("email", investor.getInvesEmail());
+                update.set("telephoneNo", investor.getPhoneNm());
+            }
+        }
+    }
+
+    /**
+     * 认证投FA部分逻辑
+     * @param user
+     * @param targetRoleCode
+     * @param update
+     * @throws Exception
+     */
+    private void financialAdvisorVerify(User user, String targetRoleCode, Update update) throws Exception {
+        // 验证该fa是否已维护
+        FinancialAdvisor financialAdvisor = mongoTemplate.findOne(query(where("phoneNm").is(user.getPhoneNm())), FinancialAdvisor.class);
+        if (null == financialAdvisor && StringUtils.isEmpty(user.getEmail())) {
+            throw new Exception("请联系管理员注册或者上传资料审核验证");
+        }
+
+        // 如果为上传资料认证，则更新相关字段
+        if (!StringUtils.isEmpty(user.getEmail())) {
+            update.set("userName", user.getUserName());
+            update.set("companyName", user.getCompanyName());
+            update.set("positionName", user.getPositionName());
+            update.set("email", user.getEmail());
+            update.set("telephoneNo", user.getTelephoneNo());
+            update.set("roleCode", targetRoleCode);
+            update.set("auditRoleCode", targetRoleCode);
+            update.set("isVerify", false);
+            update.set("auditStatus", 1);// 审核状态：1-待审核，2-审核通过，3-审核不通过
+        }
+
+        if (null == financialAdvisor) {
+            // 通过机构名称和姓名查询是否存在系统导入的投资人信息
+            FinancialAdvisor sysFA = mongoTemplate.findOne(query(where("faName").is(user.getUserName()).and("orgNm").is(user.getCompanyName())), FinancialAdvisor.class);
+            if (null != sysFA) {
+                // 先删除系统批量导入的FA信息
+                mongoTemplate.remove(query(where("faId").is(sysFA.getFaId())), FinancialAdvisor.class);
+            }
+            // 插入新的用户（投资人）额外信息
+            FinancialAdvisor fa = new FinancialAdvisor();
+            fa.setFaId(user.getUserId());
+            fa.setFaName(user.getUserName());
+            fa.setEmail(user.getEmail());
+            fa.setStatus(1);//状态：0-有效，1-失效
+            fa.setOrgNm(user.getCompanyName());
+            fa.setPhoneNm(user.getPhoneNm());
+            mongoTemplate.insert(fa, "financialAdvisor");
+        } else {
+            update.set("auditStatus", 2);// 审核状态：1-待审核，2-审核通过，3-审核不通过
+            update.set("isVerify", true);
+            if (!StringUtils.isEmpty(user.getEmail())) {
+                Update faUpdate = new Update();
+                faUpdate.set("faId", user.getUserId());
+                faUpdate.set("faName", user.getUserName());
+                faUpdate.set("email", user.getEmail());
+                faUpdate.set("status", 0);// 状态：0-有效，1-失效
+                faUpdate.set("orgNm", user.getCompanyName());
+                faUpdate.set("phoneNm", user.getPhoneNm());
+                faUpdate.set("faType", 1);
+                mongoTemplate.updateFirst(query(where("faId").is(financialAdvisor.getFaId())), faUpdate, Investor.class);
+            } else {
+                update.set("userName", financialAdvisor.getFaName());
+                update.set("companyName", financialAdvisor.getOrgNm());
+                update.set("positionName", financialAdvisor.getPositionName());
+                update.set("email", financialAdvisor.getEmail());
+                update.set("telephoneNo", financialAdvisor.getPhoneNm());
+            }
+        }
+    }
+
 
     /**
      * 手机验证码校验及手机号码授权
@@ -400,6 +569,15 @@ public class UserLoginController {
         }
     }
 
+    @PostMapping("/user/chooseRole")
+    public String chooseRole(String userId, String targetRoleCode) {
+        Update update = new Update();
+        update.set("roleCode", targetRoleCode);
+        mongoTemplate.updateFirst(query(where("userId").is(userId)), update, User.class);
+        User userDto = mongoTemplate.findOne(query(where("userId").is(userId)), User.class);
+        OutputFormate outputFormate = new OutputFormate(userDto, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
+        return JSONObject.toJSONString(outputFormate);
+    }
 
 
 
@@ -463,7 +641,7 @@ public class UserLoginController {
      * @return
      */
     @GetMapping("/user/detail")
-    public String detail(@RequestParam String userId) {
+    public String detail(String userId) {
         User user = userLoginService.detail(userId);
         OutputFormate outputFormate = new OutputFormate(user, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
         return JSONObject.toJSONString(outputFormate);

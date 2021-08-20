@@ -37,7 +37,7 @@ public class ActivityServiceImpl implements ActivityService {
             // 删除历史活动草稿，只保留最新草稿
             mongoTemplate.remove(query(where("idDone").is(false)), Activity.class);
         }
-        activity.setStatus(1);
+//        activity.setStatus(1);
         activity.setCreateTime(new Date());
         mongoTemplate.save(activity);
     }
@@ -76,6 +76,8 @@ public class ActivityServiceImpl implements ActivityService {
                 }
                 if (!StringUtils.isEmpty(activity.getEndDate()) && DateUtil.dateToStr(new Date(), "yyyy-MM-dd HH:mm:ss").compareTo(activity.getEndDate()) > 0) {
                     activity.setStatus(2);
+                } else {
+                    activity.setStatus(1);
                 }
 
                 if (null != status && 1 == status && 1 == activity.getStatus()) {
@@ -103,6 +105,11 @@ public class ActivityServiceImpl implements ActivityService {
     @Override
     public Activity detail(String id) {
         Activity activity = mongoTemplate.findOne(query(where("id").is(id)), Activity.class);
+        if (!StringUtils.isEmpty(activity.getEndDate()) && DateUtil.dateToStr(new Date(), "yyyy-MM-dd HH:mm:ss").compareTo(activity.getEndDate()) > 0) {
+            activity.setStatus(2);
+        } else {
+            activity.setStatus(1);
+        }
         if (!StringUtils.isEmpty(activity.getPhotoRoute())) {
             activity.setPhotoRoute(commonUtils.getFullFilePath(activity.getPhotoRoute()));
         }

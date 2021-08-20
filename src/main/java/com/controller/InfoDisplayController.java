@@ -341,6 +341,7 @@ public class InfoDisplayController {
      */
     @PostMapping(value = "/project/uploadproject")
     public String upLoadProject(MultipartFile file, MultipartFile logoFile, Project project) {
+        logger.info("项目上传入参：" + JSONObject.toJSONString(project));
         String projectNo = (project.getIsDone() != null && project.getIsDone()) ? commonUtils.getNumCode() : null;// 生成主键ID
         //文件上传可能会出问题
         if (null != file) {

@@ -17,4 +17,6 @@ public interface OrderService {
     Integer count(String openId);
     List<OrderOutDto> pageList(Integer pageNum, Integer pageSize, String openId, String userId);
     void commitReply(Order order);
+    Integer countAll(String openId);
+    List<OrderOutDto> pageListAll(Integer pageNum, Integer pageSize, String userId);
 }

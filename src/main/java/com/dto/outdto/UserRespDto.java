@@ -82,4 +82,8 @@ public class UserRespDto {
      * 名片反面路径
      */
     private String cardBackRoute;
+    /**
+     * 审核状态：1-待审核，2-审核通过，3-审核不通过
+     */
+    private Integer auditStatus;
 }

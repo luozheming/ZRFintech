@@ -36,7 +36,7 @@ public class ProjectDeliverController {
     }
 
     /**
-     * 新增项目群发记录
+     * 查询BP投递记录
      * @param userId
      * @return
      */
@@ -54,6 +54,25 @@ public class ProjectDeliverController {
                 List<ProjectDeliver> projectDeliverList = projectDeliverService.pageListByUserId(pageNum, pageSize, userId);
                 pageListDto.setList(projectDeliverList);
             }
+            OutputFormate outputFormate = new OutputFormate(pageListDto);
+            return JSONObject.toJSONString(outputFormate);
+        } catch (Exception e) {
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+    }
+
+    /**
+     * 查询BP投递记录（投资人视角）
+     * @param targetUserId
+     * @return
+     */
+    @GetMapping("/pageListByTargetUserId")
+    public String pageListByTargetUserId(Integer pageNum, Integer pageSize, String targetUserId) {
+        if (pageNum < 0 || pageSize <= 0) {
+            return ErrorCode.PAGEBELLOWZERO.toJsonString();
+        }
+        try {
+            PageListDto pageListDto = projectDeliverService.pageListByTargetUserId(pageNum, pageSize, targetUserId);
             OutputFormate outputFormate = new OutputFormate(pageListDto);
             return JSONObject.toJSONString(outputFormate);
         } catch (Exception e) {

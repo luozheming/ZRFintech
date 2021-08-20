@@ -117,7 +117,7 @@ public class Investor {
      */
     private Boolean isPlatform;
     /**
-     * 状态：0-启用，1-禁用
+     * 状态：0-有效，1-失效
      */
     private Integer status;
     /**
@@ -164,6 +164,10 @@ public class Investor {
      * 数据来源说明，如；excel导入，后台单个录入
      */
     private String sourceDesc;
+    /**
+     * 投资人展示标识：0-不展示，1-投资人授权展示
+     */
+    private Integer showFlag;
 
     @Tolerate
     public Investor() {}

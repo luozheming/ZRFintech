@@ -32,8 +32,6 @@ public class VIPCardUsageLogServiceImpl implements VIPCardUsageLogService {
     private MongoTemplate mongoTemplate;
     @Autowired
     private EmailService emailService;
-    @Value("${project.deliver.email}")
-    private String email;
     @Value("${platform.adviser.email}")
     private String adviserEmail;
 
@@ -76,6 +74,7 @@ public class VIPCardUsageLogServiceImpl implements VIPCardUsageLogService {
                     projectDeliver.setTargetEmail(investor.getInvesEmail());
                     projectDeliver.setTargetObject(investor);
                     projectDeliver.setCreateDate(new Date());
+                    projectDeliver.setTargetUserId(investor.getInvestorId());
                     projectDeliverList.add(projectDeliver);
                 }
                 mongoTemplate.insert(projectDeliverList, ProjectDeliver.class);
@@ -93,8 +92,6 @@ public class VIPCardUsageLogServiceImpl implements VIPCardUsageLogService {
         // 获取用户的项目信息
         Project project = mongoTemplate.findOne(query(where("entUserId").is(user.getUserId())), Project.class);
         SendEmailDto sendEmailDto = new SendEmailDto();
-        List<String> emails = Arrays.asList(email.split(","));
-        sendEmailDto.setSender(emails.get(0));
         sendEmailDto.setReceiver(adviserEmail);
         sendEmailDto.setTheme("金卡顾问服务申请");
         StringBuilder stringBuilder = new StringBuilder("客户信息：");

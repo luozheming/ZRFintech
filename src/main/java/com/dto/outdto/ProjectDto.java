@@ -152,13 +152,17 @@ public class ProjectDto {
      */
     private List<String> hideFieldList;
     /**
-     * 项目展示标识：0-不展示，1-企业授权展示
+     * `项目展示标识：0-不展示，1-企业授权展示`
      */
     private Integer showFlag;
     /**
      * 项目置顶刷新时间
      */
     private Date topFlushTime;
+    /**
+     * 用户id
+     */
+    private String userId;
     /**
      * 用户名称
      */
@@ -176,7 +180,19 @@ public class ProjectDto {
      */
     private String photoRoute;
     /**
+     * 角色编码
+     */
+    private String roleCode;
+    /**
      * 是否已认证
      */
     private Boolean isVerify;
+    /**
+     * 是否被收藏
+     */
+    private Boolean isCollection;
+    /**
+     * 是否被关注
+     */
+    private Boolean isAttention;
 }

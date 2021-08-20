@@ -69,6 +69,10 @@ public class ProjectDeliver {
      */
     private Object targetObject;
     /**
+     * 投递目标用户id
+     */
+    private String targetUserId;
+    /**
      * 投递目标邮箱
      */
     private String targetEmail;
@@ -76,6 +80,10 @@ public class ProjectDeliver {
      * 投递状态：0-录入成功未投递，1-定时投递成功，2-失败
      */
     private Integer status;
+    /**
+     * 投递次数
+     */
+    private Integer deliverTimes;
     /**
      * 创建时间
      */

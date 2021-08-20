@@ -1,5 +1,6 @@
 package com.service.manage.impl;
 
+import com.pojo.FinancialAdvisor;
 import com.pojo.Investor;
 import com.service.manage.ExcelService;
 import com.utils.CommonUtils;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.FileNotFoundException;
@@ -22,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -74,6 +77,55 @@ public class ExcelServiceImpl implements ExcelService {
 
             // 3，批量插入投资人信息
             mongoTemplate.insert(investorList, Investor.class);
+        }
+
+    }
+
+    @Override
+    public void importFinancialAdvisor(MultipartFile file) throws Exception {
+        // 1，创建Excel工作簿
+        Workbook workbook = getWorkBook(file);
+        if (null == workbook) {
+            throw new Exception(ErrorCode.EMPITYFILE.getMessage());
+        }
+
+        // 2，解析excel具体信息
+        Sheet sheet = workbook.getSheetAt(0);// 获取excel第一个表单
+        // 得到总行数
+        int rowNum = sheet.getLastRowNum();
+        Row row = sheet.getRow(0);
+        int colNum = row.getPhysicalNumberOfCells();
+        List<FinancialAdvisor> financialAdvisorList = new ArrayList<>();
+        FinancialAdvisor financialAdvisor = null;
+        if (rowNum > 1 && colNum > 0) {
+            // 正文内容应该从第二行开始,第一行为表头的标题
+            for (int i = 1; i < rowNum; i++) {
+                row = sheet.getRow(i);
+                if (StringUtils.isEmpty(String.valueOf(getCellFormatValue(row.getCell(0))))) {
+                    break;
+                }
+                financialAdvisor = new FinancialAdvisor();
+                financialAdvisor.setFaName(String.valueOf(getCellFormatValue(row.getCell(0))));// FA机构
+                financialAdvisor.setOrgNm(String.valueOf(getCellFormatValue(row.getCell(0))));// FA机构
+                financialAdvisor.setFocusFiled(String.valueOf(getCellFormatValue(row.getCell(1))).replaceAll("，|、", ","));// 关注行业
+                financialAdvisor.setFinRound(String.valueOf(getCellFormatValue(row.getCell(2))).replaceAll("，|、", ","));// 关注轮次
+                financialAdvisor.setIntrod(String.valueOf(getCellFormatValue(row.getCell(3))));// 简介
+                financialAdvisor.setInvestmentCase(String.valueOf(getCellFormatValue(row.getCell(4))).replaceAll("，|、", ","));// 投资案例
+                financialAdvisor.setContactUser(String.valueOf(getCellFormatValue(row.getCell(5))));// 联系人
+                financialAdvisor.setTelephoneNo(String.valueOf(getCellFormatValue(row.getCell(6))));// 联系方式
+                financialAdvisor.setEmail(String.valueOf(getCellFormatValue(row.getCell(7))));// 邮箱
+                financialAdvisor.setCity(String.valueOf(getCellFormatValue(row.getCell(8))).replaceAll("，|、", ","));// 办公城市
+                financialAdvisor.setFaId(commonUtils.getNumCode());
+                financialAdvisor.setSourceDesc("excel批量导入");
+                financialAdvisor.setStatus(0);
+                financialAdvisor.setFaType(2);// fa类型：1-fa个人,2-fa机构
+                financialAdvisor.setCreateTime(new Date());
+
+                financialAdvisorList.add(financialAdvisor);
+            }
+
+            // 3，批量插入投资人信息
+            mongoTemplate.insert(financialAdvisorList, FinancialAdvisor.class);
         }
 
     }

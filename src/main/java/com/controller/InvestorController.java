@@ -306,6 +306,7 @@ public class InvestorController {
     @GetMapping(value = "/project/downLoadBP")
     public String downLoadBP(HttpServletResponse response, @RequestParam String projectNo) {
         try {
+            System.out.println("/下载bp文件开始。。。");
             // 获取bp文件路径
             String filePath = "";
             List<Project> projects = mongoTemplate.find(query(Criteria.where("projectNo").is(projectNo)).limit(1), Project.class);
@@ -352,7 +353,6 @@ public class InvestorController {
                 os.write(buffer);
                 i = bis.read(buffer);
             }
-
             return ErrorCode.SUCCESS.toJsonString();
         } catch (Exception e) {
             return ErrorCode.OTHEREEEOR.toJsonString();

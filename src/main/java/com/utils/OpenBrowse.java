@@ -21,7 +21,7 @@ public class OpenBrowse extends Thread {
                 }
             }
             try {
-                Thread.sleep(1000*60*10);
+                Thread.sleep(1000*60*20);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

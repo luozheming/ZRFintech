@@ -36,13 +36,14 @@ public class EmailController {
     }
 
     public static void main(String[] args) throws Exception {
-        for (int i = 0; i < 10000; i++) {
-            HttpClientUtil.doGet("http://127.0.0.1:8888/mail/sendAttachmentsMail");
-            Thread.sleep(60*1000);
-            if ((i > 50) && (i % 50 == 0)) {
-                Thread.sleep(10*60*1000);
-            }
-            System.out.println("i=" + i);
-        }
+        HttpClientUtil.doGet("http://127.0.0.1:8888/email/sendSimpleTextMail");
+//        for (int i = 0; i < 20; i++) {
+//            HttpClientUtil.doGet("http://127.0.0.1:8888/email/sendSimpleTextMail");
+//            Thread.sleep(60*1000);
+//            if ((i > 50) && (i % 50 == 0)) {
+//                Thread.sleep(10*60*1000);
+//            }
+//            System.out.println("i=" + i);
+//        }
     }
 }

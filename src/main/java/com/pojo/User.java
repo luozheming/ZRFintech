@@ -43,7 +43,6 @@ public class User {
      * 更新日期
      */
     private Date updateTime;
-
     /**
      * 是否认证
      */
@@ -84,6 +83,14 @@ public class User {
      * 名片反面路径
      */
     private String cardBackRoute;
+    /**
+     * 审核状态：1-待审核，2-审核通过，3-审核不通过
+     */
+    private Integer auditStatus;
+    /**
+     * 认证身份申请的角色编码
+     */
+    private String auditRoleCode;
 
     @Tolerate
     public User() {}

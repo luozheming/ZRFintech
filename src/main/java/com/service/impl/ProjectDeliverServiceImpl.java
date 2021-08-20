@@ -1,9 +1,10 @@
 package com.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.dto.outdto.PageListDto;
 import com.fasterxml.jackson.annotation.JsonAlias;
-import com.pojo.Project;
-import com.pojo.ProjectDeliver;
+import com.pojo.*;
 import com.service.ProjectDeliverService;
 import com.utils.CommonUtils;
 import com.utils.ErrorCode;
@@ -13,6 +14,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -51,7 +53,17 @@ public class ProjectDeliverServiceImpl implements ProjectDeliverService {
         BeanUtils.copyProperties(project, projectDeliver);
         projectDeliver.setId(commonUtils.getNumCode());
         projectDeliver.setCreateDate(new Date());
+        projectDeliver.setUpdateDate(new Date());
         projectDeliver.setStatus(0);
+        projectDeliver.setDeliverTimes(0);
+        // 项目投递目标：1-VC,2-FA
+        if (1 == projectDeliver.getTargetType()) {
+            Investor investor = JSONObject.parseObject(JSON.toJSONString(projectDeliver.getTargetObject()), Investor.class);
+            projectDeliver.setTargetUserId(investor.getInvestorId());
+        } else if (2 == projectDeliver.getTargetType()) {
+            FinancialAdvisor financialAdvisor = JSONObject.parseObject(JSON.toJSONString(projectDeliver.getTargetObject()), FinancialAdvisor.class);
+            projectDeliver.setTargetUserId(financialAdvisor.getFaId());
+        }
         mongoTemplate.save(projectDeliver);
     }
 
@@ -62,7 +74,14 @@ public class ProjectDeliverServiceImpl implements ProjectDeliverService {
 
     @Override
     public List<ProjectDeliver> list() {
-        return mongoTemplate.find(query(where("status").is(0)).limit(50).with(Sort.by(Sort.Order.asc("createDate"))), ProjectDeliver.class);
+        // 获取未发送或者发送失败的邮件
+        Query query = new Query();
+        Criteria criteria = new Criteria();
+        // 投递状态：0-录入成功未投递，1-定时投递成功，2-失败,投递失败允许再投2次
+        criteria.orOperator(where("status").is(0), where("status").is(2));
+        criteria.and("deliverTimes").lt(4);
+        query.addCriteria(criteria);
+        return mongoTemplate.find(query.with(Sort.by(Sort.Order.asc("updateDate"))).limit(50), ProjectDeliver.class);
     }
 
     @Override
@@ -76,6 +95,22 @@ public class ProjectDeliverServiceImpl implements ProjectDeliverService {
     @Override
     public Integer count(String userId) {
         return (int) mongoTemplate.count(query(where("userId").is(userId)), ProjectDeliver.class);
+    }
+
+    @Override
+    public PageListDto<ProjectDeliver> pageListByTargetUserId(Integer pageNum, Integer pageSize, String targetUserId) {
+        Query query = new Query();
+        query.addCriteria(where("targetUserId").is(targetUserId));
+        int count = (int) mongoTemplate.count(query, ProjectDeliver.class);
+        int totalPage = count/pageSize;
+        PageListDto pageListDto = new PageListDto<Investor>();
+        pageListDto.setTotal(count);
+        if(pageNum <= totalPage){
+            int startNum = pageNum * pageSize;
+            List<ProjectDeliver> projectDelivers = mongoTemplate.find(query.skip(startNum).limit(pageSize), ProjectDeliver.class);
+            pageListDto.setList(projectDelivers);
+        }
+        return pageListDto;
     }
 
 }

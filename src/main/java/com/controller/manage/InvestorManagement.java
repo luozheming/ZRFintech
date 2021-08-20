@@ -81,7 +81,7 @@ public class InvestorManagement {
             // AWS S3存储文件
             commonUtils.uploadFile(s3BucketName,destPhotoPath + photoFile.getOriginalFilename(), photoFile.getBytes());
             commonUtils.uploadFile(s3BucketName,destPhotoPath + cardFile.getOriginalFilename(), cardFile.getBytes());
-        } catch (IllegalStateException | IOException e) {
+        } catch (Exception e) {
             return ErrorCode.OTHEREEEOR.toJsonString();
         }
         if(null!=orgphotoFile){
@@ -90,7 +90,7 @@ public class InvestorManagement {
                 // AWS S3存储文件
                 commonUtils.uploadFile(s3BucketName,destOrgPath + orgphotoFile.getOriginalFilename(), orgphotoFile.getBytes());
                 investor.setInvesOrgPhotoRoute(destOrgPath + orgphotoFile.getOriginalFilename());
-            }catch (IllegalStateException | IOException e) {
+            }catch (Exception e) {
                 return ErrorCode.OTHEREEEOR.toJsonString();
             }
         }
@@ -132,7 +132,7 @@ public class InvestorManagement {
             }
             investorService.editInvestor(investor);
             return ErrorCode.SUCCESS.toJsonString();
-        } catch (IllegalStateException | IOException e) {
+        } catch (Exception e) {
             return ErrorCode.OTHEREEEOR.toJsonString();
         }
     }

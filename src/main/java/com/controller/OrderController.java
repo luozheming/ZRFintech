@@ -78,6 +78,14 @@ public class OrderController {
         return ErrorCode.SUCCESS.toJsonString();
     }
 
+    /**
+     * 小程序展示的订单列表（不包含金卡会员购买订单）
+     * @param pageNum
+     * @param pageSize
+     * @param openId
+     * @param userId
+     * @return
+     */
     @GetMapping("/pageList")
     public String pageList(Integer pageNum, Integer pageSize, String openId, String userId) {
         logger.info("订单查询列表入参：userId=" +userId);
@@ -101,6 +109,34 @@ public class OrderController {
     }
 
     /**
+     * 后台管理展示的订单列表（含金卡会员购买订单）
+     * @param pageNum
+     * @param pageSize
+     * @param userId
+     * @return
+     */
+    @GetMapping("/pageListAll")
+    public String pageListAll(Integer pageNum, Integer pageSize, String userId) {
+        if (pageNum < 0 || pageSize <= 0) {
+            return ErrorCode.PAGEBELLOWZERO.toJsonString();
+        }
+        try {
+            int count = orderService.count(userId);
+            int totalPage = count/pageSize;
+            PageListDto pageListDto = new PageListDto<OrderOutDto>();
+            pageListDto.setTotal(count);
+            if(pageNum <= totalPage){
+                List<OrderOutDto> orderOutDtos = orderService.pageListAll(pageNum, pageSize, userId);
+                pageListDto.setList(orderOutDtos);
+            }
+            OutputFormate outputFormate = new OutputFormate(pageListDto);
+            return JSONObject.toJSONString(outputFormate);
+        } catch (Exception e) {
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+    }
+
+    /**
      * 提交评论
      * @param order
      * @return
@@ -110,7 +146,6 @@ public class OrderController {
         orderService.commitReply(order);
         return ErrorCode.SUCCESS.toJsonString();
     }
-
 
     /**
      * 查看订单

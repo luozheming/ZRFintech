@@ -18,10 +18,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
@@ -33,8 +30,6 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 @EnableScheduling
 public class ProjectDeliverJob {
 
-    @Value("${project.deliver.email}")
-    private String email;
     @Autowired
     private ProjectDeliverService projectDeliverService;
     @Autowired
@@ -52,7 +47,6 @@ public class ProjectDeliverJob {
             List<ProjectDeliver> projectDeliverList = projectDeliverService.list();
             if (!CollectionUtils.isEmpty(projectDeliverList)) {
                 total = projectDeliverList.size();
-                List<String> emails = Arrays.asList(email.split(","));
                 BulkOperations operations = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, ProjectDeliver.class);
                 Update update = new Update();
                 update.set("status", 1);
@@ -62,7 +56,6 @@ public class ProjectDeliverJob {
                     sendEmailDto = new SendEmailDto();
                     filePath = new ArrayList<>();
                     // 随机设置邮件发送方
-                    sendEmailDto.setSender(emails.get(new Random().nextInt(emails.size())));
                     sendEmailDto.setReceiver(projectDeliver.getTargetEmail());
                     String theme = "项目推荐-【" + projectDeliver.getProjectNm() + "】";
                     sendEmailDto.setTheme(theme);// 邮件主题
@@ -73,9 +66,16 @@ public class ProjectDeliverJob {
                         logger.info("项目编号|项目名称：" + projectDeliver.getProjectNo() + "|" + projectDeliver.getProjectNm() + "未上传BP");
                     }
                     sendEmailDto.setFilePathList(filePath);
-                    emailService.sendAttachmentsMail(sendEmailDto);
+                    try {
+                        emailService.sendAttachmentsMail(sendEmailDto);
+                    } catch (Exception e) {
+                        update.set("status", 2);// 更新邮件发送失败
+                    }
 
                     // 添加更新内容
+                    update.set("updateDate", new Date());
+                    Integer deliverTimes = projectDeliver.getDeliverTimes() == null ? 0 : projectDeliver.getDeliverTimes();
+                    update.set("deliverTimes", deliverTimes + 1);
                     operations.updateOne(query(where("id").is(projectDeliver.getId())), update);
                 }
 
@@ -84,6 +84,7 @@ public class ProjectDeliverJob {
             }
             logger.info("项目投递定时任务结束，共投递邮件数：" + total);
         } catch (Exception e) {
+
             logger.error("项目投递定时任务异常：", e);
         }
     }

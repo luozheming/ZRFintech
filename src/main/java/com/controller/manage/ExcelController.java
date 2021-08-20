@@ -29,4 +29,15 @@ public class ExcelController {
             return ErrorCode.OTHEREEEOR.toJsonString();
         }
     }
+
+    @PostMapping("/importFinancialAdvisor")
+    public String importFinancialAdvisor(MultipartFile file) {
+        try {
+            excelService.importFinancialAdvisor(file);
+            return ErrorCode.SUCCESS.toJsonString();
+        } catch (Exception e) {
+            logger.error("excel导入FA机构信息系统错误：", e);
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+    }
 }

@@ -24,7 +24,7 @@ public class Project {
     /**
      * 项目类型：1-融资项目，2-路演项目，3-路演转融资
      */
-//    private Integer projectType;
+//    private Integer projectType;x`
     /**
      * 所属行业
      */

@@ -1,11 +1,15 @@
 package com.service.manage.impl;
 
+import com.dto.indto.EntUserPageListDto;
+import com.dto.indto.InvestorEditDto;
+import com.dto.indto.PageDto;
+import com.dto.indto.SendEmailDto;
+import com.dto.outdto.EntUserDto;
 import com.dto.outdto.HomePageDto;
+import com.dto.outdto.PageListDto;
 import com.enums.RoleCode;
-import com.pojo.EntUser;
-import com.pojo.Investor;
-import com.pojo.Project;
-import com.pojo.User;
+import com.pojo.*;
+import com.service.EmailService;
 import com.service.manage.UserService;
 import com.utils.CommonUtils;
 import com.utils.DateUtil;
@@ -13,9 +17,11 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.ArrayOperators;
+import org.springframework.data.mongodb.core.aggregation.*;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -23,6 +29,7 @@ import org.springframework.util.StringUtils;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
@@ -36,6 +43,10 @@ public class UserServiceImpl implements UserService {
     private String internalPhoneNo;
     @Autowired
     private CommonUtils commonUtils;
+    @Autowired
+    private EmailService emailService;
+    @Value("${platform.adviser.email}")
+    private String adviserEmail;
 
     @Override
     public User login(String phoneNm, String password) {
@@ -70,10 +81,6 @@ public class UserServiceImpl implements UserService {
                     if (null != project.getIsPay() && project.getIsPay()) {
                         isPayCount ++;
                     }
-
-//                    if (null != project.getProjectType() && (2 == project.getProjectType() || 3 == project.getProjectType())) {
-//                        roadShowCount ++;
-//                    }
                 }
             }
         }
@@ -124,63 +131,159 @@ public class UserServiceImpl implements UserService {
             }
             mongoTemplate.insert(userList, User.class);
         }
-//
-//        // 获取评论信息生成订单信息
-//        List<ProjectComment> projectComments = mongoTemplate.find(new Query(), ProjectComment.class);
-//        if (!CollectionUtils.isEmpty(projectComments)) {
-//            List<Order> orderList = new ArrayList<>();
-//            Order order = null;
-//            for (ProjectComment projectComment : projectComments) {
-//                order = new Order();
-//                order.setOrderNo(commonUtils.getNumCode().substring(0, 32));
-//                order.setBizId(projectComment.getId());
-//                Integer bizType = projectComment.getCommentType() == null ? 1 : projectComment.getCommentType();
-//                order.setBizType(bizType);// 详情见OrderBizType
-//                order.setOpenId(projectComment.getOpenId());
-//                Integer commentStatus = projectComment.getCommonStatus();
-//                if (!StringUtils.isEmpty(commentStatus) && 2 == commentStatus ) {
-//                    order.setBizStatus(11);
-//                } else {
-//                    order.setBizStatus(3);
-//                }
-//                order.setCreateTime(projectComment.getCreateTime());
-//                order.setPayAmount(projectComment.getCommentAmount());
-//                order.setStars(projectComment.getStars());
-//                order.setReply(projectComment.getReply());
-//                order.setReplyTm(projectComment.getReplyTm());
-//                orderList.add(order);
-//            }
-//
-//            if (!CollectionUtils.isEmpty(orderList)) {
-//                mongoTemplate.insert(orderList, Order.class);
-//            }
-//        }
-//
-//        // 同步商业计划书申请订单
-//        List<ProjectBpApply> projectBpApplyList = mongoTemplate.find(new Query(), ProjectBpApply.class);
-//        if (!CollectionUtils.isEmpty(projectBpApplyList)) {
-//            List<Order> orderList = new ArrayList<>();
-//            Order order = null;
-//            for(ProjectBpApply projectBpApply : projectBpApplyList) {
-//                order = new Order();
-//                order.setOrderNo(commonUtils.getNumCode().substring(0, 32));
-//                order.setBizId(projectBpApply.getId());
-//                order.setBizType(OrderBizType.BPOPTIMIZE.getCode());// 详情见OrderBizType.
-//                Integer commentStatus = projectBpApply.getDealStatus();
-//                if (!StringUtils.isEmpty(commentStatus) && 1 == commentStatus ) {
-//                    order.setBizStatus(11);
-//                } else {
-//                    order.setBizStatus(3);
-//                }
-//                order.setCreateTime(projectBpApply.getCreateTime());
-//                orderList.add(order);
-//            }
-//
-//            if (!CollectionUtils.isEmpty(orderList)) {
-//                mongoTemplate.insert(orderList, Order.class);
-//            }
-//        }
     }
 
+    @Override
+    public Integer entUserCount(EntUserPageListDto entUserPageListDto) {
+        Criteria criteria = new Criteria();
+        List<String> roleCodeList = new ArrayList<>();
+        roleCodeList.add("visitor");
+        roleCodeList.add("entuser");
+        criteria.and("roleCode").in(roleCodeList);
+        if (!StringUtils.isEmpty(entUserPageListDto.getSearchField())) {
+            criteria.orOperator(Criteria.where("phoneNm").is(entUserPageListDto.getSearchField()), Criteria.where("project.projectNm").regex(".*?\\" + entUserPageListDto.getSearchField() + ".*"));
+        }
+        LookupOperation lookup = LookupOperation.newLookup()
+                //从表（关联的表）
+                .from("project")
+                //主表中与从表相关联的字段
+                .localField("userId")
+                //从表与主表相关联的字段
+                .foreignField("entUserId")
+                //查询出的从表集合 命名
+                .as("project");
+        AggregationOperation operation = Aggregation.match(criteria);
+        Aggregation agg = Aggregation.newAggregation(lookup, operation);
+        AggregationResults<Map> studentAggregation = mongoTemplate.aggregate(agg, "user", Map.class);
+        int count = studentAggregation.getMappedResults().size();
+        return count;
+    }
 
+    @Override
+    public List<EntUserDto> entUserPageList(EntUserPageListDto entUserPageListDto) {
+        int pageNum = entUserPageListDto.getPageNum();
+        int pageSize = entUserPageListDto.getPageSize();
+        String searchField = entUserPageListDto.getSearchField();
+        int startNum = pageNum * pageSize;
+        Criteria criteria = new Criteria();
+        List<String> roleCodeList = new ArrayList<>();
+        roleCodeList.add("visitor");
+        roleCodeList.add("entuser");
+        criteria.and("roleCode").in(roleCodeList);
+        if (!StringUtils.isEmpty(searchField)) {
+            criteria.orOperator(Criteria.where("phoneNm").is(searchField), Criteria.where("project.projectNm").regex(".*?\\" + searchField + ".*"));
+        }
+        LookupOperation lookup = LookupOperation.newLookup()
+                //从表（关联的表）
+                .from("project")
+                //主表中与从表相关联的字段
+                .localField("userId")
+                //从表与主表相关联的字段
+                .foreignField("entUserId")
+                //查询出的从表集合 命名
+                .as("project");
+        AggregationOperation operation = Aggregation.match(criteria);
+
+        Aggregation agg = Aggregation.newAggregation(lookup, operation,
+                Aggregation.skip((long) startNum),
+                Aggregation.limit(pageSize));
+        AggregationResults<EntUserDto> result = mongoTemplate.aggregate(agg,"user", EntUserDto.class);
+        List<EntUserDto> entUserDtos = result.getMappedResults();
+        return entUserDtos;
+    }
+
+    @Override
+    public void cancelVerify(String userId) {
+        User user = mongoTemplate.findOne(query(where("userId").is(userId)), User.class);
+        if (null == user || StringUtils.isEmpty(user.getRoleCode())) {
+            return;
+        }
+        if (RoleCode.ENTUSER.getCode().equals(user.getRoleCode())) {
+            // 删除客户扩展信息
+            mongoTemplate.remove(query(where("entUserId").is(user.getUserId())));
+        } else if (RoleCode.INVESTOR.getCode().equals(user.getRoleCode())) {
+            // 删除投资人扩展信息
+            mongoTemplate.remove(query(where("investorId").is(user.getUserId())), Investor.class);
+        }
+
+        // 更新用户未认证且游客身份
+        Update update = new Update();
+        update.set("isVerify", false);
+        update.set("roleCode", RoleCode.VISITOR.getCode());
+        mongoTemplate.updateFirst(query(where("userId").is(user.getUserId())), update, User.class);
+    }
+
+    @Override
+    public void editInvestor(InvestorEditDto investorEditDto) {
+        User user = mongoTemplate.findOne(query(where("userId").is(investorEditDto.getUserId())), User.class);
+        if (null == user) {
+            return;
+        }
+
+    }
+
+    /**
+     * 异步执行 发送身份认证审核提醒邮件
+     * @param user
+     */
+    @Override
+    @Async
+    public void sendAuditMail(User user) throws Exception {
+        SendEmailDto sendEmailDto = new SendEmailDto();
+        sendEmailDto.setReceiver(adviserEmail);
+        sendEmailDto.setTheme("身份认证申请");
+        StringBuilder stringBuilder = new StringBuilder("用户信息：");
+        stringBuilder.append("\n");
+        stringBuilder.append("姓名：").append(null == user.getUserName()?"":user.getUserName()).append("\n");
+        String roleName = RoleCode.getMessage(user.getRoleCode());
+        stringBuilder.append("身份：").append(roleName).append("\n");
+        stringBuilder.append("手机：").append(null == user.getPhoneNm()?"":user.getPhoneNm()).append("\n");
+        stringBuilder.append("联系电话：").append(null == user.getTelephoneNo()?"":user.getTelephoneNo()).append("\n");
+        stringBuilder.append("\n");
+        stringBuilder.append("烦请及时处理，后台管理系统：zrfintech-prd.srv.cmbchina.biz/management/index.html");
+        sendEmailDto.setContent(stringBuilder.toString());
+        emailService.sendSimpleTextMail(sendEmailDto);
+    }
+
+    @Override
+    public PageListDto<User> pageList(PageDto pageDto) {
+        int pageNum = pageDto.getPageNum();
+        int pageSize = pageDto.getPageSize();
+
+        Query query = new Query();
+        if (!StringUtils.isEmpty(pageDto.getRoleCode())) {
+            query.addCriteria(where("roleCode").is(pageDto.getRoleCode()));
+        }
+        int count = (int) mongoTemplate.count(query, Attention.class);
+        int totalPage = count/pageSize;
+        PageListDto pageListDto = new PageListDto<User>();
+        pageListDto.setTotal(count);
+        if(pageNum <= totalPage){
+            int startNum = pageNum * pageSize;
+            List<User> users = mongoTemplate.find(query.skip(startNum).limit(pageSize), User.class);
+            pageListDto.setList(users);
+        }
+        return pageListDto;
+    }
+
+    @Override
+    public void auditUser(String userId, Integer auditStatus) {
+        User user = mongoTemplate.findOne(query(where("userId").is(userId)), User.class);
+        Update update = new Update();
+        update.set("auditStatus", auditStatus);
+        if (2 == auditStatus) {
+            update.set("isVerify", true);
+            if (RoleCode.INVESTOR.getCode().equals(user.getRoleCode())) {
+                Update investorUpdate = new Update();
+                investorUpdate.set("status", 0);
+                mongoTemplate.updateFirst(query(where("investorId").is(user.getUserId())), investorUpdate, Investor.class);
+            } else if (RoleCode.FINANCIALADVISOR.getCode().equals(user.getRoleCode())) {
+                Update faUpdate = new Update();
+                faUpdate.set("status", 0);
+                mongoTemplate.updateFirst(query(where("faId").is(user.getUserId())), faUpdate, FinancialAdvisor.class);
+            }
+        }
+        update.set("updateTime", new Date());
+        mongoTemplate.updateFirst(query(where("userId").is(userId)), update, User.class);
+    }
 }

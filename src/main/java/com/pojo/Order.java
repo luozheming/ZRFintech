@@ -80,6 +80,10 @@ public class Order {
      * 联系人姓名
      */
     private String userName;
+    /**
+     * 订单处理人
+     */
+    private String dealBy;
 
     @Tolerate
     public Order() {}

@@ -7,4 +7,5 @@ import java.util.List;
 public interface VIPCardService {
     VIPCard detail(String id);
     List<VIPCard> list();
+    void update(VIPCard vipCard);
 }

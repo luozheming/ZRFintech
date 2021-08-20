@@ -1,6 +1,7 @@
 package com.controller.manage;
 
 import com.alibaba.fastjson.JSONObject;
+import com.dto.indto.PageDto;
 import com.dto.outdto.OutputFormate;
 import com.dto.outdto.PageListDto;
 import com.dto.outdto.ProjectDto;
@@ -8,11 +9,15 @@ import com.pojo.Project;
 import com.service.manage.ProjectService;
 import com.utils.CommonUtils;
 import com.utils.ErrorCode;
+import com.utils.S3Util;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @RestController
@@ -27,6 +32,8 @@ public class ProjectController {
     private String savedfilepath;
     @Value("${s3BucketName}")
     private String s3BucketName;
+
+    private static final Logger loggr = LoggerFactory.getLogger(ProjectController.class);
 
     /**
      * 分页获取项目列表
@@ -63,10 +70,10 @@ public class ProjectController {
      * @return
      */
     @GetMapping("/detail")
-    public String detail(String projectNo) {
+    public String detail(String projectNo, String userId) {
         ProjectDto projectDto = null;
         try {
-            projectDto = projectService.detail(projectNo);
+            projectDto = projectService.detail(projectNo, userId);
         } catch (Exception e) {
             return ErrorCode.OTHEREEEOR.toJsonString();
         }
@@ -146,4 +153,28 @@ public class ProjectController {
         }
     }
 
+    @GetMapping("/pageListByInvestor")
+    public String pageListByInvestor(PageDto pageDto) {
+        if (pageDto.getPageNum() < 0 || pageDto.getPageSize() <= 0) {
+            return ErrorCode.PAGEBELLOWZERO.toJsonString();
+        }
+        PageListDto pageListDto = projectService.pageListByInvestor(pageDto);
+        OutputFormate outputFormate = new OutputFormate(pageListDto, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
+        return JSONObject.toJSONString(outputFormate);
+    }
+
+    @GetMapping("/bpDownload")
+    public String bpDownload(HttpServletResponse response, @RequestParam String bpRoute) {
+        try {
+            Boolean status = S3Util.downLoadFile(s3BucketName, bpRoute, response);
+            if (!status) {
+                OutputFormate outputFormate = new OutputFormate("", ErrorCode.OTHEREEEOR.getCode(), "bp下载失败");
+                return JSONObject.toJSONString(outputFormate);
+            }
+            return ErrorCode.SUCCESS.toJsonString();
+        } catch (Exception e) {
+            loggr.error("bp文件下载失败：" + e);
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+    }
 }

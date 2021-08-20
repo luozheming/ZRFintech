@@ -4,7 +4,7 @@ public enum RoleCode {
     MANAGEMENT("management", "管理员"),
     ENTUSER("entuser", "企业客户"),
     INVESTOR("investor", "投资人"),
-    FINANCIALADVISOR("financialAdvisor", "FA机构"),
+    FINANCIALADVISOR("financialAdvisor", "FA"),
     VISITOR("visitor", "游客");
 
     private String code;
