@@ -15,6 +15,10 @@ public class Attention {
      */
     private String userId;
     /**
+     * 关注者的用户角色编码
+     */
+    private String roleCode;
+    /**
      * 关注对象的用户id
      */
     private String attentionUserId;

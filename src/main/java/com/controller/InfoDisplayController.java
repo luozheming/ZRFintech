@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.FindAndReplaceOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.ArrayOperators;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -109,7 +110,15 @@ public class InfoDisplayController {
             } else {
                 pageListDto = getInvestorList(pageDto);
             }
-
+            if (null != pageListDto && !CollectionUtils.isEmpty(pageListDto.getList())) {
+                List<Investor> investorList = pageListDto.getList();
+                for (Investor investor : investorList) {
+                    User user = mongoTemplate.findOne(query(where("userId").is(investor.getInvestorId())), User.class);
+                    if (null != user) {
+                        investor.setIsVerify(user.getIsVerify());
+                    }
+                }
+            }
             OutputFormate outputFormate = new OutputFormate(pageListDto);
             return JSONObject.toJSONString(outputFormate);
         }

@@ -17,6 +17,10 @@ public class FinancialAdvisor {
      */
     private String faId;
     /**
+     * 个人FA的所属机构faId
+     */
+    private String orgFaId;
+    /**
      * fa类型：1-fa个人,2-fa机构
      */
     private Integer faType;
@@ -44,7 +48,6 @@ public class FinancialAdvisor {
      * 个人简介
      */
     private String selfIntroduction;
-
     /**
      * 联系人
      */
@@ -82,6 +85,10 @@ public class FinancialAdvisor {
      */
     private Integer status;
     /**
+     * 是否展示：0-不展示，1-FA授权展示
+     */
+    private Integer showFlag;
+    /**
      * 数据来源
      */
     private String sourceDesc;
@@ -89,6 +96,10 @@ public class FinancialAdvisor {
      * 创建时间
      */
     private Date createTime;
+    /**
+     * 角色编码
+     */
+    private String roleCode;
 
     @Tolerate
     public FinancialAdvisor() {}

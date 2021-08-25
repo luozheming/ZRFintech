@@ -168,6 +168,11 @@ public class Investor {
      * 投资人展示标识：0-不展示，1-投资人授权展示
      */
     private Integer showFlag;
+    /**
+     * 是否认证投资人
+     */
+    private Boolean isVerify;
+
 
     @Tolerate
     public Investor() {}

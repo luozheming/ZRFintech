@@ -25,6 +25,14 @@ public class ActivityRecord {
      */
     private String theme;
     /**
+     * 副标题
+     */
+    private String subTheme;
+    /**
+     * 举办城市
+     */
+    private String city;
+    /**
      * 活动起始日期
      */
     private String startDate;

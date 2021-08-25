@@ -121,6 +121,7 @@ public class ExcelServiceImpl implements ExcelService {
                 financialAdvisor.setSourceDesc("excel批量导入");
                 financialAdvisor.setStatus(0);
                 financialAdvisor.setFaType(2);// fa类型：1-fa个人,2-fa机构
+                financialAdvisor.setShowFlag(1);
                 financialAdvisor.setCreateTime(new Date());
 
                 financialAdvisorList.add(financialAdvisor);

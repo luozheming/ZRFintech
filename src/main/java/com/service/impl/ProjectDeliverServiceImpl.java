@@ -17,6 +17,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.Date;
@@ -62,6 +63,10 @@ public class ProjectDeliverServiceImpl implements ProjectDeliverService {
             projectDeliver.setTargetUserId(investor.getInvestorId());
         } else if (2 == projectDeliver.getTargetType()) {
             FinancialAdvisor financialAdvisor = JSONObject.parseObject(JSON.toJSONString(projectDeliver.getTargetObject()), FinancialAdvisor.class);
+            if (!StringUtils.isEmpty(financialAdvisor) && financialAdvisor.getOrgNm().indexOf("|") != -1) {
+                financialAdvisor.setOrgNm(financialAdvisor.getOrgNm().split("|")[0]);
+                projectDeliver.setTargetObject(financialAdvisor);
+            }
             projectDeliver.setTargetUserId(financialAdvisor.getFaId());
         }
         mongoTemplate.save(projectDeliver);
@@ -90,6 +95,17 @@ public class ProjectDeliverServiceImpl implements ProjectDeliverService {
         int startNum = pageNum * pageSize;
         Query query = new Query(where("userId").is(userId)).with(Sort.by(Sort.Order.desc("createDate")));
         List<ProjectDeliver> projectDeliverList = mongoTemplate.find(query.skip(startNum).limit(pageSize), ProjectDeliver.class);
+        if (!CollectionUtils.isEmpty(projectDeliverList)) {
+            for (ProjectDeliver projectDeliver : projectDeliverList) {
+                if (2 == projectDeliver.getTargetType()) {
+                    FinancialAdvisor financialAdvisor = JSONObject.parseObject(JSON.toJSONString(projectDeliver.getTargetObject()), FinancialAdvisor.class);
+                    if (!StringUtils.isEmpty(financialAdvisor.getOrgNm()) && financialAdvisor.getOrgNm().indexOf("|") == -1) {
+                        financialAdvisor.setOrgNm(financialAdvisor.getOrgNm() + "  |  " + financialAdvisor.getPositionName());
+                    }
+                    projectDeliver.setTargetObject(financialAdvisor);
+                }
+            }
+        }
         return projectDeliverList;
     }
 

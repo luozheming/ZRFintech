@@ -1,5 +1,6 @@
 package com.service.impl;
 
+import com.pojo.Activity;
 import com.pojo.ActivityRecord;
 import com.pojo.Project;
 import com.service.ActivityRecordService;
@@ -30,6 +31,11 @@ public class ActivityRecordServiceImpl implements ActivityRecordService {
     public void add(ActivityRecord activityRecord) {
         activityRecord.setId(commonUtils.getNumCode());
         activityRecord.setCreateTime(new Date());
+        Activity activity = mongoTemplate.findOne(query(where("id").is(activityRecord.getActivityId())), Activity.class);
+        if (null != activity) {
+            activityRecord.setSubTheme(activity.getSubTheme());
+            activityRecord.setCity(activity.getCity());
+        }
         mongoTemplate.save(activityRecord);
     }
 

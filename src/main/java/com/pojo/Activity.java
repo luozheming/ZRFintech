@@ -22,6 +22,14 @@ public class Activity {
      */
     private String theme;
     /**
+     * 副标题
+     */
+    private String subTheme;
+    /**
+     * 举办城市
+     */
+    private String city;
+    /**
      * 图片路径
      */
     private String photoRoute;

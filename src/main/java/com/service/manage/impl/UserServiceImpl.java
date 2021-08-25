@@ -25,6 +25,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -231,12 +232,13 @@ public class UserServiceImpl implements UserService {
     public void sendAuditMail(User user) throws Exception {
         SendEmailDto sendEmailDto = new SendEmailDto();
         sendEmailDto.setReceiver(adviserEmail);
-        sendEmailDto.setTheme("身份认证申请");
+        String roleName = RoleCode.getMessage(user.getRoleCode());
+        sendEmailDto.setTheme(roleName + "认证申请");
         StringBuilder stringBuilder = new StringBuilder("用户信息：");
         stringBuilder.append("\n");
         stringBuilder.append("姓名：").append(null == user.getUserName()?"":user.getUserName()).append("\n");
-        String roleName = RoleCode.getMessage(user.getRoleCode());
         stringBuilder.append("身份：").append(roleName).append("\n");
+        stringBuilder.append("公司：").append(null == user.getCompanyName()?"":user.getCompanyName()).append("\n");
         stringBuilder.append("手机：").append(null == user.getPhoneNm()?"":user.getPhoneNm()).append("\n");
         stringBuilder.append("联系电话：").append(null == user.getTelephoneNo()?"":user.getTelephoneNo()).append("\n");
         stringBuilder.append("\n");

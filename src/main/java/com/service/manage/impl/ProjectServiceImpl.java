@@ -86,9 +86,9 @@ public class ProjectServiceImpl implements ProjectService {
                 projectDto.setRoleCode(user.getRoleCode());
             }
 
-            // 通过userId查询用户信息,用户为投资人时，记录该项目的浏览历史
+            // 通过userId查询用户信息,用户为投资人/FA时，记录该项目的浏览历史
             User investorUser = mongoTemplate.findOne(query(where("userId").is(userId)), User.class);
-            if (null != investorUser && RoleCode.INVESTOR.getCode().equals(investorUser.getRoleCode())) {
+            if (null != investorUser && (RoleCode.INVESTOR.getCode().equals(investorUser.getRoleCode()) || RoleCode.FINANCIALADVISOR.getCode().equals(investorUser.getRoleCode()))) {
                 // 查询是否已被浏览过
                 BrowseHistory browseHistoryResp = mongoTemplate.findOne(query(where("userId").is(userId).and("projectNo")
                         .is(project.getProjectNo())), BrowseHistory.class);
@@ -106,6 +106,7 @@ public class ProjectServiceImpl implements ProjectService {
                     browseHistory.setUpdateTime(new Date());
                     browseHistory.setBrowseTimes(1);
                     browseHistory.setUserId(userId);
+                    browseHistory.setRoleCode(investorUser.getRoleCode());
                     mongoTemplate.insert(browseHistory, "browseHistory");
                 }
 
@@ -215,7 +216,7 @@ public class ProjectServiceImpl implements ProjectService {
         int pageSize = pageDto.getPageSize();
 
         Query query = new Query();
-        query.addCriteria(where("isDone").is(true));
+        query.addCriteria(where("isDone").is(true).and("showFlag").is(1));
         // 行业
         Criteria proIndusCriteria = null;
         if (!StringUtils.isEmpty(pageDto.getProIndus())) {
@@ -280,7 +281,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         // 精确匹配查询条件
         Query accurateQuery = new Query();
-        accurateQuery.addCriteria(where("isDone").is(true));
+        accurateQuery.addCriteria(where("isDone").is(true).and("showFlag").is(1));
 
         // 智能匹配查询条件
         Query matchedQuery = new Query();

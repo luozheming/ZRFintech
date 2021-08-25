@@ -20,6 +20,10 @@ public class BrowseHistory {
      */
     private String userId;
     /**
+     * 用户角色
+     */
+    private String roleCode;
+    /**
      * 项目编号
      */
     private String projectNo;

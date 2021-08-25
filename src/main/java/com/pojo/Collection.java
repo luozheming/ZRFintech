@@ -15,6 +15,10 @@ public class Collection {
      */
     private String userId;
     /**
+     * 用户角色编码
+     */
+    private String roleCode;
+    /**
      * 项目编号
      */
     private String projectNo;

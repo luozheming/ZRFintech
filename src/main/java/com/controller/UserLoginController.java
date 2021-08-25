@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.dto.indto.UserEditDto;
 import com.dto.indto.UserRegisterDto;
 import com.dto.indto.UserUpdatePasswordDto;
+import com.dto.indto.UserVerifyDto;
 import com.dto.outdto.OutputFormate;
 import com.dto.outdto.UserLoginDto;
 import com.dto.outdto.UserRespDto;
@@ -61,6 +62,7 @@ public class UserLoginController {
     private UserService userService;
 
     private static final Logger logger = LoggerFactory.getLogger(UserLoginController.class);
+    private FinancialAdvisor fa;
 
     @PostMapping(value = "/investor/investorLogin")
     public String investorLogin(@RequestBody Investor investor){
@@ -302,6 +304,8 @@ public class UserLoginController {
                 if (!StringUtils.isEmpty(photoFilePath)) {
                     faUpdate.set("photoRoute", photoFilePath);
                 }
+                faUpdate.set("orgNm", userEditDto.getCompanyName());
+                faUpdate.set("positionName", userEditDto.getPositionName());
                 mongoTemplate.updateFirst(query(where("faId").is(userEditDto.getUserId())), faUpdate, FinancialAdvisor.class);
             }
 
@@ -335,14 +339,14 @@ public class UserLoginController {
      * @return
      */
     @PostMapping("/user/verify")
-        public String verify(MultipartFile photoFile, MultipartFile cardFile, MultipartFile cardBackFile, User user, String captcha, String targetRoleCode) {
+        public String verify(MultipartFile photoFile, MultipartFile cardFile, MultipartFile cardBackFile, UserVerifyDto user, String captcha, String targetRoleCode) {
         logger.info("身份认证入参： user=" + JSONObject.toJSONString(user));
         logger.info("身份认证入参： targetRoleCode=" + targetRoleCode);
         Map<String, Object> respMap = userLoginService.validateSms(user.getPhoneNm(), captcha);
-//        if (!(boolean)respMap.get("result")) {
-//            OutputFormate outputFormate = new OutputFormate("", ErrorCode.OTHEREEEOR.getCode(), String.valueOf(respMap.get("msg")));
-//            return JSONObject.toJSONString(outputFormate);
-//        }
+        if (!(boolean)respMap.get("result")) {
+            OutputFormate outputFormate = new OutputFormate("", ErrorCode.OTHEREEEOR.getCode(), String.valueOf(respMap.get("msg")));
+            return JSONObject.toJSONString(outputFormate);
+        }
         try {
             User userResp = mongoTemplate.findOne(query(where("userId").is(user.getUserId())), User.class);
             logger.info("身份认证通过userId获取用户信息： userResp=" + JSONObject.toJSONString(userResp));
@@ -357,6 +361,7 @@ public class UserLoginController {
                 commonUtils.uploadFile(s3BucketName, filePath, photoFile.getBytes());
                 //文件保存后更新数据库信息
                 update.set("photoRoute", filePath);
+                user.setPhotoRoute(filePath);
             }
             if (null != cardFile) {
                 String filePath = entUserSavedFilepath + user.getUserId() + "/" + cardFile.getOriginalFilename();
@@ -419,7 +424,7 @@ public class UserLoginController {
      * @param update
      * @throws Exception
      */
-    private void investorVerify(User user, String targetRoleCode, Update update) throws Exception {
+    private void investorVerify(UserVerifyDto user, String targetRoleCode, Update update) throws Exception {
         // 验证该投资人是否已维护
         Investor investor = mongoTemplate.findOne(query(where("phoneNm").is(user.getPhoneNm())), Investor.class);
         if (null == investor && StringUtils.isEmpty(user.getEmail())) {
@@ -452,7 +457,7 @@ public class UserLoginController {
             insertInvestor.setInvestor(user.getUserName());
             insertInvestor.setInvesEmail(user.getEmail());
             insertInvestor.setStatus(1);// 状态：0-有效，1-失效
-            insertInvestor.setShowFlag(0);// 投资人展示标识：0-不展示，1-投资人授权展示
+            insertInvestor.setShowFlag(user.getShowFlag());// 投资人展示标识：0-不展示，1-投资人授权展示
             insertInvestor.setOrgNm(user.getCompanyName() + "  |  " + user.getPositionName());
             insertInvestor.setPhoneNm(user.getPhoneNm());
             if (StringUtils.isEmpty(user.getPhotoRoute())) {
@@ -462,9 +467,18 @@ public class UserLoginController {
                 String fileName = random + ".jpg";
                 photoRoute = photoRoute + fileName;
                 insertInvestor.setInvesPhotoRoute(photoRoute);
-
                 update.set("photoRoute", photoRoute);// 更新用户的头像
+            } else {
+                insertInvestor.setInvesPhotoRoute(user.getPhotoRoute());
+                update.set("photoRoute", user.getPhotoRoute());// 更新用户的头像
             }
+
+            // 关注轮次和投资行业信息补充一起认证
+            insertInvestor.setFocusFiled(user.getFocusFiled());
+            insertInvestor.setFinRound(user.getFinRound());
+            insertInvestor.setFocusCity(user.getFocusCity());
+            insertInvestor.setSelfIntroduction(user.getSelfIntroduction());
+
             mongoTemplate.insert(insertInvestor, "investor");
         } else {
             update.set("auditStatus", 2);// 审核状态：1-待审核，2-审核通过，3-审核不通过
@@ -477,6 +491,25 @@ public class UserLoginController {
                 investorUpdate.set("status", 0);// 状态：0-有效，1-失效
                 investorUpdate.set("orgNm", user.getCompanyName() + "  |  " + user.getPositionName());
                 investorUpdate.set("phoneNm", user.getPhoneNm());
+
+                if (StringUtils.isEmpty(user.getPhotoRoute())) {
+                    // 给个随机默认投资人头像
+                    String photoRoute = "/home/ec2-user/data/investor/";
+                    int random = new Random().nextInt(13) + 1;
+                    String fileName = random + ".jpg";
+                    photoRoute = photoRoute + fileName;
+                    investorUpdate.set("photoRoute", photoRoute);
+                    update.set("photoRoute", photoRoute);// 更新用户的头像
+                } else {
+                    investorUpdate.set("photoRoute", user.getPhotoRoute());
+                    update.set("photoRoute", user.getPhotoRoute());// 更新用户的头像
+                }
+
+                // 关注轮次和投资行业信息补充一起认证
+                investorUpdate.set("focusFiled", user.getFocusFiled());
+                investorUpdate.set("finRound", user.getFinRound());
+                investorUpdate.set("focusCity", user.getFocusCity());
+                investorUpdate.set("selfIntroduction", user.getSelfIntroduction());
             } else {
                 update.set("userName", investor.getInvestor());
                 if (!StringUtils.isEmpty(investor.getOrgNm()) && investor.getOrgNm().split("\\|").length == 2) {
@@ -485,19 +518,23 @@ public class UserLoginController {
                 }
                 update.set("email", investor.getInvesEmail());
                 update.set("telephoneNo", investor.getPhoneNm());
+                update.set("invesPhotoRoute", investor.getInvesPhotoRoute());
+                update.set("cardRoute", investor.getInvesCardRoute());
+
             }
+            investorUpdate.set("showFlag", 1);
             mongoTemplate.updateFirst(query(where("investorId").is(investor.getInvestorId())), investorUpdate, Investor.class);
         }
     }
 
     /**
-     * 认证投FA部分逻辑
+     * 认证FA部分逻辑
      * @param user
      * @param targetRoleCode
      * @param update
      * @throws Exception
      */
-    private void financialAdvisorVerify(User user, String targetRoleCode, Update update) throws Exception {
+    private void financialAdvisorVerify(UserVerifyDto user, String targetRoleCode, Update update) throws Exception {
         // 验证该fa是否已维护
         FinancialAdvisor financialAdvisor = mongoTemplate.findOne(query(where("phoneNm").is(user.getPhoneNm())), FinancialAdvisor.class);
         if (null == financialAdvisor && StringUtils.isEmpty(user.getEmail())) {
@@ -519,40 +556,85 @@ public class UserLoginController {
 
         if (null == financialAdvisor) {
             // 通过机构名称和姓名查询是否存在系统导入的投资人信息
-            FinancialAdvisor sysFA = mongoTemplate.findOne(query(where("faName").is(user.getUserName()).and("orgNm").is(user.getCompanyName())), FinancialAdvisor.class);
+            FinancialAdvisor sysFA = mongoTemplate.findOne(query(where("faName").is(user.getUserName()).and("orgNm").is(user.getCompanyName()).and("faType").is(1)), FinancialAdvisor.class);
             if (null != sysFA) {
                 // 先删除系统批量导入的FA信息
                 mongoTemplate.remove(query(where("faId").is(sysFA.getFaId())), FinancialAdvisor.class);
             }
             // 插入新的用户（投资人）额外信息
             FinancialAdvisor fa = new FinancialAdvisor();
+            fa.setFaType(1);// fa类型：1-fa个人,2-fa机构
             fa.setFaId(user.getUserId());
             fa.setFaName(user.getUserName());
             fa.setEmail(user.getEmail());
-            fa.setStatus(1);//状态：0-有效，1-失效
+            fa.setStatus(1);// 状态：0-有效，1-失效
+            fa.setShowFlag(user.getShowFlag());// 是否展示：0-不展示，1-FA授权展示
             fa.setOrgNm(user.getCompanyName());
+            fa.setPositionName(user.getPositionName());
             fa.setPhoneNm(user.getPhoneNm());
+            if (StringUtils.isEmpty(user.getPhotoRoute())) {
+                // 给个随机默认投资人头像
+                String photoRoute = "/home/ec2-user/data/investor/";
+                int random = new Random().nextInt(13) + 1;
+                String fileName = random + ".jpg";
+                photoRoute = photoRoute + fileName;
+                fa.setPhotoRoute(photoRoute);
+                update.set("photoRoute", photoRoute);// 更新用户的头像
+            } else {
+                fa.setPhotoRoute(user.getPhotoRoute());
+                update.set("photoRoute", user.getPhotoRoute());// 更新用户的头像
+            }
+
+            // 关注轮次和投资行业信息补充一起认证
+            fa.setFocusFiled(user.getFocusFiled());
+            fa.setFinRound(user.getFinRound());
+            fa.setCity(user.getFocusCity());
+            fa.setInvestmentCase(user.getInvestmentCase());
+            fa.setSelfIntroduction(user.getSelfIntroduction());
+
             mongoTemplate.insert(fa, "financialAdvisor");
         } else {
             update.set("auditStatus", 2);// 审核状态：1-待审核，2-审核通过，3-审核不通过
             update.set("isVerify", true);
+
+            Update faUpdate = new Update();
             if (!StringUtils.isEmpty(user.getEmail())) {
-                Update faUpdate = new Update();
                 faUpdate.set("faId", user.getUserId());
                 faUpdate.set("faName", user.getUserName());
                 faUpdate.set("email", user.getEmail());
                 faUpdate.set("status", 0);// 状态：0-有效，1-失效
                 faUpdate.set("orgNm", user.getCompanyName());
                 faUpdate.set("phoneNm", user.getPhoneNm());
+                faUpdate.set("positionName", user.getPositionName());
                 faUpdate.set("faType", 1);
-                mongoTemplate.updateFirst(query(where("faId").is(financialAdvisor.getFaId())), faUpdate, Investor.class);
+                if (StringUtils.isEmpty(user.getPhotoRoute())) {
+                    // 给个随机默认投资人头像
+                    String photoRoute = "/home/ec2-user/data/investor/";
+                    int random = new Random().nextInt(13) + 1;
+                    String fileName = random + ".jpg";
+                    photoRoute = photoRoute + fileName;
+                    faUpdate.set("photoRoute", photoRoute);
+                    update.set("photoRoute", photoRoute);// 更新用户的头像
+                } else {
+                    faUpdate.set("photoRoute", user.getPhotoRoute());
+                    update.set("photoRoute", user.getPhotoRoute());// 更新用户的头像
+                }
+
+                // 关注轮次和投资行业信息补充一起认证
+                faUpdate.set("focusFiled", user.getFocusFiled());
+                faUpdate.set("finRound", user.getFinRound());
+                faUpdate.set("focusCity", user.getFocusCity());
+                faUpdate.set("selfIntroduction", user.getSelfIntroduction());
             } else {
                 update.set("userName", financialAdvisor.getFaName());
                 update.set("companyName", financialAdvisor.getOrgNm());
                 update.set("positionName", financialAdvisor.getPositionName());
                 update.set("email", financialAdvisor.getEmail());
                 update.set("telephoneNo", financialAdvisor.getPhoneNm());
+                update.set("photoRoute", financialAdvisor.getPhotoRoute());
             }
+            faUpdate.set("showFlag", 1);
+            mongoTemplate.updateFirst(query(where("faId").is(financialAdvisor.getFaId())), faUpdate, Investor.class);
         }
     }
 

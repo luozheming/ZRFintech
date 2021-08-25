@@ -49,6 +49,8 @@ public class ActivityServiceImpl implements ActivityService {
             update.set("photoRoute", activity.getPhotoRoute());
         }
         update.set("theme", activity.getTheme());
+        update.set("subTheme", activity.getSubTheme());
+        update.set("city", activity.getCity());
         update.set("startDate", activity.getStartDate());
         update.set("endDate", activity.getEndDate());
         update.set("activityMode", activity.getActivityMode());

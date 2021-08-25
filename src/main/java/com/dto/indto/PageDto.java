@@ -40,5 +40,13 @@ public class PageDto {
      * fa类型：1-fa个人,2-fa机构
      */
     private Integer faType;
+    /**
+     * 个人FA的所属机构faId
+     */
+    private String orgFaId;
+    /**
+     * 是否展示：0-否，1-展示
+     */
+    private Integer showFlag;
 
 }

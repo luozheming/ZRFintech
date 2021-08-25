@@ -6,5 +6,6 @@ import com.pojo.ServiceApply;
 
 public interface ServiceApplyService {
     PageListDto<ServiceApply> pageList(PageDto pageDto);
-    void add(ServiceApply serviceApply);
+    void add(ServiceApply serviceApply) throws Exception;
+    void sendMail(ServiceApply serviceApply) throws Exception;
 }

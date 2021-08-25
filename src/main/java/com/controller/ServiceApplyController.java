@@ -29,7 +29,12 @@ public class ServiceApplyController {
 
     @PostMapping("/add")
     public String add(@RequestBody ServiceApply serviceApply) {
-        serviceApplyService.add(serviceApply);
-        return ErrorCode.SUCCESS.toJsonString();
+        try{
+            serviceApplyService.add(serviceApply);
+            serviceApplyService.sendMail(serviceApply);
+            return ErrorCode.SUCCESS.toJsonString();
+        } catch (Exception e){
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
     }
 }
