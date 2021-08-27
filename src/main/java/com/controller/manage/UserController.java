@@ -181,4 +181,10 @@ public class UserController {
         userService.auditUser(userId, auditStatus);
         return ErrorCode.SUCCESS.toJsonString();
     }
+
+    @GetMapping("/delete")
+    public String delete(String userId, String phoneNm) {
+        userService.delete(userId, phoneNm);
+        return ErrorCode.SUCCESS.toJsonString();
+    }
 }

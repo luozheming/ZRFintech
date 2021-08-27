@@ -36,7 +36,7 @@ public class BrowseHistoryServiceImpl implements BrowseHistoryService {
         int count = (int) mongoTemplate.count(query, BrowseHistory.class);
 
         int totalPage = count/pageSize;
-        PageListDto pageListDto = new PageListDto<Investor>();
+        PageListDto pageListDto = new PageListDto<BrowseHistory>();
         pageListDto.setTotal(count);
         if(pageNum <= totalPage){
             int startNum = pageNum * pageSize;

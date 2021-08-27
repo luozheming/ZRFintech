@@ -4,9 +4,8 @@ import com.dto.indto.OrderDto;
 import com.dto.outdto.OrderOutDto;
 import com.dto.outdto.WxPayDto;
 import com.enums.OrderBizType;
-import com.pojo.IntegralGoods;
 import com.pojo.Order;
-import com.pojo.ProjectComment;
+import com.pojo.User;
 import com.service.OrderService;
 import com.service.WxPayService;
 import com.utils.CommonUtils;
@@ -59,6 +58,15 @@ public class OrderServiceImpl implements OrderService {
         order.setCreateTime(new Date());
         if (1 == orderDto.getPaymentType() && null == wxPayDto) {
             order.setPayStatus(3);
+        }
+        User user = mongoTemplate.findOne(query(where("userId").is(order.getUserId())), User.class);
+        if (null != user) {
+            if (StringUtils.isEmpty(order.getPhoneNm())) {
+                order.setPhoneNm(user.getPhoneNm());
+            }
+            if (StringUtils.isEmpty(order.getUserName())) {
+                order.setUserName(user.getUserName());
+            }
         }
         mongoTemplate.insert(order, "order");
         return wxPayDto;

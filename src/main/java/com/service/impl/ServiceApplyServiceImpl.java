@@ -45,7 +45,7 @@ public class ServiceApplyServiceImpl implements ServiceApplyService {
         int count = (int) mongoTemplate.count(query, ServiceApply.class);
 
         int totalPage = count/pageSize;
-        PageListDto pageListDto = new PageListDto<Investor>();
+        PageListDto pageListDto = new PageListDto<ServiceApply>();
         pageListDto.setTotal(count);
         if(pageNum <= totalPage){
             int startNum = pageNum * pageSize;

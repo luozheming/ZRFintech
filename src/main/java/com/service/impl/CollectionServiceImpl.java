@@ -37,7 +37,7 @@ public class CollectionServiceImpl implements CollectionService {
         int count = (int) mongoTemplate.count(query, Collection.class);
 
         int totalPage = count/pageSize;
-        PageListDto pageListDto = new PageListDto<Investor>();
+        PageListDto pageListDto = new PageListDto<Collection>();
         pageListDto.setTotal(count);
         if(pageNum <= totalPage){
             int startNum = pageNum * pageSize;

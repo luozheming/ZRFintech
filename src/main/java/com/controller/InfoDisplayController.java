@@ -117,6 +117,12 @@ public class InfoDisplayController {
                     if (null != user) {
                         investor.setIsVerify(user.getIsVerify());
                     }
+                    List<Attention> attentionList = mongoTemplate.find(query(where("userId").is(pageDto.getUserId()).and("attentionUserId").is(investor.getInvestorId())), Attention.class);
+                    if (!CollectionUtils.isEmpty(attentionList)) {
+                        investor.setIsAttention(true);
+                    } else {
+                        investor.setIsAttention(false);
+                    }
                 }
             }
             OutputFormate outputFormate = new OutputFormate(pageListDto);
@@ -177,7 +183,7 @@ public class InfoDisplayController {
         if(pageNum <= totalPage){
             // 按isPlatform排序，将平台投资人置前
             int startNum = pageNum * pageSize;
-            List<Investor> investors = mongoTemplate.find(query.skip(startNum).limit(pageSize), Investor.class);
+            List<Investor> investors = mongoTemplate.find(query.with(Sort.by(Sort.Order.asc("createTime"))).skip(startNum).limit(pageSize), Investor.class);
             pageListDto.setList(investors);
         }
         return pageListDto;
@@ -218,7 +224,7 @@ public class InfoDisplayController {
         }
 
         // 精确匹配查询
-        accurateList = mongoTemplate.find(accurateQuery, Investor.class);
+        accurateList = mongoTemplate.find(accurateQuery.with(Sort.by(Sort.Order.asc("createTime"))), Investor.class);
         if (!CollectionUtils.isEmpty(accurateList)) {
             investorList.addAll(accurateList);
             for (Investor investor : accurateList) {
@@ -274,7 +280,7 @@ public class InfoDisplayController {
         }
 
         // 智能匹配查询（在未精准匹配列表）
-        matchedList = mongoTemplate.find(matchedQuery.addCriteria(where("investorId").nin(investorIdList)), Investor.class);
+        matchedList = mongoTemplate.find(matchedQuery.addCriteria(where("investorId").nin(investorIdList)).with(Sort.by(Sort.Order.asc("createTime"))), Investor.class);
 
         if (!CollectionUtils.isEmpty(matchedList)) {
             investorList.addAll(matchedList);
@@ -293,7 +299,7 @@ public class InfoDisplayController {
         } else if (null == proIndusCriteria && null != finRoundCriteria) {
             otherQuery.addCriteria(new Criteria().andOperator(finRoundCriteria));
         }
-        unMatchList = mongoTemplate.find(otherQuery, Investor.class);
+        unMatchList = mongoTemplate.find(otherQuery.with(Sort.by(Sort.Order.asc("createTime"))), Investor.class);
         if (!CollectionUtils.isEmpty(unMatchList)) {
             investorList.addAll(unMatchList);
         }
@@ -454,11 +460,10 @@ public class InfoDisplayController {
      * 已上传项目查询
      */
     @GetMapping("/project/getMyProjects")
-    public String getMyProjects(String openId, String entUserId){
+    public String getMyProjects(String entUserId){
         logger.info("查询项目信息入参：" + entUserId);
         ProjectDto projectDto = new ProjectDto();
         Criteria criteria = new Criteria();
-//        criteria.orOperator(Criteria.where("entUserId").is(entUserId), Criteria.where("openId").is(openId));
         criteria.and("entUserId").is(entUserId);
         criteria.and("isDone").is(true);
         Query query = new Query(criteria);

@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.dto.indto.PageDto;
 import com.dto.outdto.OutputFormate;
 import com.dto.outdto.PageListDto;
+import com.pojo.Attention;
 import com.pojo.FinancialAdvisor;
 import com.pojo.User;
 import com.service.FinancialAdvisorService;
@@ -88,6 +89,17 @@ public class FinancialAdvisorController {
         try {
             financialAdvisorService.delete(faId);
             return ErrorCode.SUCCESS.toJsonString();
+        }catch (Exception e) {
+            return ErrorCode.OTHEREEEOR.toJsonString();
+        }
+    }
+
+    @GetMapping("/detail")
+    public String detail(String faId) {
+        try {
+            FinancialAdvisor financialAdvisor = financialAdvisorService.detail(faId);
+            OutputFormate outputFormate = new OutputFormate(financialAdvisor, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage());
+            return JSONObject.toJSONString(outputFormate);
         }catch (Exception e) {
             return ErrorCode.OTHEREEEOR.toJsonString();
         }

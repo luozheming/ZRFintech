@@ -77,6 +77,12 @@ public class ProjectServiceImpl implements ProjectService {
             // 获取用户信息
             User user = mongoTemplate.findOne(query(where("userId").is(project.getEntUserId())), User.class);
             if (null != user) {
+                VIPCardUsage vipCardUsage = mongoTemplate.findOne(query(where("userId").is(user.getUserId())), VIPCardUsage.class);
+                if (null != vipCardUsage && DateUtil.getDiffDate(new Date(), vipCardUsage.getEndTime(), 1) > 0) {
+                    projectDto.setIsValid(true);
+                } else {
+                    projectDto.setIsValid(false);
+                }
                 projectDto.setUserId(user.getUserId());
                 projectDto.setUserName(user.getUserName());
                 projectDto.setPositionName(user.getPositionName());
@@ -84,6 +90,7 @@ public class ProjectServiceImpl implements ProjectService {
                 projectDto.setPhotoRoute(user.getPhotoRoute());
                 projectDto.setIsVerify(user.getIsVerify());
                 projectDto.setRoleCode(user.getRoleCode());
+                projectDto.setTelephoneNo(user.getTelephoneNo());
             }
 
             // 通过userId查询用户信息,用户为投资人/FA时，记录该项目的浏览历史
@@ -254,7 +261,7 @@ public class ProjectServiceImpl implements ProjectService {
         int count = (int) mongoTemplate.count(query, Project.class);
 
         int totalPage = count/pageSize;
-        PageListDto pageListDto = new PageListDto<Investor>();
+        PageListDto pageListDto = new PageListDto<Project>();
         pageListDto.setTotal(count);
         if(pageNum <= totalPage){
             // 按isPlatform排序，将平台投资人置前
@@ -382,7 +389,7 @@ public class ProjectServiceImpl implements ProjectService {
         }
 
         int count = 0;
-        PageListDto pageListDto = new PageListDto<Investor>();
+        PageListDto pageListDto = new PageListDto<Project>();
         if (CollectionUtils.isEmpty(projectList)) {
             pageListDto.setTotal(count);
             return pageListDto;

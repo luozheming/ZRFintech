@@ -38,9 +38,9 @@ public class VIPCardUsage {
      */
     private Date endTime;
     /**
-     * 是否金卡模板：true-是，false-否
+     * 金卡模板:0-默认，1-金色，2-蓝色
      */
-    private Boolean isVipTemplate;
+    private Integer vipTemplate;
 
     @Tolerate
     public VIPCardUsage() {}

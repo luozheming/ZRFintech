@@ -10,4 +10,5 @@ public interface FinancialAdvisorService {
     void edit(FinancialAdvisor financialAdvisor);
     void status(FinancialAdvisor financialAdvisor);
     void delete(String faId);
+    FinancialAdvisor detail(String faId);
 }

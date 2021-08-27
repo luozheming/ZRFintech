@@ -50,9 +50,9 @@ public class VIPCardUsageRespDto {
      */
     private Boolean isValid;
     /**
-     * 是否金卡模板：true-是，false-否
+     * 金卡模板背景：1-项目专属背景,2-项目专属背景2
      */
-    private Boolean isVipTemplate;
+    private Integer vipTemplate;
 
     @Tolerate
     public VIPCardUsageRespDto() {}

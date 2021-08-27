@@ -100,6 +100,10 @@ public class FinancialAdvisor {
      * 角色编码
      */
     private String roleCode;
+    /**
+     * 是否被关注
+     */
+    private Boolean isAttention;
 
     @Tolerate
     public FinancialAdvisor() {}

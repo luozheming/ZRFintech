@@ -22,4 +22,5 @@ public interface UserService {
     void sendAuditMail(User user) throws Exception;
     PageListDto<User> pageList(PageDto pageDto);
     void auditUser(String userId, Integer auditStatus);
+    void delete(String userId, String phoneNm);
 }

@@ -120,7 +120,7 @@ public class ProjectDeliverServiceImpl implements ProjectDeliverService {
         query.addCriteria(where("targetUserId").is(targetUserId));
         int count = (int) mongoTemplate.count(query, ProjectDeliver.class);
         int totalPage = count/pageSize;
-        PageListDto pageListDto = new PageListDto<Investor>();
+        PageListDto pageListDto = new PageListDto<ProjectDeliver>();
         pageListDto.setTotal(count);
         if(pageNum <= totalPage){
             int startNum = pageNum * pageSize;

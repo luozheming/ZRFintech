@@ -1,11 +1,11 @@
-package com.pojo;
+package com.dto.outdto;
 
 import lombok.Data;
 
 import java.util.Date;
 
 @Data
-public class Attention {
+public class AttentionOutDto {
     /**
      * 主键id
      */
@@ -39,10 +39,6 @@ public class Attention {
      */
     private String attentionRoleCode;
     /**
-     * 关注对象为FA时，区分；1-个人，2-机构
-     */
-    private Integer attentionFaType;
-    /**
      * 关注对象的头像路径
      */
     private String attentionPhotoRoute;
@@ -54,4 +50,16 @@ public class Attention {
      * 创建时间
      */
     private Date createTime;
+    /**
+     * 被关注对象是否金卡会员：true-是，false-否
+     */
+    private Boolean isValid;
+    /**
+     * 被关注对象是否已认证：true-是，false-否
+     */
+    private Boolean isVerify;
+    /**
+     * 关注对象的实体对象（如：创业者、投资人、FA个人、FA机构）
+     */
+    private Object attentionObject;
 }

@@ -137,7 +137,7 @@ public class VIPCardUsageServiceImpl implements VIPCardUsageService {
             }
             vipCardUsageAdd.setStartTime(startTime);
             vipCardUsageAdd.setEndTime(endTime);
-            vipCardUsageAdd.setIsVipTemplate(true);
+            vipCardUsageAdd.setVipTemplate(vipCardUsage.getVipTemplate());
             mongoTemplate.save(vipCardUsageAdd);
         }
     }
@@ -145,8 +145,8 @@ public class VIPCardUsageServiceImpl implements VIPCardUsageService {
     @Override
     public void edit(VIPCardUsage vipCardUsage) {
         Update update = new Update();
-        if (null != vipCardUsage.getIsVipTemplate()) {
-            update.set("isVipTemplate", vipCardUsage.getIsVipTemplate());
+        if (null != vipCardUsage.getVipTemplate()) {
+            update.set("vipTemplate", vipCardUsage.getVipTemplate());
         }
         mongoTemplate.updateFirst(query(where("id").is(vipCardUsage.getId())), update, VIPCardUsage.class);
     }

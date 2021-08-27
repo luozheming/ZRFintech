@@ -163,7 +163,7 @@ public class OrderController {
         try {
             int count = orderService.count(userId);
             int totalPage = count/pageSize;
-            PageListDto pageListDto = new PageListDto<Project>();
+            PageListDto pageListDto = new PageListDto<OrderOutDto>();
             pageListDto.setTotal(count);
             if(pageNum <= totalPage){
                 List<OrderOutDto> orderOutDtos = orderService.pageList(pageNum, pageSize, openId, userId);

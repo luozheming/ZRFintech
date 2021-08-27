@@ -66,7 +66,7 @@ public class ArticleController {
         try {
             int count = articleService.count(articleType);
             int totalPage = count/pageSize;
-            PageListDto pageListDto = new PageListDto<Project>();
+            PageListDto pageListDto = new PageListDto<Article>();
             pageListDto.setTotal(count);
             if(pageNum <= totalPage){
                 List<Article> activities =  articleService.pageList(pageNum, pageSize, articleType);

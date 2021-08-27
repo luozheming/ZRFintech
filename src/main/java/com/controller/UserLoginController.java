@@ -342,7 +342,7 @@ public class UserLoginController {
         public String verify(MultipartFile photoFile, MultipartFile cardFile, MultipartFile cardBackFile, UserVerifyDto user, String captcha, String targetRoleCode) {
         logger.info("身份认证入参： user=" + JSONObject.toJSONString(user));
         logger.info("身份认证入参： targetRoleCode=" + targetRoleCode);
-        Map<String, Object> respMap = userLoginService.validateSms(user.getPhoneNm(), captcha);
+        Map<String, Object> respMap = userLoginService.validateSms(user.getTelephoneNo(), captcha);
         if (!(boolean)respMap.get("result")) {
             OutputFormate outputFormate = new OutputFormate("", ErrorCode.OTHEREEEOR.getCode(), String.valueOf(respMap.get("msg")));
             return JSONObject.toJSONString(outputFormate);
@@ -425,7 +425,63 @@ public class UserLoginController {
      * @throws Exception
      */
     private void investorVerify(UserVerifyDto user, String targetRoleCode, Update update) throws Exception {
-        // 验证该投资人是否已维护
+        if (!StringUtils.isEmpty(user.getEmail())) {
+            update.set("userName", user.getUserName());
+            update.set("companyName", user.getCompanyName());
+            update.set("positionName", user.getPositionName());
+            update.set("email", user.getEmail());
+            update.set("telephoneNo", user.getTelephoneNo());
+            update.set("roleCode", targetRoleCode);
+            update.set("auditRoleCode", targetRoleCode);
+            update.set("isVerify", false);
+            update.set("auditStatus", 1);// 审核状态：1-待审核，2-审核通过，3-审核不通过
+
+            // 通过机构名称和姓名查询是否存在系统导入的投资人信息
+            Investor sysInvestor = mongoTemplate.findOne(query(where("investor").is(user.getUserName()).and("orgNm").is(user.getCompanyName() + "  |  " + user.getPhoneNm())), Investor.class);
+            if (null != sysInvestor) {
+                // 先删除原后台批量导入的信息
+                mongoTemplate.remove(query(where("investorId").is(sysInvestor.getInvestorId())), Investor.class);
+            }
+            Investor orgInvestor = mongoTemplate.findOne(query(where("investorId").is(user.getUserId())), Investor.class);
+            if (null != orgInvestor) {
+                // 先删除上次认证失败的信息
+                mongoTemplate.remove(query(where("investorId").is(orgInvestor.getInvestorId())), Investor.class);
+            }
+            // 插入新的用户（投资人）额外信息
+            Investor insertInvestor = new Investor();
+            insertInvestor.setInvestorId(user.getUserId());
+            insertInvestor.setInvestor(user.getUserName());
+            insertInvestor.setInvesEmail(user.getEmail());
+            insertInvestor.setStatus(1);// 状态：0-有效，1-失效
+            insertInvestor.setShowFlag(user.getShowFlag());// 投资人展示标识：0-不展示，1-投资人授权展示
+            insertInvestor.setOrgNm(user.getCompanyName() + "  |  " + user.getPositionName());
+            insertInvestor.setPhoneNm(user.getPhoneNm());
+            if (StringUtils.isEmpty(user.getPhotoRoute())) {
+                // 给个随机默认投资人头像
+                String photoRoute = "/home/ec2-user/data/investor/";
+                int random = new Random().nextInt(13) + 1;
+                String fileName = random + ".jpg";
+                photoRoute = photoRoute + fileName;
+                insertInvestor.setInvesPhotoRoute(photoRoute);
+                update.set("photoRoute", photoRoute);// 更新用户的头像
+            } else {
+                insertInvestor.setInvesPhotoRoute(user.getPhotoRoute());
+                update.set("photoRoute", user.getPhotoRoute());// 更新用户的头像
+            }
+
+            // 关注轮次和投资行业信息补充一起认证
+            insertInvestor.setFocusFiled(user.getFocusFiled());
+            insertInvestor.setFinRound(user.getFinRound());
+            insertInvestor.setFocusCity(user.getFocusCity());
+            insertInvestor.setSelfIntroduction(user.getSelfIntroduction());
+
+            mongoTemplate.insert(insertInvestor, "investor");
+        } else {
+            throw new Exception("上传资料审不能为空");
+        }
+
+/*
+        // 验证该投资人是否已维护（后期有此需求时要加是否系统维护的条件限制查询）
         Investor investor = mongoTemplate.findOne(query(where("phoneNm").is(user.getPhoneNm())), Investor.class);
         if (null == investor && StringUtils.isEmpty(user.getEmail())) {
             throw new Exception("请联系管理员注册或者上传资料审核验证");
@@ -524,7 +580,7 @@ public class UserLoginController {
             }
             investorUpdate.set("showFlag", 1);
             mongoTemplate.updateFirst(query(where("investorId").is(investor.getInvestorId())), investorUpdate, Investor.class);
-        }
+        }*/
     }
 
     /**
@@ -535,6 +591,68 @@ public class UserLoginController {
      * @throws Exception
      */
     private void financialAdvisorVerify(UserVerifyDto user, String targetRoleCode, Update update) throws Exception {
+        // 如果为上传资料认证，则更新相关字段
+        if (!StringUtils.isEmpty(user.getEmail())) {
+            update.set("userName", user.getUserName());
+            update.set("companyName", user.getCompanyName());
+            update.set("positionName", user.getPositionName());
+            update.set("email", user.getEmail());
+            update.set("telephoneNo", user.getTelephoneNo());
+            update.set("roleCode", targetRoleCode);
+            update.set("auditRoleCode", targetRoleCode);
+            update.set("isVerify", false);
+            update.set("auditStatus", 1);// 审核状态：1-待审核，2-审核通过，3-审核不通过
+
+            // 通过机构名称和姓名查询是否存在系统导入的投资人信息
+            FinancialAdvisor sysFA = mongoTemplate.findOne(query(where("faName").is(user.getUserName()).and("orgNm").is(user.getCompanyName()).and("faType").is(1)), FinancialAdvisor.class);
+            if (null != sysFA) {
+                // 先删除系统批量导入的FA信息
+                mongoTemplate.remove(query(where("faId").is(sysFA.getFaId())), FinancialAdvisor.class);
+            }
+
+            // 重新认证时查询已录入系统的数据
+            FinancialAdvisor orgFA = mongoTemplate.findOne(query(where("faId").is(user.getUserId())), FinancialAdvisor.class);
+            if (null != orgFA) {
+                // 先删除上次认证的FA数据
+                mongoTemplate.remove(query(where("faId").is(orgFA.getFaId())), FinancialAdvisor.class);
+            }
+            // 插入新的用户（投资人）额外信息
+            FinancialAdvisor fa = new FinancialAdvisor();
+            fa.setFaType(1);// fa类型：1-fa个人,2-fa机构
+            fa.setFaId(user.getUserId());
+            fa.setFaName(user.getUserName());
+            fa.setEmail(user.getEmail());
+            fa.setStatus(1);// 状态：0-有效，1-失效
+            fa.setShowFlag(user.getShowFlag());// 是否展示：0-不展示，1-FA授权展示
+            fa.setOrgNm(user.getCompanyName());
+            fa.setPositionName(user.getPositionName());
+            fa.setPhoneNm(user.getPhoneNm());
+            if (StringUtils.isEmpty(user.getPhotoRoute())) {
+                // 给个随机默认投资人头像
+                String photoRoute = "/home/ec2-user/data/investor/";
+                int random = new Random().nextInt(13) + 1;
+                String fileName = random + ".jpg";
+                photoRoute = photoRoute + fileName;
+                fa.setPhotoRoute(photoRoute);
+                update.set("photoRoute", photoRoute);// 更新用户的头像
+            } else {
+                fa.setPhotoRoute(user.getPhotoRoute());
+                update.set("photoRoute", user.getPhotoRoute());// 更新用户的头像
+            }
+
+            // 关注轮次和投资行业信息补充一起认证
+            fa.setFocusFiled(user.getFocusFiled());
+            fa.setFinRound(user.getFinRound());
+            fa.setCity(user.getFocusCity());
+            fa.setInvestmentCase(user.getInvestmentCase());
+            fa.setSelfIntroduction(user.getSelfIntroduction());
+
+            mongoTemplate.insert(fa, "financialAdvisor");
+        } else {
+            throw new Exception("上传资料不能为空");
+        }
+
+/*
         // 验证该fa是否已维护
         FinancialAdvisor financialAdvisor = mongoTemplate.findOne(query(where("phoneNm").is(user.getPhoneNm())), FinancialAdvisor.class);
         if (null == financialAdvisor && StringUtils.isEmpty(user.getEmail())) {
@@ -635,7 +753,7 @@ public class UserLoginController {
             }
             faUpdate.set("showFlag", 1);
             mongoTemplate.updateFirst(query(where("faId").is(financialAdvisor.getFaId())), faUpdate, Investor.class);
-        }
+        }*/
     }
 
 

@@ -168,6 +168,10 @@ public class ProjectDto {
      */
     private String userName;
     /**
+     *  联系电话号码
+     */
+    private String telephoneNo;
+    /**
      * 公司
      */
     private String companyName;
@@ -195,4 +199,8 @@ public class ProjectDto {
      * 是否被关注
      */
     private Boolean isAttention;
+    /**
+     * 是否为会员：true-是，false-否
+     */
+    private Boolean isValid;
 }

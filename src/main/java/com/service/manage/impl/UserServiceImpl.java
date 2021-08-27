@@ -288,4 +288,34 @@ public class UserServiceImpl implements UserService {
         update.set("updateTime", new Date());
         mongoTemplate.updateFirst(query(where("userId").is(userId)), update, User.class);
     }
+
+    @Override
+    public void delete(String userId, String phoneNm) {
+        Query query = new Query();
+        if (!StringUtils.isEmpty(userId)) {
+            query.addCriteria(where("userId").is(userId));
+        }
+        if (!StringUtils.isEmpty(phoneNm)) {
+            query.addCriteria(where("phoneNm").is(phoneNm));
+        }
+        User user = mongoTemplate.findOne(query, User.class);
+        if (null != user) {
+            if (RoleCode.ENTUSER.getCode().equals(user.getRoleCode())) {
+                mongoTemplate.remove(query(where("entUserId").is(user.getUserId())), Project.class);
+                mongoTemplate.remove(query(where("entUserId").is(user.getUserId())), EntUser.class);
+            } else if (RoleCode.INVESTOR.getCode().equals(user.getRoleCode())) {
+                mongoTemplate.remove(query(where("investorId").is(user.getUserId())), Investor.class);
+            } else if (RoleCode.FINANCIALADVISOR.getCode().equals(user.getRoleCode())) {
+                mongoTemplate.remove(query(where("faId").is(user.getUserId())), FinancialAdvisor.class);
+            }
+            // 删除该用户的关注
+            mongoTemplate.remove(query(where("userId").is(user.getUserId())), Attention.class);
+            // 删除该用户的收藏
+            mongoTemplate.remove(query(where("userId").is(user.getUserId())), Collection.class);
+            // 删除该用户的浏览记录
+            mongoTemplate.remove(query(where("userId").is(user.getUserId())), BrowseHistory.class);
+            // 删除该用户
+            mongoTemplate.remove(query(where("userId").is(user.getUserId())), User.class);
+        }
+    }
 }

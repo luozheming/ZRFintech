@@ -6,6 +6,7 @@ import lombok.experimental.Tolerate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -172,7 +173,14 @@ public class Investor {
      * 是否认证投资人
      */
     private Boolean isVerify;
-
+    /**
+     * 是否被关注
+     */
+    private Boolean isAttention;
+    /**
+     * 创建时间
+     */
+    private Date CreateTime;
 
     @Tolerate
     public Investor() {}

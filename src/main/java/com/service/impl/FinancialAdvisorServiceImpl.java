@@ -3,6 +3,7 @@ package com.service.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.dto.indto.PageDto;
 import com.dto.outdto.PageListDto;
+import com.pojo.Attention;
 import com.pojo.FinancialAdvisor;
 import com.pojo.Investor;
 import com.pojo.Project;
@@ -16,6 +17,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -91,11 +93,21 @@ public class FinancialAdvisorServiceImpl implements FinancialAdvisorService {
         int count = (int) mongoTemplate.count(query, FinancialAdvisor.class);
 
         int totalPage = count/pageSize;
-        PageListDto pageListDto = new PageListDto<Investor>();
+        PageListDto pageListDto = new PageListDto<FinancialAdvisor>();
         pageListDto.setTotal(count);
         if(pageNum <= totalPage){
             int startNum = pageNum * pageSize;
             List<FinancialAdvisor> financialAdvisors = mongoTemplate.find(query.skip(startNum).limit(pageSize), FinancialAdvisor.class);
+            if (!CollectionUtils.isEmpty(financialAdvisors)) {
+                for (FinancialAdvisor financialAdvisor : financialAdvisors) {
+                    List<Attention> attentionList = mongoTemplate.find(query(where("userId").is(pageDto.getUserId()).and("attentionUserId").is(financialAdvisor.getFaId())), Attention.class);
+                    if (!CollectionUtils.isEmpty(attentionList)) {
+                        financialAdvisor.setIsAttention(true);
+                    } else {
+                        financialAdvisor.setIsAttention(false);
+                    }
+                }
+            }
             pageListDto.setList(financialAdvisors);
         }
         return pageListDto;
@@ -174,5 +186,11 @@ public class FinancialAdvisorServiceImpl implements FinancialAdvisorService {
     @Override
     public void delete(String faId) {
         mongoTemplate.remove(query(where("faId").is(faId)), FinancialAdvisor.class);
+    }
+
+    @Override
+    public FinancialAdvisor detail(String faId) {
+        FinancialAdvisor financialAdvisor = mongoTemplate.findOne(query(where("faId").is(faId)), FinancialAdvisor.class);
+        return financialAdvisor;
     }
 }
